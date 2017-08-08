@@ -16,7 +16,14 @@ namespace MyFilm
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+
+            LoginForm loginForm = new LoginForm();
+            loginForm.ShowDialog();
+
+            if (loginForm.DialogResult == DialogResult.OK)
+            {
+                Application.Run(new MainForm());
+            }
         }
     }
 }

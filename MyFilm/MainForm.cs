@@ -122,6 +122,7 @@ namespace MyFilm
         {
             this.ColumnName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             this.ColumnPath.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            this.ColumnDisk.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
 
             this.ColumnIndex.DataPropertyName = "index";
             this.ColumnName.DataPropertyName = "name";
@@ -356,14 +357,18 @@ namespace MyFilm
 
         private void btnUpFolder_Click(object sender, EventArgs e)
         {
-            if (this.dataGridView.SelectedRows.Count == 1)
+            if (this.dataGridView.SelectedRows.Count == 1 || sourceType == SourceType.DATABASE_PID)
             {
-                int pid = Convert.ToInt32(gridViewData.Rows[this.dataGridView.SelectedRows[0].Index]["pid"]);
+                int pid = actionParam.Pid;
+                if (this.dataGridView.SelectedRows.Count == 1)
+                    pid = Convert.ToInt32(gridViewData.Rows[this.dataGridView.SelectedRows[0].Index]["pid"]);
+
                 if (pid == -1)
                 {
                     MessageBox.Show("已是顶层！", "提示", MessageBoxButtons.OK);
                     return;
                 }
+
                 DataTable dt = sqlData.GetDataByIdFromFilmInfo(pid);
 
                 actionParam.Pid = Convert.ToInt32(dt.Rows[0]["pid"]);

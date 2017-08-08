@@ -21,7 +21,7 @@ namespace MyFilm
         {
             String sqlText = String.Format(
                 "server = {0}; uid = {1}; pwd = {2}; database = {3};",
-                "127.0.0.1", "root", "123456", "myfilm");
+                "127.0.0.1", "root", "123456", CommonString.DataBaseName);
             sqlCon = new MySqlConnection(sqlText);
             sqlCon.Open();
 
@@ -165,7 +165,8 @@ namespace MyFilm
         /// </summary>
         /// <param name="diskPath">磁盘路径</param>
         /// <param name="diskDescribe">磁盘描述</param>
-        public void ScanDisk(String diskPath, String diskDescribe)
+        /// <param name="brifeScan">简略扫描</param>
+        public void ScanDisk(String diskPath, String diskDescribe, Boolean brifeScan)
         {
             DriveInfo driveInfo = new DriveInfo(diskPath);
             // 更新磁盘信息
@@ -190,7 +191,10 @@ namespace MyFilm
 
             // 获取新插入的文件夹的id，该文件夹下的子文件夹或文件的pid即为此值
             int pid = SearchFilmInfoIdByPathAndDiskDescribe(driveInfo.RootDirectory.FullName, diskDescribe);
-            ScanAllInFolder(driveInfo.RootDirectory, diskDescribe, pid);
+            UInt32 maxLayer = UInt32.MaxValue;
+            // 简略扫描时
+            if (brifeScan) maxLayer = 3;
+            ScanAllInFolder(driveInfo.RootDirectory, diskDescribe, pid, maxLayer);
         }
 
         /// <summary>
@@ -199,8 +203,12 @@ namespace MyFilm
         /// <param name="directoryInfo">此文件夹信息</param>
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="pid">此文件夹数据库id</param>
-        private void ScanAllInFolder(DirectoryInfo directoryInfo, String diskDescribe, Int32 pid)
+        /// <param name="brifeScan">简略扫描</param>
+        private void ScanAllInFolder(
+            DirectoryInfo directoryInfo, String diskDescribe, Int32 pid, UInt32 maxLayer)
         {
+            if (maxLayer <= 0) return;
+
             foreach (DirectoryInfo childDirectoryInfo in directoryInfo.GetDirectories())
             {
                 if ((childDirectoryInfo.Attributes & FileAttributes.System) == FileAttributes.System) continue;
@@ -223,7 +231,7 @@ namespace MyFilm
                 InsertDataToFilmInfo(dt);
 
                 Int32 cpid = SearchFilmInfoIdByPathAndDiskDescribe(childDirectoryInfo.FullName, diskDescribe);
-                ScanAllInFolder(childDirectoryInfo, diskDescribe, cpid);
+                ScanAllInFolder(childDirectoryInfo, diskDescribe, cpid, maxLayer - 1);
             }
 
             FileInfo[] fileInfoArray = directoryInfo.GetFiles();

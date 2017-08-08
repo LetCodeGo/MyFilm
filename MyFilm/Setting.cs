@@ -61,6 +61,8 @@ namespace MyFilm
 
         private void InitGrid()
         {
+            this.ColumnDisk.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
             this.ColumnIndex.DataPropertyName = "index";
             this.ColumnDisk.DataPropertyName = "disk_desc";
             this.ColumnFreeSpace.DataPropertyName = "free_space";
@@ -154,7 +156,7 @@ namespace MyFilm
                     return;
                 }
 
-                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe);
+                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe, this.checkBoxBriefScan.Checked);
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -183,7 +185,7 @@ namespace MyFilm
                 int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
                 int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
-                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe);
+                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe, this.checkBoxBriefScan.Checked);
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -363,6 +365,19 @@ namespace MyFilm
 
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
+        }
+
+        private void dataGridView_SelectionChanged(object sender, EventArgs e)
+        {
+            if (sender != null)
+            {
+                DataGridView dgv = sender as DataGridView;
+                if (dgv.SelectedRows.Count == 1)
+                {
+                    int index = dgv.SelectedRows[0].Index;
+                    this.textBoxDiskDescribe.Text = this.gridViewData.Rows[index]["disk_desc"].ToString();
+                }
+            }
         }
     }
 }

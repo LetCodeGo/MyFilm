@@ -45,6 +45,7 @@
             this.btnChangeDiskDescribe = new System.Windows.Forms.Button();
             this.comboBoxLocalDisk = new System.Windows.Forms.ComboBox();
             this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
+            this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -96,6 +97,7 @@
             this.dataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView.Size = new System.Drawing.Size(595, 433);
             this.dataGridView.TabIndex = 0;
+            this.dataGridView.SelectionChanged += new System.EventHandler(this.dataGridView_SelectionChanged);
             // 
             // ColumnIndex
             // 
@@ -131,7 +133,7 @@
             // btnAddDisk
             // 
             this.btnAddDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddDisk.Location = new System.Drawing.Point(622, 39);
+            this.btnAddDisk.Location = new System.Drawing.Point(622, 61);
             this.btnAddDisk.Name = "btnAddDisk";
             this.btnAddDisk.Size = new System.Drawing.Size(150, 25);
             this.btnAddDisk.TabIndex = 1;
@@ -142,7 +144,7 @@
             // btnUpdateDisk
             // 
             this.btnUpdateDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateDisk.Location = new System.Drawing.Point(622, 108);
+            this.btnUpdateDisk.Location = new System.Drawing.Point(622, 92);
             this.btnUpdateDisk.Name = "btnUpdateDisk";
             this.btnUpdateDisk.Size = new System.Drawing.Size(150, 25);
             this.btnUpdateDisk.TabIndex = 2;
@@ -153,7 +155,7 @@
             // btnDeleteDisk
             // 
             this.btnDeleteDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteDisk.Location = new System.Drawing.Point(622, 177);
+            this.btnDeleteDisk.Location = new System.Drawing.Point(622, 123);
             this.btnDeleteDisk.Name = "btnDeleteDisk";
             this.btnDeleteDisk.Size = new System.Drawing.Size(150, 25);
             this.btnDeleteDisk.TabIndex = 3;
@@ -164,7 +166,7 @@
             // btnMoveFolderOrFile
             // 
             this.btnMoveFolderOrFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(622, 298);
+            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(622, 335);
             this.btnMoveFolderOrFile.Name = "btnMoveFolderOrFile";
             this.btnMoveFolderOrFile.Size = new System.Drawing.Size(150, 25);
             this.btnMoveFolderOrFile.TabIndex = 4;
@@ -204,7 +206,7 @@
             this.comboBoxLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxLocalDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLocalDisk.FormattingEnabled = true;
-            this.comboBoxLocalDisk.Location = new System.Drawing.Point(686, 329);
+            this.comboBoxLocalDisk.Location = new System.Drawing.Point(686, 366);
             this.comboBoxLocalDisk.Name = "comboBoxLocalDisk";
             this.comboBoxLocalDisk.Size = new System.Drawing.Size(86, 20);
             this.comboBoxLocalDisk.TabIndex = 9;
@@ -212,7 +214,7 @@
             // btnUpdateLocalDisk
             // 
             this.btnUpdateLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateLocalDisk.Location = new System.Drawing.Point(622, 327);
+            this.btnUpdateLocalDisk.Location = new System.Drawing.Point(622, 364);
             this.btnUpdateLocalDisk.Name = "btnUpdateLocalDisk";
             this.btnUpdateLocalDisk.Size = new System.Drawing.Size(58, 23);
             this.btnUpdateLocalDisk.TabIndex = 10;
@@ -220,11 +222,23 @@
             this.btnUpdateLocalDisk.UseVisualStyleBackColor = true;
             this.btnUpdateLocalDisk.Click += new System.EventHandler(this.btnUpdateLocalDisk_Click);
             // 
+            // checkBoxBriefScan
+            // 
+            this.checkBoxBriefScan.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxBriefScan.AutoSize = true;
+            this.checkBoxBriefScan.Location = new System.Drawing.Point(622, 39);
+            this.checkBoxBriefScan.Name = "checkBoxBriefScan";
+            this.checkBoxBriefScan.Size = new System.Drawing.Size(72, 16);
+            this.checkBoxBriefScan.TabIndex = 11;
+            this.checkBoxBriefScan.Text = "简略扫描";
+            this.checkBoxBriefScan.UseVisualStyleBackColor = true;
+            // 
             // Setting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 457);
+            this.Controls.Add(this.checkBoxBriefScan);
             this.Controls.Add(this.btnUpdateLocalDisk);
             this.Controls.Add(this.comboBoxLocalDisk);
             this.Controls.Add(this.textBoxNewDiskDescribe);
@@ -262,5 +276,6 @@
         private System.Windows.Forms.Button btnChangeDiskDescribe;
         private System.Windows.Forms.ComboBox comboBoxLocalDisk;
         private System.Windows.Forms.Button btnUpdateLocalDisk;
+        private System.Windows.Forms.CheckBox checkBoxBriefScan;
     }
 }
