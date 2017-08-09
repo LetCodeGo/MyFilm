@@ -76,6 +76,8 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            this.Icon = Properties.Resources.ico;
+
             sqlData.InitMySql();
 
             SetDataGridView();

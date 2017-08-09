@@ -25,6 +25,7 @@ namespace MyFilm
         private void LoginForm_Load(object sender, EventArgs e)
         {
             this.comboBoxDataBase.SelectedIndex = 0;
+            this.Icon = Properties.Resources.ico;
         }
 
         private void btnOK_Click(object sender, EventArgs e)

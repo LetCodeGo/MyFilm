@@ -31,7 +31,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Setting));
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -287,7 +286,6 @@
             this.Controls.Add(this.btnUpdateDisk);
             this.Controls.Add(this.btnAddDisk);
             this.Controls.Add(this.dataGridView);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(800, 495);
             this.Name = "Setting";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

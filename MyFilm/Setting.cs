@@ -93,6 +93,7 @@ namespace MyFilm
 
         private void Setting_Load(object sender, EventArgs e)
         {
+            this.Icon = Properties.Resources.ico;
             InitComboxLocalDisk();
             InitGrid();
         }

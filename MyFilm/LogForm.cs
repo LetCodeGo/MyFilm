@@ -16,6 +16,7 @@ namespace MyFilm
         {
             InitializeComponent();
             this.richTextBox.Text = log;
+            this.Icon = Properties.Resources.ico;
         }
     }
 }
