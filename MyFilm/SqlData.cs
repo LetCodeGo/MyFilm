@@ -77,14 +77,16 @@ namespace MyFilm
 
         /// <summary>
         /// 创建磁盘信息表，主要记录磁盘可用容量和总容量
-        /// +------------+--------------+------+-----+---------+----------------+
-        /// | Field      | Type         | Null | Key | Default | Extra          |
-        /// +------------+--------------+------+-----+---------+----------------+
-        /// | id         | int(11)      | NO   | PRI | NULL    | auto_increment |
-        /// | disk_desc  | varchar(256) | NO   | UNI | NULL    |                |
-        /// | free_space | bigint(20)   | NO   |     | NULL    |                |
-        /// | total_size | bigint(20)   | NO   |     | NULL    |                |
-        /// +------------+--------------+------+-----+---------+----------------+
+        /// +---------------+--------------+------+-----+---------+----------------+
+        /// | Field         | Type         | Null | Key | Default | Extra          |
+        /// +---------------+--------------+------+-----+---------+----------------+
+        /// | id            | int(11)      | NO   | PRI | NULL    | auto_increment |
+        /// | disk_desc     | varchar(256) | NO   | UNI | NULL    |                |
+        /// | free_space    | bigint(20)   | NO   |     | NULL    |                |
+        /// | total_size    | bigint(20)   | NO   |     | NULL    |                |
+        /// | complete_scan | tinyint(1)   | NO   |     | NULL    |                |
+        /// | max_layer     | int(11)      | NO   |     | NULL    |                |
+        /// +---------------+--------------+------+-----+---------+----------------+
         /// </summary>
         private void CreateDiskInfoTable()
         {
@@ -92,7 +94,9 @@ namespace MyFilm
             sqlText += String.Format(@"{0} integer primary key auto_increment, ", "id");
             sqlText += String.Format(@"{0} varchar(256) unique key not null, ", "disk_desc");
             sqlText += String.Format(@"{0} bigint not null, ", "free_space");
-            sqlText += String.Format(@"{0} bigint not null );", "total_size");
+            sqlText += String.Format(@"{0} bigint not null, ", "total_size");
+            sqlText += String.Format(@"{0} bool not null, ", "complete_scan");
+            sqlText += String.Format(@"{0} integer not null );", "max_layer");
 
             MySqlCommand sqlCom = new MySqlCommand(sqlText, sqlCon);
             sqlCom.ExecuteNonQuery();
@@ -156,6 +160,8 @@ namespace MyFilm
             dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("free_space", typeof(Int64));
             dt.Columns.Add("total_size", typeof(Int64));
+            dt.Columns.Add("complete_scan", typeof(Boolean));
+            dt.Columns.Add("max_layer", typeof(Int32));
 
             return dt;
         }
@@ -166,11 +172,16 @@ namespace MyFilm
         /// <param name="diskPath">磁盘路径</param>
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="brifeScan">简略扫描</param>
-        public void ScanDisk(String diskPath, String diskDescribe, Boolean brifeScan)
+        /// <param name="maxLayer">最多扫描层数，brifeScan为true时起作用</param>
+        public void ScanDisk(
+            String diskPath, String diskDescribe, Boolean brifeScan, Int32 maxLayer = Int32.MaxValue)
         {
             DriveInfo driveInfo = new DriveInfo(diskPath);
+
+            if (!brifeScan) maxLayer = Int32.MaxValue;
             // 更新磁盘信息
-            InsertOrUpdateDataToDiskInfo(diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize);
+            InsertOrUpdateDataToDiskInfo(
+                diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize, brifeScan, maxLayer);
 
             DataTable dt = GetFilmInfoDataTable();
 
@@ -191,9 +202,6 @@ namespace MyFilm
 
             // 获取新插入的文件夹的id，该文件夹下的子文件夹或文件的pid即为此值
             int pid = SearchFilmInfoIdByPathAndDiskDescribe(driveInfo.RootDirectory.FullName, diskDescribe);
-            UInt32 maxLayer = UInt32.MaxValue;
-            // 简略扫描时
-            if (brifeScan) maxLayer = 3;
             ScanAllInFolder(driveInfo.RootDirectory, diskDescribe, pid, maxLayer);
         }
 
@@ -203,9 +211,9 @@ namespace MyFilm
         /// <param name="directoryInfo">此文件夹信息</param>
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="pid">此文件夹数据库id</param>
-        /// <param name="brifeScan">简略扫描</param>
+        /// <param name="maxLayer">最多扫描层数</param>
         private void ScanAllInFolder(
-            DirectoryInfo directoryInfo, String diskDescribe, Int32 pid, UInt32 maxLayer)
+            DirectoryInfo directoryInfo, String diskDescribe, Int32 pid, Int32 maxLayer)
         {
             if (maxLayer <= 0) return;
 
@@ -318,18 +326,27 @@ namespace MyFilm
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="freeSpace">剩余大小</param>
         /// <param name="totalSize">总大小</param>
-        private void InsertOrUpdateDataToDiskInfo(String diskDescribe, Int64 freeSpace, Int64 totalSize)
+        /// <param name="brifeScan">简略扫描</param>
+        /// <param name="maxLayer">brifeScan为true时起作用</param>
+        private void InsertOrUpdateDataToDiskInfo(
+            String diskDescribe, Int64 freeSpace, Int64 totalSize,
+            Boolean brifeScan, Int32 maxLayer = Int32.MaxValue)
         {
+            if (!brifeScan) maxLayer = Int32.MaxValue;
+
             MySqlCommand sqlCom = new MySqlCommand();
             sqlCom.Connection = sqlCon;
             sqlCom.CommandText = String.Format(
-                @"insert into {0} (disk_desc, free_space, total_size) values(
-                @disk_desc, @free_space, @total_size) 
+                @"insert into {0} (disk_desc, free_space, total_size, complete_scan, max_layer) values(
+                @disk_desc, @free_space, @total_size, @complete_scan, @max_layer) 
                 on duplicate key update free_space = values(free_space),
-                total_size = values(total_size);", "disk_info");
+                total_size = values(total_size), complete_scan = values(complete_scan),
+                max_layer = values(max_layer);", "disk_info");
             sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
             sqlCom.Parameters.AddWithValue("@free_space", freeSpace);
             sqlCom.Parameters.AddWithValue("@total_size", totalSize);
+            sqlCom.Parameters.AddWithValue("@complete_scan", !brifeScan);
+            sqlCom.Parameters.AddWithValue("@max_layer", maxLayer);
 
             int affectedRows = sqlCom.ExecuteNonQuery();
             Debug.Assert(affectedRows == 1 || affectedRows == 2);

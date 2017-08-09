@@ -67,6 +67,8 @@ namespace MyFilm
             this.ColumnDisk.DataPropertyName = "disk_desc";
             this.ColumnFreeSpace.DataPropertyName = "free_space";
             this.ColumnTotalSize.DataPropertyName = "total_size";
+            this.ColumnCompleteScan.DataPropertyName = "complete_scan";
+            this.ColumnMaxLayer.DataPropertyName = "max_layer";
 
             this.dataGridView.AutoGenerateColumns = false;
 
@@ -103,6 +105,8 @@ namespace MyFilm
             dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("free_space", typeof(String));
             dt.Columns.Add("total_size", typeof(String));
+            dt.Columns.Add("complete_scan", typeof(String));
+            dt.Columns.Add("max_layer", typeof(String));
 
             return dt;
         }
@@ -118,6 +122,9 @@ namespace MyFilm
                 dr[1] = diDt.Rows[i][1];
                 dr[2] = Helper.GetSizeString(Convert.ToInt64(diDt.Rows[i][2]));
                 dr[3] = Helper.GetSizeString(Convert.ToInt64(diDt.Rows[i][3]));
+                Boolean completeScan = Convert.ToBoolean(diDt.Rows[i][4]);
+                dr[4] = completeScan ? "✔" : "✘";
+                dr[5] = completeScan ? "---" : diDt.Rows[i][5].ToString();
                 dt.Rows.Add(dr);
             }
 
@@ -156,7 +163,9 @@ namespace MyFilm
                     return;
                 }
 
-                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe, this.checkBoxBriefScan.Checked);
+                sqlData.ScanDisk(
+                    dlg.SelectedPath, diskDescribe,
+                    this.checkBoxBriefScan.Checked, Convert.ToInt32(this.tbeLayer.Text));
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -185,7 +194,9 @@ namespace MyFilm
                 int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
                 int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
-                sqlData.ScanDisk(dlg.SelectedPath, diskDescribe, this.checkBoxBriefScan.Checked);
+                sqlData.ScanDisk(
+                    dlg.SelectedPath, diskDescribe,
+                    this.checkBoxBriefScan.Checked, Convert.ToInt32(this.tbeLayer.Text));
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -378,6 +389,17 @@ namespace MyFilm
                     this.textBoxDiskDescribe.Text = this.gridViewData.Rows[index]["disk_desc"].ToString();
                 }
             }
+        }
+
+        private void checkBoxBriefScan_CheckedChanged(object sender, EventArgs e)
+        {
+            this.tbeLayer.Enabled = this.checkBoxBriefScan.Checked;
+        }
+
+        private void tbeLayer_MouseLeave(object sender, EventArgs e)
+        {
+            if (Convert.ToInt32(this.tbeLayer.Text) == 0)
+                this.tbeLayer.Text = "1";
         }
     }
 }

@@ -280,7 +280,7 @@ namespace MyFilm
             String explain = String.Format("{0} （{1}）", explain1, explain2);
             Size sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
             int length = explain2.Length;
-            while (sizeT.Width > this.labelExplain.Width)
+            while (sizeT.Width > this.labelExplain.Width && length > 0)
             {
                 length--;
                 explain = String.Format("{0} （{1}...）", explain1, explain2.Substring(0, length));
@@ -634,7 +634,7 @@ namespace MyFilm
             String explain = String.Format("{0} （{1}）", explainArray[0], explainArray[1]);
             Size sizeT = TextRenderer.MeasureText(explain, lb.Font);
             int length = explainArray[1].Length;
-            while (sizeT.Width > lb.Width)
+            while (sizeT.Width > lb.Width && length > 0)
             {
                 length--;
                 explain = String.Format("{0} （{1}...）",

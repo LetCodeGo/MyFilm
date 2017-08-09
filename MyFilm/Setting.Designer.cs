@@ -32,10 +32,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnFreeSpace = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnTotalSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAddDisk = new System.Windows.Forms.Button();
             this.btnUpdateDisk = new System.Windows.Forms.Button();
             this.btnDeleteDisk = new System.Windows.Forms.Button();
@@ -46,6 +42,13 @@
             this.comboBoxLocalDisk = new System.Windows.Forms.ComboBox();
             this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
+            this.tbeLayer = new MyFilm.TextBoxEx();
+            this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnFreeSpace = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnTotalSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnCompleteScan = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnMaxLayer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -72,7 +75,9 @@
             this.ColumnIndex,
             this.ColumnDisk,
             this.ColumnFreeSpace,
-            this.ColumnTotalSize});
+            this.ColumnTotalSize,
+            this.ColumnCompleteScan,
+            this.ColumnMaxLayer});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
@@ -98,37 +103,6 @@
             this.dataGridView.Size = new System.Drawing.Size(595, 433);
             this.dataGridView.TabIndex = 0;
             this.dataGridView.SelectionChanged += new System.EventHandler(this.dataGridView_SelectionChanged);
-            // 
-            // ColumnIndex
-            // 
-            this.ColumnIndex.FillWeight = 40F;
-            this.ColumnIndex.HeaderText = "索引";
-            this.ColumnIndex.MinimumWidth = 40;
-            this.ColumnIndex.Name = "ColumnIndex";
-            this.ColumnIndex.ReadOnly = true;
-            // 
-            // ColumnDisk
-            // 
-            this.ColumnDisk.HeaderText = "磁盘";
-            this.ColumnDisk.MinimumWidth = 100;
-            this.ColumnDisk.Name = "ColumnDisk";
-            this.ColumnDisk.ReadOnly = true;
-            // 
-            // ColumnFreeSpace
-            // 
-            this.ColumnFreeSpace.FillWeight = 80F;
-            this.ColumnFreeSpace.HeaderText = "可用空间";
-            this.ColumnFreeSpace.MinimumWidth = 80;
-            this.ColumnFreeSpace.Name = "ColumnFreeSpace";
-            this.ColumnFreeSpace.ReadOnly = true;
-            // 
-            // ColumnTotalSize
-            // 
-            this.ColumnTotalSize.FillWeight = 80F;
-            this.ColumnTotalSize.HeaderText = "总空间";
-            this.ColumnTotalSize.MinimumWidth = 80;
-            this.ColumnTotalSize.Name = "ColumnTotalSize";
-            this.ColumnTotalSize.ReadOnly = true;
             // 
             // btnAddDisk
             // 
@@ -232,12 +206,75 @@
             this.checkBoxBriefScan.TabIndex = 11;
             this.checkBoxBriefScan.Text = "简略扫描";
             this.checkBoxBriefScan.UseVisualStyleBackColor = true;
+            this.checkBoxBriefScan.CheckedChanged += new System.EventHandler(this.checkBoxBriefScan_CheckedChanged);
+            // 
+            // tbeLayer
+            // 
+            this.tbeLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbeLayer.Enabled = false;
+            this.tbeLayer.Location = new System.Drawing.Point(697, 37);
+            this.tbeLayer.Name = "tbeLayer";
+            this.tbeLayer.Size = new System.Drawing.Size(75, 21);
+            this.tbeLayer.TabIndex = 26;
+            this.tbeLayer.Text = "3";
+            this.tbeLayer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tbeLayer.MouseLeave += new System.EventHandler(this.tbeLayer_MouseLeave);
+            // 
+            // ColumnIndex
+            // 
+            this.ColumnIndex.FillWeight = 40F;
+            this.ColumnIndex.HeaderText = "索引";
+            this.ColumnIndex.MinimumWidth = 40;
+            this.ColumnIndex.Name = "ColumnIndex";
+            this.ColumnIndex.ReadOnly = true;
+            // 
+            // ColumnDisk
+            // 
+            this.ColumnDisk.HeaderText = "磁盘";
+            this.ColumnDisk.MinimumWidth = 100;
+            this.ColumnDisk.Name = "ColumnDisk";
+            this.ColumnDisk.ReadOnly = true;
+            // 
+            // ColumnFreeSpace
+            // 
+            this.ColumnFreeSpace.FillWeight = 80F;
+            this.ColumnFreeSpace.HeaderText = "可用空间";
+            this.ColumnFreeSpace.MinimumWidth = 80;
+            this.ColumnFreeSpace.Name = "ColumnFreeSpace";
+            this.ColumnFreeSpace.ReadOnly = true;
+            // 
+            // ColumnTotalSize
+            // 
+            this.ColumnTotalSize.FillWeight = 60F;
+            this.ColumnTotalSize.HeaderText = "总空间";
+            this.ColumnTotalSize.MinimumWidth = 60;
+            this.ColumnTotalSize.Name = "ColumnTotalSize";
+            this.ColumnTotalSize.ReadOnly = true;
+            // 
+            // ColumnCompleteScan
+            // 
+            this.ColumnCompleteScan.FillWeight = 80F;
+            this.ColumnCompleteScan.HeaderText = "完全扫描";
+            this.ColumnCompleteScan.MinimumWidth = 40;
+            this.ColumnCompleteScan.Name = "ColumnCompleteScan";
+            this.ColumnCompleteScan.ReadOnly = true;
+            this.ColumnCompleteScan.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.ColumnCompleteScan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ColumnMaxLayer
+            // 
+            this.ColumnMaxLayer.FillWeight = 80F;
+            this.ColumnMaxLayer.HeaderText = "最大层数";
+            this.ColumnMaxLayer.MinimumWidth = 40;
+            this.ColumnMaxLayer.Name = "ColumnMaxLayer";
+            this.ColumnMaxLayer.ReadOnly = true;
             // 
             // Setting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 457);
+            this.Controls.Add(this.tbeLayer);
             this.Controls.Add(this.checkBoxBriefScan);
             this.Controls.Add(this.btnUpdateLocalDisk);
             this.Controls.Add(this.comboBoxLocalDisk);
@@ -267,15 +304,18 @@
         private System.Windows.Forms.Button btnUpdateDisk;
         private System.Windows.Forms.Button btnDeleteDisk;
         private System.Windows.Forms.Button btnMoveFolderOrFile;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnIndex;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnDisk;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnFreeSpace;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTotalSize;
         private System.Windows.Forms.TextBox textBoxDiskDescribe;
         private System.Windows.Forms.TextBox textBoxNewDiskDescribe;
         private System.Windows.Forms.Button btnChangeDiskDescribe;
         private System.Windows.Forms.ComboBox comboBoxLocalDisk;
         private System.Windows.Forms.Button btnUpdateLocalDisk;
         private System.Windows.Forms.CheckBox checkBoxBriefScan;
+        private TextBoxEx tbeLayer;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnIndex;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnDisk;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnFreeSpace;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTotalSize;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCompleteScan;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnMaxLayer;
     }
 }
