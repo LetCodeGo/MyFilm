@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             this.comboBoxDataBase = new System.Windows.Forms.ComboBox();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -128,9 +129,10 @@
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.comboBoxDataBase);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "LoginForm";
+            this.Text = "登录";
             this.Load += new System.EventHandler(this.LoginForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogForm));
             this.richTextBox = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
@@ -47,9 +48,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 704);
             this.Controls.Add(this.richTextBox);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "LogForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "LogForm";
+            this.Text = "日志";
             this.ResumeLayout(false);
 
         }
