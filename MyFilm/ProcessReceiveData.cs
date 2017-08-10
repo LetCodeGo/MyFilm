@@ -5,99 +5,38 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.IO.Pipes;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MyFilm
 {
-    public class ProcessReceiveData
+    public class ProcessReceiveData : ProcessCommunication
     {
-        #region Win32 API
-
-        /// <summary>
-        /// 自定义的结构
-        /// </summary>
-        public struct My_lParam
-        {
-            public int i;
-            public string s;
-        }
-
-        /// <summary>
-        /// 使用COPYDATASTRUCT来传递字符串
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct COPYDATASTRUCT
-        {
-            public IntPtr dwData;
-            public int cbData;
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string lpData;
-        }
-
-        //消息发送API
-        [DllImport("User32.dll", EntryPoint = "SendMessage")]
-        public static extern int SendMessage(
-            IntPtr hWnd,        // 信息发往的窗口的句柄
-            int Msg,            // 消息ID
-            int wParam,         // 参数1
-            int lParam          // 参数2
-        );
-
-        //消息发送API
-        [DllImport("User32.dll", EntryPoint = "SendMessage")]
-        public static extern int SendMessage(
-            IntPtr hWnd,         // 信息发往的窗口的句柄
-            int Msg,             // 消息ID
-            int wParam,          // 参数1
-            ref My_lParam lParam // 参数2
-        );
-
-        //消息发送API
-        [DllImport("User32.dll", EntryPoint = "SendMessage")]
-        public static extern int SendMessage(
-            IntPtr hWnd,               // 信息发往的窗口的句柄
-            int Msg,                   // 消息ID
-            int wParam,                // 参数1
-            ref COPYDATASTRUCT lParam  // 参数2
-        );
-
-        //消息发送API
-        [DllImport("User32.dll", EntryPoint = "PostMessage")]
-        public static extern int PostMessage(
-            IntPtr hWnd,          // 信息发往的窗口的句柄
-            int Msg,              // 消息ID
-            int wParam,           // 参数1
-            int lParam            // 参数2
-        );
-
-        //消息发送API
-        [DllImport("User32.dll", EntryPoint = "PostMessage")]
-        public static extern int PostMessage(
-            IntPtr hWnd,         // 信息发往的窗口的句柄
-            int Msg,             // 消息ID
-            int wParam,          // 参数1
-            ref My_lParam lParam // 参数2
-        );
-
-        //异步消息发送API
-        [DllImport("User32.dll", EntryPoint = "PostMessage")]
-        public static extern int PostMessage(
-            IntPtr hWnd,        // 信息发往的窗口的句柄
-            int Msg,            // 消息ID
-            int wParam,         // 参数1
-            ref COPYDATASTRUCT lParam  // 参数2
-        );
-
-        public readonly static int WM_USER = 0x0400;
-        #endregion
-
         public static bool receiveExit = false;
-        public const int WM_SEARCH = 0x0410;
 
-        public static void ReceiveDataByPipe(object hWnd)
+        public static void ReceiveData(object hWnd)
+        {
+            switch (processCommunicateType)
+            {
+                case ProcessCommunicationType.PIPE:
+                    ReceiveDataByPipe(hWnd);
+                    break;
+                case ProcessCommunicationType.SHAREDMEMORY:
+                    ReceiveDataBySharedMemory(hWnd);
+                    break;
+                case ProcessCommunicationType.TCP:
+                    ReceiveDataByTcp(hWnd);
+                    break;
+                default: break;
+            }
+        }
+
+        private static void ReceiveDataByPipe(object hWnd)
         {
             using (NamedPipeServerStream pipeServer =
                 new NamedPipeServerStream(
@@ -111,9 +50,9 @@ namespace MyFilm
                     int length = pipeServer.Read(bytes, 0, 1024);
                     CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, length);
 
-                    if (!receiveExit)
+                    if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
                     {
-                        PostMessage((IntPtr)hWnd, WM_SEARCH, 0, 0);
+                        Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                     }
 
                     pipeServer.Disconnect();
@@ -121,34 +60,62 @@ namespace MyFilm
             }
         }
 
-        public static void ReceiveDataBySharedMemory(object hWnd)
+        private static void ReceiveDataBySharedMemory(object hWnd)
         {
-            long capacity = 1 << 10;
-
-            // 打开共享内存
-            using (var mmf = MemoryMappedFile.OpenExisting("myfilmMMF"))
+            using (var mmf = MemoryMappedFile.CreateOrOpen(
+                "myfilmMMF", 1024, MemoryMappedFileAccess.ReadWrite))
             {
-                // 使用CreateViewStream方法返回stream实例  
-                using (var mmViewStream = mmf.CreateViewStream(0, capacity))
+                using (var mmViewStream = mmf.CreateViewStream(0, 1024))
                 {
-                    // 这里要制定Unicode编码否则会出问题  
-                    using (BinaryReader br = new BinaryReader(mmViewStream, Encoding.Unicode))
+                    Semaphore mmfWrite = new Semaphore(1, 1, "myfilmMMF_WriteMap");
+                    Semaphore mmfRead = new Semaphore(0, 1, "myfilmMMF_ReadMap");
+
+                    while (!receiveExit)
                     {
-                        while (!receiveExit)
+                        mmfRead.WaitOne();
+
+                        mmViewStream.Seek(0, SeekOrigin.Begin);
+
+                        byte[] bytesInt = new byte[4];
+                        mmViewStream.Read(bytesInt, 0, 4);
+                        int byteLen = BitConverter.ToInt32(bytesInt, 0);
+
+                        byte[] bytes = new byte[byteLen];
+                        mmViewStream.Read(bytes, 0, byteLen);
+                        CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, byteLen);
+
+                        if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
                         {
-                            mmViewStream.Seek(0, SeekOrigin.Begin);
-
-                            int length = br.ReadInt32();
-                            char[] chars = br.ReadChars(length);
-                            CommonString.WebSearchKeyWord = new String(chars);
-
-                            if (!receiveExit)
-                            {
-                                PostMessage((IntPtr)hWnd, WM_SEARCH, 0, 0);
-                            }
+                            Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                         }
+
+                        mmfWrite.Release();
                     }
                 }
+            }
+        }
+
+        private static void ReceiveDataByTcp(object hWnd)
+        {
+            IPAddress ip = IPAddress.Parse("127.0.0.1");
+            Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            serverSocket.Bind(new IPEndPoint(ip, 9321));
+            serverSocket.Listen(1);
+
+            while (!receiveExit)
+            {
+                Socket acceptSocket = serverSocket.Accept();
+
+                byte[] bytes = new byte[1024];
+                int length = acceptSocket.Receive(bytes);
+                CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, length);
+
+                if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
+                {
+                    Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
+                }
+
+                acceptSocket.Close();
             }
         }
     }

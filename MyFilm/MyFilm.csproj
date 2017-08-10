@@ -70,6 +70,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProcessCommunication.cs" />
     <Compile Include="ProcessReceiveData.cs" />
     <Compile Include="ProcessSendData.cs" />
     <Compile Include="Program.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="TextBoxEx.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Win32API.cs" />
     <EmbeddedResource Include="LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
     </EmbeddedResource>

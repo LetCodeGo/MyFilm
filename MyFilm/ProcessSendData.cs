@@ -4,15 +4,37 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.IO.Pipes;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MyFilm
 {
-    public class ProcessSendData
+    public class ProcessSendData : ProcessCommunication
     {
-        public static void SendDataByPipe(String data)
+        public static void SendData(String data)
+        {
+            if (data.Length > 100) return;
+
+            switch (processCommunicateType)
+            {
+                case ProcessCommunicationType.PIPE:
+                    SendDataByPipe(data);
+                    break;
+                case ProcessCommunicationType.SHAREDMEMORY:
+                    SendDataBySharedMemory(data);
+                    break;
+                case ProcessCommunicationType.TCP:
+                    SendDataByTcp(data);
+                    break;
+                default: break;
+            }
+        }
+
+        private static void SendDataByPipe(String data)
         {
             using (NamedPipeClientStream pipeSend =
                 new NamedPipeClientStream(
@@ -27,23 +49,37 @@ namespace MyFilm
             }
         }
 
-        public static void SendDataBySharedMemory(String data)
+        private static void SendDataBySharedMemory(String data)
         {
-            long capacity = 1 << 10;
-
-            // 创建或者打开共享内存  
             using (var mmf = MemoryMappedFile.CreateOrOpen(
-                "myfilmMMF", capacity, MemoryMappedFileAccess.ReadWrite))
+                "myfilmMMF", 1024, MemoryMappedFileAccess.ReadWrite))
             {
-                // 通过MemoryMappedFile的CreateViewAccssor方法获得共享内存的访问器
-                using (var viewAccessor = mmf.CreateViewAccessor(0, capacity))
+                using (var viewAccessor = mmf.CreateViewAccessor(0, 1024))
                 {
-                    // 向共享内存开始位置写入字符串的长度
-                    viewAccessor.Write(0, data.Length);
-                    // 向共享内存4位置写入字符  
-                    viewAccessor.WriteArray<char>(4, data.ToArray(), 0, data.Length);
+                    Semaphore mmfWrite = Semaphore.OpenExisting("myfilmMMF_WriteMap");
+                    Semaphore mmfRead = Semaphore.OpenExisting("myfilmMMF_ReadMap");
+
+                    mmfWrite.WaitOne();
+
+                    byte[] bytes = Encoding.Default.GetBytes(data);
+                    // 在起始点写入字符长度，占4各字节
+                    viewAccessor.Write(0, bytes.Length);
+                    viewAccessor.WriteArray<byte>(4, bytes, 0, bytes.Length);
+                    viewAccessor.Flush();
+
+                    mmfRead.Release();
                 }
             }
+        }
+
+        private static void SendDataByTcp(String data)
+        {
+            IPAddress ip = IPAddress.Parse("127.0.0.1");
+            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            clientSocket.Connect(new IPEndPoint(ip, 9321));
+
+            clientSocket.Send(Encoding.Default.GetBytes(data));
+            clientSocket.Close();
         }
     }
 }

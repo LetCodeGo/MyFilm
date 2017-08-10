@@ -70,6 +70,8 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = new DataTable();
 
+        
+
         public MainForm()
         {
             InitializeComponent();
@@ -78,7 +80,7 @@ namespace MyFilm
         private void MainForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.ico;
-            Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveDataByPipe));
+            Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
 
             sqlData.InitMySql();
@@ -104,7 +106,7 @@ namespace MyFilm
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             ProcessReceiveData.receiveExit = true;
-            ProcessSendData.SendDataByPipe("quit");
+            ProcessSendData.SendData("quit");
 
             sqlData.CloseMySql();
         }
@@ -663,7 +665,7 @@ namespace MyFilm
         {
             switch (m.Msg)
             {
-                case ProcessReceiveData.WM_SEARCH:
+                case Win32API.WM_SEARCH:
                     this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
                     btnSearch_Click(null, null);
                     break;
