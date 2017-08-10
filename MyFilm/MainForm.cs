@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace MyFilm
@@ -77,6 +78,8 @@ namespace MyFilm
         private void MainForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.ico;
+            Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveDataByPipe));
+            thread.Start(this.Handle);
 
             sqlData.InitMySql();
 
@@ -88,11 +91,21 @@ namespace MyFilm
             sourceType = SourceType.DATATABLE_LOCAL;
 
             InitDiskCombox();
-            ShowDataGridViewPage(0);
+
+            if (String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
+                ShowDataGridViewPage(0);
+            else
+            {
+                this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
+                btnSearch_Click(null, null);
+            }
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            ProcessReceiveData.receiveExit = true;
+            ProcessSendData.SendDataByPipe("quit");
+
             sqlData.CloseMySql();
         }
 
@@ -644,6 +657,20 @@ namespace MyFilm
                 sizeT = TextRenderer.MeasureText(explain, lb.Font);
             }
             lb.Text = explain;
+        }
+
+        protected override void DefWndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case ProcessReceiveData.WM_SEARCH:
+                    this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
+                    btnSearch_Click(null, null);
+                    break;
+                default:
+                    base.DefWndProc(ref m);
+                    break;
+            }
         }
     }
 }

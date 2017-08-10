@@ -9,5 +9,6 @@ namespace MyFilm
     public class CommonString
     {
         public static String DataBaseName = "myfilm";
+        public static String WebSearchKeyWord = String.Empty;
     }
 }
