@@ -8,14 +8,15 @@ namespace MyFilm
 {
     public class ProcessCommunication
     {
-        protected enum ProcessCommunicationType
+        public enum ProcessCommunicationType
         {
             PIPE,
             SHAREDMEMORY,
             TCP
         }
 
-        protected readonly static ProcessCommunicationType processCommunicateType =
+        // 此值仅登录时修改
+        public static ProcessCommunicationType processCommunicateType =
             ProcessCommunicationType.PIPE;
     }
 }

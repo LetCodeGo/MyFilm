@@ -25,6 +25,7 @@ namespace MyFilm
         private void LoginForm_Load(object sender, EventArgs e)
         {
             this.comboBoxDataBase.SelectedIndex = 0;
+            this.comboBoxProcessCommct.SelectedIndex = 0;
             this.Icon = Properties.Resources.ico;
         }
 
@@ -38,6 +39,12 @@ namespace MyFilm
             {
                 this.DialogResult = DialogResult.OK;
             }
+        }
+
+        private void comboBoxProcessCommct_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ProcessCommunication.processCommunicateType = 
+                (ProcessCommunication.ProcessCommunicationType)(this.comboBoxProcessCommct.SelectedIndex);
         }
     }
 }
