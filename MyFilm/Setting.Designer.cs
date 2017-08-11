@@ -249,7 +249,7 @@
             // 
             this.checkBoxBriefScan.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxBriefScan.AutoSize = true;
-            this.checkBoxBriefScan.Location = new System.Drawing.Point(622, 39);
+            this.checkBoxBriefScan.Location = new System.Drawing.Point(622, 40);
             this.checkBoxBriefScan.Name = "checkBoxBriefScan";
             this.checkBoxBriefScan.Size = new System.Drawing.Size(72, 16);
             this.checkBoxBriefScan.TabIndex = 11;

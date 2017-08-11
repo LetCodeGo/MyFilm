@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommonDataTable.cs" />
     <Compile Include="CommonString.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="LogForm.cs">

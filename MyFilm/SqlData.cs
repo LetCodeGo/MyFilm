@@ -126,47 +126,6 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// 获取film_info数据库对应的DataTable
-        /// </summary>
-        /// <returns></returns>
-        private DataTable GetFilmInfoDataTable()
-        {
-            DataTable dt = new DataTable();
-
-            dt.Columns.Add("id", typeof(Int32));
-            dt.Columns.Add("name", typeof(String));
-            dt.Columns.Add("path", typeof(String));
-            dt.Columns.Add("size", typeof(Int64));
-            dt.Columns.Add("create_t", typeof(DateTime));
-            dt.Columns.Add("modify_t", typeof(DateTime));
-            dt.Columns.Add("is_folder", typeof(Boolean));
-            dt.Columns.Add("pid", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
-            dt.Columns.Add("to_watch", typeof(Boolean));
-            dt.Columns.Add("to_delete", typeof(Boolean));
-
-            return dt;
-        }
-
-        /// <summary>
-        /// 获取disk_info数据库对应的DataTable
-        /// </summary>
-        /// <returns></returns>
-        private DataTable GetDiskInfoDataTable()
-        {
-            DataTable dt = new DataTable();
-
-            dt.Columns.Add("id", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
-            dt.Columns.Add("free_space", typeof(Int64));
-            dt.Columns.Add("total_size", typeof(Int64));
-            dt.Columns.Add("complete_scan", typeof(Boolean));
-            dt.Columns.Add("max_layer", typeof(Int32));
-
-            return dt;
-        }
-
-        /// <summary>
         /// 扫描磁盘，更新磁盘信息和影片信息
         /// </summary>
         /// <param name="diskPath">磁盘路径</param>
@@ -183,7 +142,7 @@ namespace MyFilm
             InsertOrUpdateDataToDiskInfo(
                 diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize, brifeScan, maxLayer);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             DataRow dr = dt.NewRow();
             dr[1] = driveInfo.RootDirectory.Name;
@@ -221,7 +180,7 @@ namespace MyFilm
             {
                 if ((childDirectoryInfo.Attributes & FileAttributes.System) == FileAttributes.System) continue;
 
-                DataTable dt = GetFilmInfoDataTable();
+                DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
                 DataRow dr = dt.NewRow();
                 dr[1] = childDirectoryInfo.Name;
@@ -245,7 +204,7 @@ namespace MyFilm
             FileInfo[] fileInfoArray = directoryInfo.GetFiles();
             if (fileInfoArray.Length > 0)
             {
-                DataTable dt = GetFilmInfoDataTable();
+                DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
                 foreach (FileInfo fileInfo in fileInfoArray)
                 {
@@ -415,7 +374,7 @@ namespace MyFilm
             sqlCom.Parameters.AddWithValue("@search", string.Format("%{0}%", keyWord));
             if (diskDescribe != null) sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -448,7 +407,7 @@ namespace MyFilm
             string sqlStr = string.Format("select * from {0};", "disk_info");
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
 
-            DataTable dt = GetDiskInfoDataTable();
+            DataTable dt = CommonDataTable.GetDiskInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -466,7 +425,7 @@ namespace MyFilm
             string sqlStr = string.Format("select * from {0} where pid = -1;", "film_info");
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -487,7 +446,7 @@ namespace MyFilm
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             sqlCom.Parameters.AddWithValue("@id", id);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -527,7 +486,7 @@ namespace MyFilm
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             sqlCom.Parameters.AddWithValue("@pid", pid);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -573,7 +532,7 @@ namespace MyFilm
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             if (diskDescribe != null) sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
@@ -619,7 +578,7 @@ namespace MyFilm
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             if (diskDescribe != null) sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            DataTable dt = GetFilmInfoDataTable();
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
             MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
             GetDataFromSqlDataReader(ref dt, sqlDataReader);

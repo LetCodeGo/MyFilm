@@ -17,6 +17,9 @@ namespace MyFilm
 {
     public class ProcessReceiveData : ProcessCommunication
     {
+        /// <summary>
+        /// 接收数据结束标志，在程序要退出时设置
+        /// </summary>
         public static bool receiveExit = false;
 
         public static void ReceiveData(object hWnd)
@@ -40,7 +43,7 @@ namespace MyFilm
         {
             using (NamedPipeServerStream pipeServer =
                 new NamedPipeServerStream(
-                    "myfilmpipe", PipeDirection.InOut, 1, PipeTransmissionMode.Byte))
+                    CommonString.PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte))
             {
                 while (!receiveExit)
                 {
@@ -63,12 +66,12 @@ namespace MyFilm
         private static void ReceiveDataBySharedMemory(object hWnd)
         {
             using (var mmf = MemoryMappedFile.CreateOrOpen(
-                "myfilmMMF", 1024, MemoryMappedFileAccess.ReadWrite))
+                CommonString.MemoryMappedName, 1024, MemoryMappedFileAccess.ReadWrite))
             {
                 using (var mmViewStream = mmf.CreateViewStream(0, 1024))
                 {
-                    Semaphore mmfWrite = new Semaphore(1, 1, "myfilmMMF_WriteMap");
-                    Semaphore mmfRead = new Semaphore(0, 1, "myfilmMMF_ReadMap");
+                    Semaphore mmfWrite = new Semaphore(1, 1, CommonString.SharedMemorySemaphoreWriteName);
+                    Semaphore mmfRead = new Semaphore(0, 1, CommonString.SharedMemorySemaphoreReadName);
 
                     while (!receiveExit)
                     {

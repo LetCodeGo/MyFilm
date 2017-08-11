@@ -70,8 +70,6 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = new DataTable();
 
-        
-
         public MainForm()
         {
             InitializeComponent();
@@ -80,13 +78,14 @@ namespace MyFilm
         private void MainForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.ico;
+            // 开启线程，接收从另一进程发送的数据
             Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
-
+            // 连接数据库创建表
             sqlData.InitMySql();
-
+            // 设置 DataGridView
             SetDataGridView();
-
+            // 获取根目录数据源
             sourceDataTable = GetDiskRootDirectoryInfo();
             totalRowCount = sourceDataTable.Rows.Count;
             InitPageCombox();
@@ -94,6 +93,7 @@ namespace MyFilm
 
             InitDiskCombox();
 
+            // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
             if (String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
                 ShowDataGridViewPage(0);
             else
@@ -112,29 +112,8 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// DataGridView数据源格式
+        /// 设置 DataGridView 关联数据源及样式
         /// </summary>
-        /// <returns></returns>
-        private DataTable GetGridDataTable()
-        {
-            DataTable dt = new DataTable();
-
-            dt.Columns.Add("index", typeof(Int32));
-            dt.Columns.Add("id", typeof(Int32));
-            dt.Columns.Add("name", typeof(String));
-            dt.Columns.Add("path", typeof(String));
-            dt.Columns.Add("size", typeof(String));
-            dt.Columns.Add("create_t", typeof(String));
-            dt.Columns.Add("modify_t", typeof(String));
-            dt.Columns.Add("is_folder", typeof(Boolean));
-            dt.Columns.Add("pid", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
-            dt.Columns.Add("to_watch", typeof(Boolean));
-            dt.Columns.Add("to_delete", typeof(Boolean));
-
-            return dt;
-        }
-
         private void SetDataGridView()
         {
             this.ColumnName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
@@ -154,6 +133,9 @@ namespace MyFilm
             this.dataGridView.ContextMenuStrip = this.contextMenuStrip;
         }
 
+        /// <summary>
+        /// 初始化磁盘选择控件
+        /// </summary>
         private void InitDiskCombox()
         {
             this.comboBoxDisk.SuspendLayout();
@@ -167,6 +149,9 @@ namespace MyFilm
             this.comboBoxDisk.ResumeLayout();
         }
 
+        /// <summary>
+        /// 初始化页数选择控件
+        /// </summary>
         private void InitPageCombox()
         {
             // 总页数
@@ -191,6 +176,10 @@ namespace MyFilm
             this.comboBoxPage.SelectedIndexChanged += new System.EventHandler(this.comboBoxPage_SelectedIndexChanged);
         }
 
+        /// <summary>
+        /// 计算总页数
+        /// </summary>
+        /// <returns></returns>
         private int CalcTotalPageCount()
         {
             int totalPageCount = totalRowCount / pageRowCount + 1;
@@ -201,6 +190,10 @@ namespace MyFilm
             return totalPageCount;
         }
 
+        /// <summary>
+        /// 显示某一页
+        /// </summary>
+        /// <param name="page">从0开始</param>
         private void ShowDataGridViewPage(int page)
         {
             this.currentPageIndex = page;
@@ -499,7 +492,7 @@ namespace MyFilm
 
         private DataTable ConvertFilmInfoToGrid(DataTable fiDt)
         {
-            DataTable dt = GetGridDataTable();
+            DataTable dt = CommonDataTable.GetMainFormGridDataTable();
 
             for (int i = 0; i < fiDt.Rows.Count; i++)
             {

@@ -68,23 +68,9 @@ namespace MyFilm
             InitGrid();
         }
 
-        private DataTable GetGridDataTable()
-        {
-            DataTable dt = new DataTable();
-
-            dt.Columns.Add("index", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
-            dt.Columns.Add("free_space", typeof(String));
-            dt.Columns.Add("total_size", typeof(String));
-            dt.Columns.Add("complete_scan", typeof(String));
-            dt.Columns.Add("max_layer", typeof(String));
-
-            return dt;
-        }
-
         private DataTable ConvertDiskInfoToGrid(DataTable diDt)
         {
-            DataTable dt = GetGridDataTable();
+            DataTable dt = CommonDataTable.GetSettingGridDataTable();
 
             for (int i = 0; i < diDt.Rows.Count; i++)
             {

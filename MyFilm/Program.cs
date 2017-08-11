@@ -17,17 +17,18 @@ namespace MyFilm
         [STAThread]
         static void Main(string[] args)
         {
+            // 有参数时，界面显示为搜索结果而不是根目录
             if (args.Length == 1)
             {
+                // 网络地址需要转换，当然命名行传参也能正确处理
                 string webSearchAddr = Uri.UnescapeDataString(args[0]);
+                // 地址格式为 MyFilmWebSearch:KeyWord
                 CommonString.WebSearchKeyWord = webSearchAddr.Substring(webSearchAddr.IndexOf(':') + 1).Trim();
             }
 
             bool createNew = true;
-            //  createdNew:
-            // 在此方法返回时，如果创建了局部互斥体（即，如果 name 为 null 或空字符串）或指定的命名系统互斥体，则包含布尔值 true；
-            // 如果指定的命名系统互斥体已存在，则为false
-            using (Mutex mutex = new Mutex(true, Application.ProductName, out createNew))
+            // 如果指定的命名系统互斥体已存在，createNew则为false，说明已存在另一实例
+            using (Mutex mutex = new Mutex(true, CommonString.AppMutexName, out createNew))
             {
                 if (createNew)
                 {
@@ -71,6 +72,7 @@ namespace MyFilm
                                 Win32API.SwitchToThisWindow(process.MainWindowHandle, true);
                             }
 
+                            // 进程间通信发送要搜索的关键字给已在运行的另一实例
                             if (!String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
                             {
                                 ProcessSendData.SendData(CommonString.WebSearchKeyWord);
