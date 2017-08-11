@@ -131,6 +131,9 @@ namespace MyFilm
 
             this.dataGridView.AutoGenerateColumns = false;
             this.dataGridView.ContextMenuStrip = this.contextMenuStrip;
+
+            foreach (DataGridViewColumn col in this.dataGridView.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
 
         /// <summary>

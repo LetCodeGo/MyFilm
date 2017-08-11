@@ -42,6 +42,9 @@ namespace MyFilm
 
             this.dataGridView.AutoGenerateColumns = false;
 
+            foreach (DataGridViewColumn col in this.dataGridView.Columns)
+                col.SortMode = DataGridViewColumnSortMode.NotSortable;
+
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
         }
