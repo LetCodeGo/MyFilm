@@ -81,14 +81,14 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSearch.Location = new System.Drawing.Point(196, 12);
             this.textBoxSearch.Name = "textBoxSearch";
-            this.textBoxSearch.Size = new System.Drawing.Size(452, 21);
+            this.textBoxSearch.Size = new System.Drawing.Size(652, 21);
             this.textBoxSearch.TabIndex = 1;
             this.textBoxSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSearch_KeyDown);
             // 
             // btnSearch
             // 
             this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSearch.Location = new System.Drawing.Point(654, 11);
+            this.btnSearch.Location = new System.Drawing.Point(854, 11);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(75, 23);
             this.btnSearch.TabIndex = 2;
@@ -99,7 +99,7 @@
             // btnDelete
             // 
             this.btnDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDelete.Location = new System.Drawing.Point(735, 11);
+            this.btnDelete.Location = new System.Drawing.Point(935, 11);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(75, 23);
             this.btnDelete.TabIndex = 3;
@@ -110,7 +110,7 @@
             // btnWatch
             // 
             this.btnWatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnWatch.Location = new System.Drawing.Point(816, 11);
+            this.btnWatch.Location = new System.Drawing.Point(1016, 11);
             this.btnWatch.Name = "btnWatch";
             this.btnWatch.Size = new System.Drawing.Size(75, 23);
             this.btnWatch.TabIndex = 4;
@@ -121,7 +121,7 @@
             // btnSetting
             // 
             this.btnSetting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetting.Location = new System.Drawing.Point(897, 11);
+            this.btnSetting.Location = new System.Drawing.Point(1097, 11);
             this.btnSetting.Name = "btnSetting";
             this.btnSetting.Size = new System.Drawing.Size(75, 23);
             this.btnSetting.TabIndex = 5;
@@ -170,7 +170,7 @@
             this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.RowTemplate.Height = 23;
             this.dataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView.Size = new System.Drawing.Size(960, 457);
+            this.dataGridView.Size = new System.Drawing.Size(1160, 581);
             this.dataGridView.TabIndex = 6;
             this.dataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellDoubleClick);
             this.dataGridView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView_CellFormatting);
@@ -237,7 +237,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelExplain.Location = new System.Drawing.Point(12, 55);
             this.labelExplain.Name = "labelExplain";
-            this.labelExplain.Size = new System.Drawing.Size(780, 12);
+            this.labelExplain.Size = new System.Drawing.Size(980, 12);
             this.labelExplain.TabIndex = 7;
             this.labelExplain.Text = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
             this.labelExplain.Resize += new System.EventHandler(this.labelExplain_Resize);
@@ -292,7 +292,7 @@
             // btnRootDirectory
             // 
             this.btnRootDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRootDirectory.Location = new System.Drawing.Point(196, 545);
+            this.btnRootDirectory.Location = new System.Drawing.Point(196, 669);
             this.btnRootDirectory.Name = "btnRootDirectory";
             this.btnRootDirectory.Size = new System.Drawing.Size(75, 23);
             this.btnRootDirectory.TabIndex = 23;
@@ -305,7 +305,7 @@
             this.comboBoxPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxPage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPage.FormattingEnabled = true;
-            this.comboBoxPage.Location = new System.Drawing.Point(897, 547);
+            this.comboBoxPage.Location = new System.Drawing.Point(1097, 671);
             this.comboBoxPage.Name = "comboBoxPage";
             this.comboBoxPage.Size = new System.Drawing.Size(75, 20);
             this.comboBoxPage.TabIndex = 22;
@@ -314,7 +314,7 @@
             // btnLastPage
             // 
             this.btnLastPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLastPage.Location = new System.Drawing.Point(816, 545);
+            this.btnLastPage.Location = new System.Drawing.Point(1016, 669);
             this.btnLastPage.Name = "btnLastPage";
             this.btnLastPage.Size = new System.Drawing.Size(75, 23);
             this.btnLastPage.TabIndex = 21;
@@ -325,7 +325,7 @@
             // btnNextPage
             // 
             this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNextPage.Location = new System.Drawing.Point(735, 545);
+            this.btnNextPage.Location = new System.Drawing.Point(935, 669);
             this.btnNextPage.Name = "btnNextPage";
             this.btnNextPage.Size = new System.Drawing.Size(75, 23);
             this.btnNextPage.TabIndex = 20;
@@ -336,7 +336,7 @@
             // btnPrePage
             // 
             this.btnPrePage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPrePage.Location = new System.Drawing.Point(654, 545);
+            this.btnPrePage.Location = new System.Drawing.Point(854, 669);
             this.btnPrePage.Name = "btnPrePage";
             this.btnPrePage.Size = new System.Drawing.Size(75, 23);
             this.btnPrePage.TabIndex = 19;
@@ -347,7 +347,7 @@
             // btnFirstPage
             // 
             this.btnFirstPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnFirstPage.Location = new System.Drawing.Point(573, 545);
+            this.btnFirstPage.Location = new System.Drawing.Point(773, 669);
             this.btnFirstPage.Name = "btnFirstPage";
             this.btnFirstPage.Size = new System.Drawing.Size(75, 23);
             this.btnFirstPage.TabIndex = 18;
@@ -358,7 +358,7 @@
             // btnUpFolder
             // 
             this.btnUpFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnUpFolder.Location = new System.Drawing.Point(12, 545);
+            this.btnUpFolder.Location = new System.Drawing.Point(12, 669);
             this.btnUpFolder.Name = "btnUpFolder";
             this.btnUpFolder.Size = new System.Drawing.Size(178, 23);
             this.btnUpFolder.TabIndex = 17;
@@ -370,7 +370,7 @@
             // 
             this.labelPageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPageRowCount.AutoSize = true;
-            this.labelPageRowCount.Location = new System.Drawing.Point(818, 55);
+            this.labelPageRowCount.Location = new System.Drawing.Point(1018, 55);
             this.labelPageRowCount.Name = "labelPageRowCount";
             this.labelPageRowCount.Size = new System.Drawing.Size(77, 12);
             this.labelPageRowCount.TabIndex = 24;
@@ -379,7 +379,7 @@
             // tbePageRowCount
             // 
             this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbePageRowCount.Location = new System.Drawing.Point(897, 51);
+            this.tbePageRowCount.Location = new System.Drawing.Point(1097, 51);
             this.tbePageRowCount.Name = "tbePageRowCount";
             this.tbePageRowCount.Size = new System.Drawing.Size(75, 21);
             this.tbePageRowCount.TabIndex = 25;
@@ -391,7 +391,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 580);
+            this.ClientSize = new System.Drawing.Size(1184, 704);
             this.Controls.Add(this.tbePageRowCount);
             this.Controls.Add(this.labelPageRowCount);
             this.Controls.Add(this.btnRootDirectory);

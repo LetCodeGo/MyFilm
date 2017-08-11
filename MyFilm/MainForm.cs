@@ -513,7 +513,7 @@ namespace MyFilm
                         else dr[j + 1] = Helper.GetSizeString(size);
                     }
                     else if (j == 4 || j == 5)
-                        dr[j + 1] = Convert.ToDateTime(fiDt.Rows[i][j]).ToString("yyyy-MM-dd hh:mm:ss");
+                        dr[j + 1] = Convert.ToDateTime(fiDt.Rows[i][j]).ToString("yyyy-MM-dd HHH:mm:ss");
                     else dr[j + 1] = fiDt.Rows[i][j];
                 }
                 dr[0] = i + 1;
