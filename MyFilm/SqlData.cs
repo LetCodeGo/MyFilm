@@ -160,8 +160,11 @@ namespace MyFilm
             InsertDataToFilmInfo(dt);
 
             // 获取新插入的文件夹的id，该文件夹下的子文件夹或文件的pid即为此值
-            int pid = SearchFilmInfoIdByPathAndDiskDescribe(driveInfo.RootDirectory.FullName, diskDescribe);
+            //Int32 pid = SearchFilmInfoIdByPathAndDiskDescribe(driveInfo.RootDirectory.FullName, diskDescribe);
+            Int32 pid = GetLastInsertID();
             ScanAllInFolder(driveInfo.RootDirectory, diskDescribe, pid, maxLayer);
+
+            if (!brifeScan) UpdateFolderSizeFromFilmInfo(diskDescribe);
         }
 
         /// <summary>
@@ -197,7 +200,8 @@ namespace MyFilm
 
                 InsertDataToFilmInfo(dt);
 
-                Int32 cpid = SearchFilmInfoIdByPathAndDiskDescribe(childDirectoryInfo.FullName, diskDescribe);
+                //Int32 cpid = SearchFilmInfoIdByPathAndDiskDescribe(childDirectoryInfo.FullName, diskDescribe);
+                Int32 cpid = GetLastInsertID();
                 ScanAllInFolder(childDirectoryInfo, diskDescribe, cpid, maxLayer - 1);
             }
 
@@ -240,7 +244,20 @@ namespace MyFilm
             sqlCom.Parameters.AddWithValue("@path", path);
             sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
             object obj = sqlCom.ExecuteScalar();
-            if (obj == null) return -1;
+            if (obj == DBNull.Value) return -1;
+            else return Convert.ToInt32(obj);
+        }
+
+        /// <summary>
+        /// 获取最新插入数据ID（仅针对插入一条数据）
+        /// </summary>
+        /// <returns></returns>
+        private Int32 GetLastInsertID()
+        {
+            string sqlStr = string.Format("select last_insert_id();");
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+            object obj = sqlCom.ExecuteScalar();
+            if (obj == DBNull.Value) return -1;
             else return Convert.ToInt32(obj);
         }
 
@@ -701,6 +718,78 @@ namespace MyFilm
             sqlCom.Parameters.AddWithValue("@f_disk_desc", fromDiskDescribe);
 
             return sqlCom.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// 更新film_info中diskDescribe磁盘下各文件夹大小
+        /// </summary>
+        /// <param name="diskDescribe"></param>
+        private void UpdateFolderSizeFromFilmInfo(String diskDescribe)
+        {
+            String sqlAllFolder = String.Format(
+                "select id from {0} where is_folder = 1 and disk_desc = @disk_desc;", "film_info");
+            MySqlCommand sqlCom1 = new MySqlCommand(sqlAllFolder, sqlCon);
+            sqlCom1.Parameters.AddWithValue("@disk_desc", diskDescribe);
+            MySqlDataReader reader1 = sqlCom1.ExecuteReader();
+
+            List<Int32> idList = new List<Int32>();
+            while (reader1.Read())
+            {
+                idList.Add(reader1.GetInt32(0));
+            }
+            reader1.Close();
+
+            foreach (Int32 folderID in idList)
+            {
+                Int32 maxChildID = GetMaxChildID(folderID);
+
+                String sqlAllFile = String.Format(
+                    "select sum(size) from {0} where is_folder = 0 and id between @minID and @maxID;",
+                    "film_info");
+                MySqlCommand sqlCom3 = new MySqlCommand(sqlAllFile, sqlCon);
+                sqlCom3.Parameters.AddWithValue("@minID", folderID);
+                sqlCom3.Parameters.AddWithValue("@maxID", maxChildID);
+                object folderSizeObj = sqlCom3.ExecuteScalar();
+                long folderSize = 0;
+                if (folderSizeObj != DBNull.Value) folderSize = Convert.ToInt64(folderSizeObj);
+
+                String sqlUpdateFolderSize = String.Format(
+                    "update {0} set size = @size where id = @id;", "film_info");
+                MySqlCommand sqlCom4 = new MySqlCommand(sqlUpdateFolderSize, sqlCon);
+                sqlCom4.Parameters.AddWithValue("@size", folderSize);
+                sqlCom4.Parameters.AddWithValue("@id", folderID);
+                sqlCom4.ExecuteNonQuery();
+            }
+        }
+
+        private Int32 GetMaxChildID(Int32 folderID)
+        {
+            String sqlMaxChildID = String.Format(
+                    "select id, is_folder from {0} where pid = @pid order by id desc limit 1;",
+                    "film_info");
+            MySqlCommand sqlCom = new MySqlCommand(sqlMaxChildID, sqlCon);
+            sqlCom.Parameters.AddWithValue("@pid", folderID);
+
+            MySqlDataReader reader = sqlCom.ExecuteReader();
+            bool hasRows = reader.Read();
+
+            Int32 maxID = -1;
+            bool isFolder = true;
+            if (hasRows)
+            {
+                maxID = reader.GetInt32(0);
+                isFolder = reader.GetBoolean(1);
+            }
+            reader.Close();
+
+            if (hasRows)
+            {
+                if (isFolder) return GetMaxChildID(maxID);
+                // 最大ID项为文件
+                else return maxID;
+            }
+            // 文件夹为空
+            else return folderID;
         }
     }
 }

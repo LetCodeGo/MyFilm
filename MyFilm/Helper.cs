@@ -8,6 +8,12 @@ namespace MyFilm
 {
     public class Helper
     {
+        private readonly static long KB = 1024;
+        private readonly static long MB = KB * 1024;
+        private readonly static long GB = MB * 1024;
+        private readonly static long TB = GB * 1024;
+        private readonly static long PB = TB * 1024;
+
         /// <summary>
         /// 返回文件占用空间大小
         /// </summary>
@@ -25,13 +31,8 @@ namespace MyFilm
         /// <returns></returns>
         public static String GetSizeString(long lSize)
         {
-            long KB = 1024;
-            long MB = KB * 1024;
-            long GB = MB * 1024;
-            long TB = GB * 1024;
-            long PB = TB * 1024;
-
-            if (lSize < KB) return "1KB";
+            if (lSize == 0) return "0KB";
+            else if (lSize < KB) return "1KB";
 
             double dSize = (double)lSize;
 
