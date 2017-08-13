@@ -46,39 +46,43 @@ namespace MyFilm
                 // 程序已经运行
                 else
                 {
-                    Process currentproc = Process.GetCurrentProcess();
-                    Process[] processcollection = Process.GetProcessesByName(currentproc.ProcessName);
-                    Debug.Assert(processcollection.Length >= 1);
-
-                    //ProcessSendData.SendData(CommonString.WebSearchKeyWord);
-
-                    foreach (Process process in processcollection)
+                    // 进程间通信发送要搜索的关键字给已在运行的另一实例
+                    if (!String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
                     {
-                        if (process.Id != currentproc.Id)
-                        {
-                            // 如果进程的句柄为0，即代表没有找到该窗体，即该窗体隐藏的情况时
-                            if (process.MainWindowHandle.ToInt32() == 0)
-                            {
-                                // 获得窗体句柄
-                                IntPtr formhwnd = Win32API.FindWindow(null, "文件");
-                                // 重新显示该窗体并切换到带入到前台
-                                Win32API.ShowWindow(formhwnd, Win32API.SW_RESTORE);
-                                Win32API.SwitchToThisWindow(formhwnd, true);
-                            }
-                            else
-                            {
-                                // 如果窗体没有隐藏，就直接切换到该窗体并带入到前台
-                                // 因为窗体除了隐藏到托盘，还可以最小化
-                                Win32API.SwitchToThisWindow(process.MainWindowHandle, true);
-                            }
-
-                            // 进程间通信发送要搜索的关键字给已在运行的另一实例
-                            if (!String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
-                            {
-                                ProcessSendData.SendData(CommonString.WebSearchKeyWord);
-                            }
-                        }
+                        ProcessSendData.SendData(CommonString.WebSearchKeyWord);
                     }
+
+                    //Process currentproc = Process.GetCurrentProcess();
+                    //Process[] processcollection = Process.GetProcessesByName(currentproc.ProcessName);
+                    //Debug.Assert(processcollection.Length >= 1);
+
+                    //foreach (Process process in processcollection)
+                    //{
+                    //    if (process.Id != currentproc.Id)
+                    //    {
+                    //        // 如果进程的句柄为0，即代表没有找到该窗体，即该窗体隐藏的情况时
+                    //        if (process.MainWindowHandle.ToInt32() == 0)
+                    //        {
+                    //            // 获得窗体句柄
+                    //            IntPtr formhwnd = Win32API.FindWindow(null, "文件");
+                    //            // 重新显示该窗体并切换到带入到前台
+                    //            Win32API.ShowWindow(formhwnd, Win32API.SW_RESTORE);
+                    //            Win32API.SwitchToThisWindow(formhwnd, true);
+                    //        }
+                    //        else
+                    //        {
+                    //            // 如果窗体没有隐藏，就直接切换到该窗体并带入到前台
+                    //            // 因为窗体除了隐藏到托盘，还可以最小化
+                    //            Win32API.SwitchToThisWindow(process.MainWindowHandle, true);
+                    //        }
+
+                    //        // 进程间通信发送要搜索的关键字给已在运行的另一实例
+                    //        if (!String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
+                    //        {
+                    //            ProcessSendData.SendData(CommonString.WebSearchKeyWord);
+                    //        }
+                    //    }
+                    //}
                 }
             }
         }

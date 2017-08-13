@@ -15,19 +15,15 @@ namespace MyFilm
         private MySqlConnection sqlCon = null;
 
         /// <summary>
-        /// 建立数据库连接
+        /// 打开数据库
         /// </summary>
-        public void InitMySql()
+        public void OpenMySql()
         {
             String sqlText = String.Format(
                 "server = {0}; uid = {1}; pwd = {2}; database = {3};",
-                "127.0.0.1", "root", "123456", CommonString.DataBaseName);
+                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword, CommonString.DbName);
             sqlCon = new MySqlConnection(sqlText);
             sqlCon.Open();
-
-            CreateFilmInfoTable();
-            CreateDiskInfoTable();
-            CreateSearchLogTable();
         }
 
         /// <summary>
@@ -36,6 +32,16 @@ namespace MyFilm
         public void CloseMySql()
         {
             sqlCon.Close();
+        }
+
+        /// <summary>
+        /// 创建表
+        /// </summary>
+        public void CreateTables()
+        {
+            CreateFilmInfoTable();
+            CreateDiskInfoTable();
+            CreateSearchLogTable();
         }
 
         /// <summary>

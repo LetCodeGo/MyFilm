@@ -36,20 +36,17 @@
             this.textBoxPwd = new System.Windows.Forms.TextBox();
             this.textBoxUser = new System.Windows.Forms.TextBox();
             this.labelUser = new System.Windows.Forms.Label();
+            this.comboBoxIP = new System.Windows.Forms.ComboBox();
+            this.labelIP = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // comboBoxDataBase
             // 
-            this.comboBoxDataBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDataBase.FormattingEnabled = true;
-            this.comboBoxDataBase.Items.AddRange(new object[] {
-            "myfilm",
-            "test"});
-            this.comboBoxDataBase.Location = new System.Drawing.Point(222, 130);
+            this.comboBoxDataBase.Location = new System.Drawing.Point(222, 154);
             this.comboBoxDataBase.Name = "comboBoxDataBase";
             this.comboBoxDataBase.Size = new System.Drawing.Size(121, 20);
             this.comboBoxDataBase.TabIndex = 0;
-            this.comboBoxDataBase.SelectedIndexChanged += new System.EventHandler(this.comboBoxDataBase_SelectedIndexChanged);
             // 
             // btnOK
             // 
@@ -74,7 +71,7 @@
             // labelDataBase
             // 
             this.labelDataBase.AutoSize = true;
-            this.labelDataBase.Location = new System.Drawing.Point(140, 135);
+            this.labelDataBase.Location = new System.Drawing.Point(140, 158);
             this.labelDataBase.Name = "labelDataBase";
             this.labelDataBase.Size = new System.Drawing.Size(41, 12);
             this.labelDataBase.TabIndex = 3;
@@ -83,7 +80,7 @@
             // labelPwd
             // 
             this.labelPwd.AutoSize = true;
-            this.labelPwd.Location = new System.Drawing.Point(140, 96);
+            this.labelPwd.Location = new System.Drawing.Point(140, 125);
             this.labelPwd.Name = "labelPwd";
             this.labelPwd.Size = new System.Drawing.Size(41, 12);
             this.labelPwd.TabIndex = 5;
@@ -91,34 +88,51 @@
             // 
             // textBoxPwd
             // 
-            this.textBoxPwd.Location = new System.Drawing.Point(222, 91);
+            this.textBoxPwd.Location = new System.Drawing.Point(222, 120);
             this.textBoxPwd.Name = "textBoxPwd";
             this.textBoxPwd.Size = new System.Drawing.Size(121, 21);
             this.textBoxPwd.TabIndex = 6;
-            this.textBoxPwd.Text = "123456";
             // 
             // textBoxUser
             // 
-            this.textBoxUser.Location = new System.Drawing.Point(222, 52);
+            this.textBoxUser.Location = new System.Drawing.Point(222, 86);
             this.textBoxUser.Name = "textBoxUser";
             this.textBoxUser.Size = new System.Drawing.Size(121, 21);
             this.textBoxUser.TabIndex = 8;
-            this.textBoxUser.Text = "root";
             // 
             // labelUser
             // 
             this.labelUser.AutoSize = true;
-            this.labelUser.Location = new System.Drawing.Point(140, 57);
+            this.labelUser.Location = new System.Drawing.Point(140, 91);
             this.labelUser.Name = "labelUser";
             this.labelUser.Size = new System.Drawing.Size(41, 12);
             this.labelUser.TabIndex = 7;
             this.labelUser.Text = "用  户";
             // 
+            // comboBoxIP
+            // 
+            this.comboBoxIP.Location = new System.Drawing.Point(222, 52);
+            this.comboBoxIP.Name = "comboBoxIP";
+            this.comboBoxIP.Size = new System.Drawing.Size(121, 20);
+            this.comboBoxIP.TabIndex = 10;
+            // 
+            // labelIP
+            // 
+            this.labelIP.AutoSize = true;
+            this.labelIP.Location = new System.Drawing.Point(140, 57);
+            this.labelIP.Name = "labelIP";
+            this.labelIP.Size = new System.Drawing.Size(41, 12);
+            this.labelIP.TabIndex = 9;
+            this.labelIP.Text = "IP地址";
+            // 
             // LoginForm
             // 
+            this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 281);
+            this.Controls.Add(this.comboBoxIP);
+            this.Controls.Add(this.labelIP);
             this.Controls.Add(this.textBoxUser);
             this.Controls.Add(this.labelUser);
             this.Controls.Add(this.textBoxPwd);
@@ -147,5 +161,7 @@
         private System.Windows.Forms.TextBox textBoxPwd;
         private System.Windows.Forms.TextBox textBoxUser;
         private System.Windows.Forms.Label labelUser;
+        private System.Windows.Forms.ComboBox comboBoxIP;
+        private System.Windows.Forms.Label labelIP;
     }
 }

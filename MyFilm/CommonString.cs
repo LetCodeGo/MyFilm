@@ -8,9 +8,12 @@ namespace MyFilm
 {
     public class CommonString
     {
-        public static String DataBaseName = "myfilm";
-        public static String WebSearchKeyWord = String.Empty;
+        public static String DbIP = "127.0.0.1";
+        public static String DbUserName = string.Empty;
+        public static String DbPassword = string.Empty;
+        public static String DbName = "myfilm";
 
+        public static String WebSearchKeyWord = String.Empty;
 
         public readonly static String PipeName = "myfilm_pipe";
         public readonly static String MemoryMappedName = "myfilm_memory_mapped";

@@ -78,11 +78,14 @@ namespace MyFilm
         private void MainForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.ico;
+            this.Text = CommonString.DbName;
+
             // 开启线程，接收从另一进程发送的数据
             Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
             // 连接数据库创建表
-            sqlData.InitMySql();
+            sqlData.OpenMySql();
+            sqlData.CreateTables();
             // 设置 DataGridView
             SetDataGridView();
             // 获取根目录数据源
@@ -745,6 +748,8 @@ namespace MyFilm
                 case Win32API.WM_SEARCH:
                     this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
                     btnSearch_Click(null, null);
+                    // 窗口切换到最前
+                    Win32API.SwitchToThisWindow(this.Handle, true);
                     break;
                 default:
                     base.DefWndProc(ref m);
