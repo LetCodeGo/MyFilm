@@ -373,6 +373,7 @@ namespace MyFilm
 
         private void btnUpFolder_Click(object sender, EventArgs e)
         {
+            // sourceType 为 SourceType.DATABASE_PID 时，选择的行可为0（考虑场景 空文件夹）
             if (this.dataGridView.SelectedRows.Count == 1 || sourceType == SourceType.DATABASE_PID)
             {
                 int pid = actionParam.Pid;
@@ -392,10 +393,21 @@ namespace MyFilm
                 sourceType = SourceType.DATABASE_PID;
 
                 totalRowCount = sqlData.CountPidFromFilmInfo(actionParam.Pid);
+                int offset = sqlData.GetIdOffsetByPidFromFilmInfo(Convert.ToInt32(dt.Rows[0]["id"]), actionParam.Pid);
+                Debug.Assert(offset >= 0 && offset < totalRowCount);
 
                 InitPageCombox();
 
-                ShowDataGridViewPage(0);
+                int selectPage = offset / pageRowCount;
+                int selectRow = offset % pageRowCount;
+
+                ShowDataGridViewPage(selectPage);
+                if (selectRow != 0)
+                {
+                    this.dataGridView.ClearSelection();
+                    // 这里第0行时，不知什么原因选不上
+                    this.dataGridView.CurrentCell = this.dataGridView.Rows[selectRow].Cells[0];
+                }
             }
             else
             {

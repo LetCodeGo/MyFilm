@@ -519,6 +519,26 @@ namespace MyFilm
         }
 
         /// <summary>
+        /// 查找指定id的数据在所有相同pid数据中的偏移
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="pid"></param>
+        /// <returns></returns>
+        public Int32 GetIdOffsetByPidFromFilmInfo(Int32 id, Int32 pid)
+        {
+            string sqlStr = string.Format("select id from {0} where pid = @pid;", "film_info");
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+            sqlCom.Parameters.AddWithValue("@pid", pid);
+
+            MySqlDataReader reader = sqlCom.ExecuteReader();
+            List<Int32> idList = new List<Int32>();
+            while (reader.Read()) idList.Add(reader.GetInt32(0));
+            reader.Close();
+
+            return idList.IndexOf(id);
+        }
+
+        /// <summary>
         /// 计数设为待看的数据 
         /// </summary>
         /// <param name="diskDescribe">null时所有磁盘，否则特定磁盘</param>
