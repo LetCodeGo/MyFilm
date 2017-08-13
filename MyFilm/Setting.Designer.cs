@@ -49,6 +49,7 @@
             this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             this.tbeLayer = new MyFilm.TextBoxEx();
+            this.btnUpdateDiskFolderSize = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -269,11 +270,23 @@
             this.tbeLayer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.tbeLayer.MouseLeave += new System.EventHandler(this.tbeLayer_MouseLeave);
             // 
+            // btnUpdateDiskFolderSize
+            // 
+            this.btnUpdateDiskFolderSize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnUpdateDiskFolderSize.Location = new System.Drawing.Point(622, 154);
+            this.btnUpdateDiskFolderSize.Name = "btnUpdateDiskFolderSize";
+            this.btnUpdateDiskFolderSize.Size = new System.Drawing.Size(150, 25);
+            this.btnUpdateDiskFolderSize.TabIndex = 27;
+            this.btnUpdateDiskFolderSize.Text = "更新磁盘中各文件夹大小";
+            this.btnUpdateDiskFolderSize.UseVisualStyleBackColor = true;
+            this.btnUpdateDiskFolderSize.Click += new System.EventHandler(this.btnUpdateDiskFolderSize_Click);
+            // 
             // Setting
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 457);
+            this.Controls.Add(this.btnUpdateDiskFolderSize);
             this.Controls.Add(this.tbeLayer);
             this.Controls.Add(this.checkBoxBriefScan);
             this.Controls.Add(this.btnUpdateLocalDisk);
@@ -317,5 +330,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTotalSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCompleteScan;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnMaxLayer;
+        private System.Windows.Forms.Button btnUpdateDiskFolderSize;
     }
 }

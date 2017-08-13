@@ -129,6 +129,9 @@ namespace MyFilm
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
+
+                MessageBox.Show(String.Format("添加磁盘 {0} 完成！", diskDescribe),
+                    "提示", MessageBoxButtons.OK);
             }
         }
 
@@ -160,6 +163,9 @@ namespace MyFilm
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
+
+                MessageBox.Show(String.Format("更新磁盘 {0} 完成！", diskDescribe),
+                    "提示", MessageBoxButtons.OK);
             }
         }
 
@@ -177,6 +183,9 @@ namespace MyFilm
 
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
+
+            MessageBox.Show(String.Format("删除磁盘 {0} 完成！", diskDescribe),
+                "提示", MessageBoxButtons.OK);
         }
 
         private void btnMoveFolderOrFile_Click(object sender, EventArgs e)
@@ -293,6 +302,9 @@ namespace MyFilm
 
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
+
+            MessageBox.Show(String.Format("更改磁盘描述 {0} 为 {1} 完成！", diskDescribe, diskNewDescribe),
+                "提示", MessageBoxButtons.OK);
         }
 
         private void dataGridView_SelectionChanged(object sender, EventArgs e)
@@ -317,6 +329,28 @@ namespace MyFilm
         {
             if (Convert.ToInt32(this.tbeLayer.Text) == 0)
                 this.tbeLayer.Text = "1";
+        }
+
+        private void btnUpdateDiskFolderSize_Click(object sender, EventArgs e)
+        {
+            if (this.dataGridView.SelectedRows.Count != 1)
+            {
+                MessageBox.Show("请选中一行！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            bool completeScan = (this.dataGridView.SelectedRows[0].Cells[4].Value.ToString() == "✔");
+            if (!completeScan)
+            {
+                MessageBox.Show("所选磁盘需要为完全扫描！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
+            sqlData.UpdateFolderSizeFromFilmInfo(diskDescribe);
+
+            MessageBox.Show(String.Format("更新磁盘 {0} 下各文件夹大小完成！", diskDescribe),
+                "提示", MessageBoxButtons.OK);
         }
     }
 }

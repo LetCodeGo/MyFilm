@@ -144,13 +144,13 @@ namespace MyFilm
         [DllImport("user32.dll ", SetLastError = true)]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
 
-        ///// <summary>
-        /////  设置窗口的显示状态
-        /////  Win32 函数定义为：http://msdn.microsoft.com/en-us/library/windows/desktop/ms633548(v=vs.85).aspx
-        ///// </summary>
-        ///// <param name="hWnd">窗口句柄</param>
-        ///// <param name="cmdShow">指示窗口如何被显示</param>
-        ///// <returns>如果窗体之前是可见，返回值为非零；如果窗体之前被隐藏，返回值为零</returns>
+        /// <summary>
+        ///  设置窗口的显示状态
+        ///  Win32 函数定义为：http://msdn.microsoft.com/en-us/library/windows/desktop/ms633548(v=vs.85).aspx
+        /// </summary>
+        /// <param name="hWnd">窗口句柄</param>
+        /// <param name="cmdShow">指示窗口如何被显示</param>
+        /// <returns>如果窗体之前是可见，返回值为非零；如果窗体之前被隐藏，返回值为零</returns>
         [DllImport("user32.dll", EntryPoint = "ShowWindow", CharSet = CharSet.Auto)]
         public static extern int ShowWindow(IntPtr hwnd, int nCmdShow);
         public const int SW_RESTORE = 9;

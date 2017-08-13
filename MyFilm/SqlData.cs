@@ -730,7 +730,7 @@ namespace MyFilm
         /// 更新film_info中diskDescribe磁盘下各文件夹大小
         /// </summary>
         /// <param name="diskDescribe"></param>
-        private void UpdateFolderSizeFromFilmInfo(String diskDescribe)
+        public void UpdateFolderSizeFromFilmInfo(String diskDescribe)
         {
             String sqlAllFolder = String.Format(
                 "select id from {0} where is_folder = 1 and disk_desc = @disk_desc;", "film_info");

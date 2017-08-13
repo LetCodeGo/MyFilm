@@ -68,6 +68,8 @@ namespace MyFilm
                     }
                 }
             }
+
+            if (String.IsNullOrWhiteSpace(dbStruct.DBDefaultIP)) dbStruct.DBDefaultIP = "127.0.0.1";
         }
 
         private void SaveXml()
