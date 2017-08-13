@@ -61,6 +61,7 @@
             this.btnFirstPage = new System.Windows.Forms.Button();
             this.btnUpFolder = new System.Windows.Forms.Button();
             this.labelPageRowCount = new System.Windows.Forms.Label();
+            this.toolStripMenuItemPrintFolderTree = new System.Windows.Forms.ToolStripMenuItem();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
@@ -246,46 +247,47 @@
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItemSetDelete,
-            this.toolStripMenuItemSetWatch,
             this.toolStripMenuItemCancelDelete,
+            this.toolStripMenuItemSetWatch,
             this.toolStripMenuItemCancelWatch,
-            this.toolStripMenuItemOpenFolder});
+            this.toolStripMenuItemOpenFolder,
+            this.toolStripMenuItemPrintFolderTree});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(125, 114);
+            this.contextMenuStrip.Size = new System.Drawing.Size(153, 158);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // toolStripMenuItemSetDelete
             // 
             this.toolStripMenuItemSetDelete.Name = "toolStripMenuItemSetDelete";
-            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetDelete.Text = "设为待删";
             this.toolStripMenuItemSetDelete.Click += new System.EventHandler(this.toolStripMenuItemSetDelete_Click);
             // 
             // toolStripMenuItemSetWatch
             // 
             this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
-            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetWatch.Text = "设为待看";
             this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelDelete
             // 
             this.toolStripMenuItemCancelDelete.Name = "toolStripMenuItemCancelDelete";
-            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelDelete.Text = "取消待删";
             this.toolStripMenuItemCancelDelete.Click += new System.EventHandler(this.toolStripMenuItemCancelDelete_Click);
             // 
             // toolStripMenuItemCancelWatch
             // 
             this.toolStripMenuItemCancelWatch.Name = "toolStripMenuItemCancelWatch";
-            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelWatch.Text = "取消待看";
             this.toolStripMenuItemCancelWatch.Click += new System.EventHandler(this.toolStripMenuItemCancelWatch_Click);
             // 
             // toolStripMenuItemOpenFolder
             // 
             this.toolStripMenuItemOpenFolder.Name = "toolStripMenuItemOpenFolder";
-            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemOpenFolder.Text = "打开位置";
             this.toolStripMenuItemOpenFolder.Click += new System.EventHandler(this.toolStripMenuItemOpenFolder_Click);
             // 
@@ -376,6 +378,13 @@
             this.labelPageRowCount.TabIndex = 24;
             this.labelPageRowCount.Text = "每页记录条数";
             // 
+            // toolStripMenuItemPrintFolderTree
+            // 
+            this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
+            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
+            this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
+            // 
             // tbePageRowCount
             // 
             this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -455,6 +464,7 @@
         private System.Windows.Forms.Button btnUpFolder;
         private System.Windows.Forms.Label labelPageRowCount;
         private TextBoxEx tbePageRowCount;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPrintFolderTree;
     }
 }
 

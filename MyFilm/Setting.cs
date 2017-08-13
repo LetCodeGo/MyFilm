@@ -249,50 +249,7 @@ namespace MyFilm
             log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
                 moveSuccess, logSuccess, moveFailed, logFailed);
 
-            #region [ 启动记事本 ] 
-
-            System.Diagnostics.Process Proc;
-
-            try
-            {
-                // 启动记事本 
-                Proc = new System.Diagnostics.Process();
-                Proc.StartInfo.FileName = "notepad.exe";
-                Proc.StartInfo.UseShellExecute = false;
-                Proc.StartInfo.RedirectStandardInput = true;
-                Proc.StartInfo.RedirectStandardOutput = true;
-
-                Proc.Start();
-            }
-            catch
-            {
-                Proc = null;
-            }
-
-            #endregion
-
-            #region [ 传递数据给记事本 ] 
-
-            if (Proc != null)
-            {
-                // 调用 API, 传递数据 
-                while (Proc.MainWindowHandle == IntPtr.Zero)
-                {
-                    Proc.Refresh();
-                }
-
-                IntPtr vHandle = Win32API.FindWindowEx(Proc.MainWindowHandle, IntPtr.Zero, "Edit", null);
-
-                // 传递数据给记事本 
-                Win32API.SendMessage(vHandle, Win32API.WM_SETTEXT, 0, log);
-            }
-            else
-            {
-                LogForm form = new LogForm(log);
-                form.ShowDialog();
-            }
-
-            #endregion
+            Helper.OpenEdit(log);
         }
 
         private void btnUpdateLocalDisk_Click(object sender, EventArgs e)

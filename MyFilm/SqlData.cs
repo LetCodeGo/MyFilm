@@ -762,6 +762,11 @@ namespace MyFilm
             }
         }
 
+        /// <summary>
+        /// 获取文件夹下文件或文件夹的最大ID
+        /// </summary>
+        /// <param name="folderID">文件夹ID</param>
+        /// <returns></returns>
         private Int32 GetMaxChildID(Int32 folderID)
         {
             String sqlMaxChildID = String.Format(
@@ -790,6 +795,50 @@ namespace MyFilm
             }
             // 文件夹为空
             else return folderID;
+        }
+
+        /// <summary>
+        /// 获取文件夹下的文件夹
+        /// </summary>
+        /// <param name="folderID">文件夹ID</param>
+        /// <returns></returns>
+        public DataTable GetChildFolderFromFilmInfo(Int32 folderID)
+        {
+            string sqlStr = string.Format("select * from {0} where pid = @pid and is_folder = 1;",
+                "film_info");
+
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+            sqlCom.Parameters.AddWithValue("@pid", folderID);
+
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
+
+            MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
+            GetDataFromSqlDataReader(ref dt, sqlDataReader);
+            sqlDataReader.Close();
+
+            return dt;
+        }
+
+        /// <summary>
+        /// 获取文件夹下的文件
+        /// </summary>
+        /// <param name="folderID">文件夹ID</param>
+        /// <returns></returns>
+        public DataTable GetChildFileFromFilmInfo(Int32 folderID)
+        {
+            string sqlStr = string.Format("select * from {0} where pid = @pid and is_folder = 0;",
+                "film_info");
+
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+            sqlCom.Parameters.AddWithValue("@pid", folderID);
+
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
+
+            MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
+            GetDataFromSqlDataReader(ref dt, sqlDataReader);
+            sqlDataReader.Close();
+
+            return dt;
         }
     }
 }

@@ -529,6 +529,19 @@ namespace MyFilm
         {
             // 只有选中了行才弹出菜单
             if (this.dataGridView.SelectedRows.Count == 0) e.Cancel = true;
+            else
+            {
+                int index = this.dataGridView.SelectedRows[0].Index;
+                bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnDelete"].Value);
+                bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnWatch"].Value);
+                bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
+
+                this.toolStripMenuItemSetDelete.Enabled = !isDelete;
+                this.toolStripMenuItemSetWatch.Enabled = !isWatch;
+                this.toolStripMenuItemCancelDelete.Enabled = isDelete;
+                this.toolStripMenuItemCancelWatch.Enabled = isWatch;
+                this.toolStripMenuItemPrintFolderTree.Enabled = isFolder;
+            }
         }
 
         private void toolStripMenuItemSetDelete_Click(object sender, EventArgs e)
@@ -585,6 +598,28 @@ namespace MyFilm
 
             String folderPath = gridViewData.Rows[dataGridView.SelectedRows[0].Index]["path"].ToString();
             System.Diagnostics.Process.Start(folderPath);
+        }
+
+        private void toolStripMenuItemPrintFolderTree_Click(object sender, EventArgs e)
+        {
+            if (dataGridView.SelectedRows.Count != 1)
+            {
+                MessageBox.Show("请选中一行！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            int selectIndex = dataGridView.SelectedRows[0].Index;
+            bool isFolder = Convert.ToBoolean(gridViewData.Rows[selectIndex]["is_folder"]);
+            if (!isFolder)
+            {
+                MessageBox.Show("请选择文件夹！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            String strResult = String.Empty;
+            PrintFolder(Convert.ToInt32(gridViewData.Rows[selectIndex]["id"]),
+                gridViewData.Rows[selectIndex]["name"].ToString(), 0, "", ref strResult);
+            Helper.OpenEdit(strResult);
         }
 
         private void dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -655,6 +690,52 @@ namespace MyFilm
                 sizeT = TextRenderer.MeasureText(explain, lb.Font);
             }
             lb.Text = explain;
+        }
+
+        private void PrintFolder(Int32 folderID, String folderName,
+            Int32 depth, String prefix, ref String strResult)
+        {
+            // 打印当前目录
+            if (depth == 0)
+            {
+                strResult += (prefix + folderName + Environment.NewLine);
+            }
+            else
+            {
+                strResult += (prefix.Substring(0, prefix.Length - 2) + "| " + Environment.NewLine);
+                strResult += (prefix.Substring(0, prefix.Length - 2) + "|-" + folderName + Environment.NewLine);
+            }
+
+            // 打印目录下的目录信息
+            DataTable childFolderDt = sqlData.GetChildFolderFromFilmInfo(folderID);
+            DataTable childFileDt = sqlData.GetChildFileFromFilmInfo(folderID);
+
+            for (int i = 0; i < childFolderDt.Rows.Count; i++)
+            {
+                if (i != childFolderDt.Rows.Count - 1 || childFileDt.Rows.Count != 0)
+                {
+                    PrintFolder(Convert.ToInt32(childFolderDt.Rows[i]["id"]),
+                        childFolderDt.Rows[i]["name"].ToString(), depth + 1, prefix + "| ", ref strResult);
+                }
+                else
+                {
+                    PrintFolder(Convert.ToInt32(childFolderDt.Rows[i]["id"]),
+                        childFolderDt.Rows[i]["name"].ToString(), depth + 1, prefix + "  ", ref strResult);
+                }
+            }
+
+            // 打印目录下的文件信息
+            for (int i = 0; i < childFileDt.Rows.Count; i++)
+            {
+                if (i == 0)
+                {
+                    strResult += (prefix + "|" + Environment.NewLine);
+                }
+                strResult += (prefix + "|-" +
+                    String.Format("{0} [{1}]",
+                    childFileDt.Rows[i]["name"].ToString(),
+                    Helper.GetSizeString(Convert.ToInt64(childFileDt.Rows[i]["size"]))) + Environment.NewLine);
+            }
         }
 
         protected override void DefWndProc(ref Message m)
