@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("MyFilm")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("电影等文件管理")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MyFilm")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("niconicoflag@gmail Copyright ©  2017")]
+[assembly: AssemblyTrademark("niconicoflag@gmail")]
 [assembly: AssemblyCulture("")]
 
 //将 ComVisible 设置为 false 将使此程序集中的类型
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("2c66d6a0-c85c-4893-8737-b33aec44ef37")]
+[assembly: Guid("95120FFC-ABD5-4911-9E32-472975B571E6")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

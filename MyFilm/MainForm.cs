@@ -244,7 +244,7 @@ namespace MyFilm
                             sqlData.SearchKeyWordFromFilmInfo(
                                 actionParam.KeyWord, startIndex, pageRowCount,
                                 actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe));
-                        explain2 = String.Format("在 {0} 里搜索 {1}",
+                        explain2 = String.Format("在 {0} 里搜索 \'{1}\'",
                             actionParam.DiskDescribe == "全部" ? "所有磁盘" : actionParam.DiskDescribe,
                             actionParam.KeyWord);
                         break;
@@ -274,7 +274,7 @@ namespace MyFilm
                         gridViewData = ConvertFilmInfoToGrid(
                             sqlData.GetDataByPidFromFilmInfo(
                                 actionParam.Pid, startIndex, pageRowCount));
-                        explain2 = String.Format("索引 {0}", actionParam.FolderPath);
+                        explain2 = String.Format("索引 \'{0}\'", actionParam.FolderPath);
                         break;
                     }
                 case SourceType.DATATABLE_LOCAL:
@@ -766,6 +766,44 @@ namespace MyFilm
                 default:
                     base.DefWndProc(ref m);
                     break;
+            }
+        }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Escape:
+                    btnRootDirectory_Click(null, null);
+                    break;
+                case Keys.F1:
+                    btnDelete_Click(null, null);
+                    break;
+                case Keys.F2:
+                    btnWatch_Click(null, null);
+                    break;
+                case Keys.F3:
+                    btnManager_Click(null, null);
+                    break;
+                case Keys.F4:
+                    btnSearch_Click(null, null);
+                    break;
+                case Keys.Space:
+                    btnUpFolder_Click(null, null);
+                    break;
+                case Keys.Left:
+                    if (this.btnPrePage.Enabled) btnPrePage_Click(null, null);
+                    break;
+                case Keys.Right:
+                    if (this.btnNextPage.Enabled) btnNextPage_Click(null, null);
+                    break;
+                case Keys.Home:
+                    if (this.btnFirstPage.Enabled) btnFirstPage_Click(null, null);
+                    break;
+                case Keys.End:
+                    if (this.btnLastPage.Enabled) btnLastPage_Click(null, null);
+                    break;
+                default: break;
             }
         }
     }

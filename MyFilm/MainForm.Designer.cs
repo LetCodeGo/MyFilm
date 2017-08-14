@@ -49,10 +49,11 @@
             this.labelExplain = new System.Windows.Forms.Label();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemSetDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemSetWatch = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemCancelDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemSetWatch = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemCancelWatch = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemOpenFolder = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemPrintFolderTree = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRootDirectory = new System.Windows.Forms.Button();
             this.comboBoxPage = new System.Windows.Forms.ComboBox();
             this.btnLastPage = new System.Windows.Forms.Button();
@@ -61,7 +62,6 @@
             this.btnFirstPage = new System.Windows.Forms.Button();
             this.btnUpFolder = new System.Windows.Forms.Button();
             this.labelPageRowCount = new System.Windows.Forms.Label();
-            this.toolStripMenuItemPrintFolderTree = new System.Windows.Forms.ToolStripMenuItem();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
@@ -78,7 +78,7 @@
             // 
             // textBoxSearch
             // 
-            this.textBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.textBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSearch.Location = new System.Drawing.Point(196, 12);
             this.textBoxSearch.Name = "textBoxSearch";
@@ -134,8 +134,8 @@
             // 
             this.dataGridView.AllowUserToAddRows = false;
             this.dataGridView.AllowUserToDeleteRows = false;
-            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
@@ -234,7 +234,7 @@
             // 
             // labelExplain
             // 
-            this.labelExplain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.labelExplain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelExplain.Location = new System.Drawing.Point(12, 55);
             this.labelExplain.Name = "labelExplain";
@@ -253,43 +253,50 @@
             this.toolStripMenuItemOpenFolder,
             this.toolStripMenuItemPrintFolderTree});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(153, 158);
+            this.contextMenuStrip.Size = new System.Drawing.Size(137, 136);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // toolStripMenuItemSetDelete
             // 
             this.toolStripMenuItemSetDelete.Name = "toolStripMenuItemSetDelete";
-            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItemSetDelete.Text = "设为待删";
             this.toolStripMenuItemSetDelete.Click += new System.EventHandler(this.toolStripMenuItemSetDelete_Click);
-            // 
-            // toolStripMenuItemSetWatch
-            // 
-            this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
-            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(152, 22);
-            this.toolStripMenuItemSetWatch.Text = "设为待看";
-            this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelDelete
             // 
             this.toolStripMenuItemCancelDelete.Name = "toolStripMenuItemCancelDelete";
-            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItemCancelDelete.Text = "取消待删";
             this.toolStripMenuItemCancelDelete.Click += new System.EventHandler(this.toolStripMenuItemCancelDelete_Click);
+            // 
+            // toolStripMenuItemSetWatch
+            // 
+            this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
+            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemSetWatch.Text = "设为待看";
+            this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelWatch
             // 
             this.toolStripMenuItemCancelWatch.Name = "toolStripMenuItemCancelWatch";
-            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItemCancelWatch.Text = "取消待看";
             this.toolStripMenuItemCancelWatch.Click += new System.EventHandler(this.toolStripMenuItemCancelWatch_Click);
             // 
             // toolStripMenuItemOpenFolder
             // 
             this.toolStripMenuItemOpenFolder.Name = "toolStripMenuItemOpenFolder";
-            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(136, 22);
             this.toolStripMenuItemOpenFolder.Text = "打开位置";
             this.toolStripMenuItemOpenFolder.Click += new System.EventHandler(this.toolStripMenuItemOpenFolder_Click);
+            // 
+            // toolStripMenuItemPrintFolderTree
+            // 
+            this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
+            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
+            this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
             // 
             // btnRootDirectory
             // 
@@ -378,13 +385,6 @@
             this.labelPageRowCount.TabIndex = 24;
             this.labelPageRowCount.Text = "每页记录条数";
             // 
-            // toolStripMenuItemPrintFolderTree
-            // 
-            this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
-            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(152, 22);
-            this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
-            this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
-            // 
             // tbePageRowCount
             // 
             this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -418,12 +418,14 @@
             this.Controls.Add(this.btnSearch);
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.comboBoxDisk);
+            this.KeyPreview = true;
             this.MinimumSize = new System.Drawing.Size(1000, 618);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "文件";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainForm_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
