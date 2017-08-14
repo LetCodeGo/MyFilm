@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace MyFilm
 {
-    public partial class Setting : Form
+    public partial class ManagerForm : Form
     {
         // 数据库查询
         private SqlData sqlData = null;
@@ -23,7 +23,7 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = null;
 
-        public Setting(SqlData sqlData)
+        public ManagerForm(SqlData sqlData)
         {
             InitializeComponent();
             this.sqlData = sqlData;

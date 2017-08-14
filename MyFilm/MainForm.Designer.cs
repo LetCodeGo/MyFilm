@@ -36,7 +36,7 @@
             this.btnSearch = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnWatch = new System.Windows.Forms.Button();
-            this.btnSetting = new System.Windows.Forms.Button();
+            this.btnManager = new System.Windows.Forms.Button();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -78,7 +78,7 @@
             // 
             // textBoxSearch
             // 
-            this.textBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBoxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSearch.Location = new System.Drawing.Point(196, 12);
             this.textBoxSearch.Name = "textBoxSearch";
@@ -119,23 +119,23 @@
             this.btnWatch.UseVisualStyleBackColor = true;
             this.btnWatch.Click += new System.EventHandler(this.btnWatch_Click);
             // 
-            // btnSetting
+            // btnManager
             // 
-            this.btnSetting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetting.Location = new System.Drawing.Point(1097, 11);
-            this.btnSetting.Name = "btnSetting";
-            this.btnSetting.Size = new System.Drawing.Size(75, 23);
-            this.btnSetting.TabIndex = 5;
-            this.btnSetting.Text = "设置";
-            this.btnSetting.UseVisualStyleBackColor = true;
-            this.btnSetting.Click += new System.EventHandler(this.btnSetting_Click);
+            this.btnManager.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnManager.Location = new System.Drawing.Point(1097, 11);
+            this.btnManager.Name = "btnManager";
+            this.btnManager.Size = new System.Drawing.Size(75, 23);
+            this.btnManager.TabIndex = 5;
+            this.btnManager.Text = "管理";
+            this.btnManager.UseVisualStyleBackColor = true;
+            this.btnManager.Click += new System.EventHandler(this.btnManager_Click);
             // 
             // dataGridView
             // 
             this.dataGridView.AllowUserToAddRows = false;
             this.dataGridView.AllowUserToDeleteRows = false;
-            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
@@ -234,7 +234,7 @@
             // 
             // labelExplain
             // 
-            this.labelExplain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.labelExplain.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.labelExplain.Location = new System.Drawing.Point(12, 55);
             this.labelExplain.Name = "labelExplain";
@@ -412,7 +412,7 @@
             this.Controls.Add(this.btnUpFolder);
             this.Controls.Add(this.labelExplain);
             this.Controls.Add(this.dataGridView);
-            this.Controls.Add(this.btnSetting);
+            this.Controls.Add(this.btnManager);
             this.Controls.Add(this.btnWatch);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnSearch);
@@ -438,7 +438,7 @@
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnWatch;
-        private System.Windows.Forms.Button btnSetting;
+        private System.Windows.Forms.Button btnManager;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.Label labelExplain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;

@@ -362,9 +362,9 @@ namespace MyFilm
             ShowDataGridViewPage(0);
         }
 
-        private void btnSetting_Click(object sender, EventArgs e)
+        private void btnManager_Click(object sender, EventArgs e)
         {
-            Setting form = new Setting(this.sqlData);
+            ManagerForm form = new ManagerForm(this.sqlData);
             form.ShowDialog();
 
             // 设置返回后显示根目录
