@@ -454,7 +454,7 @@ namespace MyFilm
 
         private void dataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            int pid = -1;
+            int pid = int.MinValue;
             // 如果是文件夹就浏览文件夹下内容
             if (e.ColumnIndex == 1 && Convert.ToBoolean(gridViewData.Rows[e.RowIndex]["is_folder"]))
             {
@@ -470,7 +470,7 @@ namespace MyFilm
                 actionParam.FolderPath = gridViewData.Rows[e.RowIndex]["path"].ToString();
             }
 
-            if (pid != -1)
+            if (pid != int.MinValue)
             {
                 actionParam.Pid = pid;
                 sourceType = SourceType.DATABASE_PID;
@@ -762,6 +762,7 @@ namespace MyFilm
                     btnSearch_Click(null, null);
                     // 窗口切换到最前
                     Win32API.SwitchToThisWindow(this.Handle, true);
+                    this.TopLevel = true;
                     break;
                 default:
                     base.DefWndProc(ref m);
