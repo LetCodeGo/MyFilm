@@ -80,9 +80,16 @@ namespace MyFilm
             this.Icon = Properties.Resources.ico;
             this.Text = CommonString.DbName;
 
+            this.notifyIcon.Icon = Properties.Resources.ico;
+            this.notifyIcon.Visible = false;
+            this.notifyIcon.Text = String.Format("MyFilm - {0}", CommonString.DbName);
+            this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
+
             // 开启线程，接收从另一进程发送的数据
+            ProcessReceiveData.ShowSearchResultAction = this.ShowSearchResult;
             Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
+
             // 连接数据库创建表
             sqlData.OpenMySql();
             sqlData.CreateTables();
@@ -758,11 +765,11 @@ namespace MyFilm
             switch (m.Msg)
             {
                 case Win32API.WM_SEARCH:
-                    this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
-                    btnSearch_Click(null, null);
-                    // 窗口切换到最前
-                    Win32API.SwitchToThisWindow(this.Handle, true);
-                    this.TopLevel = true;
+                    //this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
+                    //btnSearch_Click(null, null);
+                    //// 窗口切换到最前
+                    //Win32API.SwitchToThisWindow(this.Handle, true);
+                    //this.TopLevel = true;
                     break;
                 default:
                     base.DefWndProc(ref m);
@@ -806,6 +813,73 @@ namespace MyFilm
                     break;
                 default: break;
             }
+        }
+
+        private void MainForm_SizeChanged(object sender, EventArgs e)
+        {
+            // 判断是否最小化
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                // 不显示在系统任务栏
+                this.ShowInTaskbar = false;
+                // 托盘图标可见
+                notifyIcon.Visible = true;
+            }
+        }
+
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                // 显示在系统任务栏
+                this.ShowInTaskbar = true;
+                // 还原窗体
+                this.WindowState = FormWindowState.Normal;
+                // 托盘图标隐藏
+                notifyIcon.Visible = false;
+            }
+        }
+
+        private void ShowSearchResult()
+        {
+            if (this.InvokeRequired)
+                this.Invoke(new Action(ShowSearchResult));
+            else
+            {
+                if (this.WindowState == FormWindowState.Minimized)
+                {
+                    // 显示在系统任务栏
+                    this.ShowInTaskbar = true;
+                    // 还原窗体
+                    this.WindowState = FormWindowState.Normal;
+                    // 托盘图标隐藏
+                    notifyIcon.Visible = false;
+                }
+
+                this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
+                btnSearch_Click(null, null);
+                // 窗口切换到最前
+                Win32API.SwitchToThisWindow(this.Handle, true);
+                this.TopLevel = true;
+            }
+        }
+
+        private void toolStripMenuItemShowWindow_Click(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                // 显示在系统任务栏
+                this.ShowInTaskbar = true;
+                // 还原窗体
+                this.WindowState = FormWindowState.Normal;
+                // 托盘图标隐藏
+                notifyIcon.Visible = false;
+            }
+        }
+
+        private void toolStripMenuItemExitWindow_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

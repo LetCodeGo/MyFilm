@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.IO.Pipes;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace MyFilm
 {
@@ -21,6 +15,11 @@ namespace MyFilm
         /// 接收数据结束标志，在程序要退出时设置
         /// </summary>
         public static bool receiveExit = false;
+
+        /// <summary>
+        /// 窗体隐藏在通知栏时不能收到消息，需要先使窗口正常显示
+        /// </summary>
+        public static Action ShowSearchResultAction = null;
 
         public static void ReceiveData(object hWnd)
         {
@@ -55,7 +54,9 @@ namespace MyFilm
 
                     if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
                     {
-                        Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
+                        // 不关心调用结果
+                        ShowSearchResultAction?.BeginInvoke(null, null);
+                        //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                     }
 
                     pipeServer.Disconnect();
@@ -89,7 +90,9 @@ namespace MyFilm
 
                         if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
                         {
-                            Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
+                            // 不关心调用结果
+                            ShowSearchResultAction?.BeginInvoke(null, null);
+                            //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                         }
 
                         mmfWrite.Release();
@@ -115,7 +118,9 @@ namespace MyFilm
 
                 if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
                 {
-                    Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
+                    // 不关心调用结果
+                    ShowSearchResultAction?.BeginInvoke(null, null);
+                    //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                 }
 
                 acceptSocket.Close();
