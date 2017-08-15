@@ -394,7 +394,10 @@ namespace MyFilm
                     "film_info", offset, rows);
 
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
-            sqlCom.Parameters.AddWithValue("@search", string.Format("%{0}%", keyWord));
+
+            String charInString = " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（）";
+            sqlCom.Parameters.AddWithValue("@search", string.Format("%{0}%",
+                Helper.Replace(keyWord.Trim(), charInString, '_')));
             if (diskDescribe != null) sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
             DataTable dt = CommonDataTable.GetFilmInfoDataTable();

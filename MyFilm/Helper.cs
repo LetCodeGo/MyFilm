@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyFilm
 {
@@ -56,6 +52,21 @@ namespace MyFilm
             String upFolder = path.Substring(0, path.LastIndexOf('\\'));
             if (upFolder.EndsWith(":")) upFolder += "\\";
             return upFolder;
+        }
+
+        /// <summary>
+        /// 将 input 中所有在 charInString 的字符替换为 replace
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="charInString"></param>
+        /// <param name="replace"></param>
+        /// <returns></returns>
+        public static String Replace(String input, String charInString, Char replace)
+        {
+            char[] charArray = input.ToCharArray();
+            for (int i = 0; i < charArray.Length; i++)
+                if (charInString.IndexOf(charArray[i]) != -1) charArray[i] = replace;
+            return new String(charArray);
         }
 
         /// <summary>
