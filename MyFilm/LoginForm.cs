@@ -11,10 +11,7 @@ namespace MyFilm
         /// <summary>
         /// 配置文件路径
         /// </summary>
-        private static String configPath = Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create),
-            "myfilm.xml");
+        private static String configPath = Path.Combine(CommonString.AppDataFolder, "myfilm.xml");
 
         [Serializable]
         [XmlRoot("DBCONFIG")]
@@ -52,6 +49,9 @@ namespace MyFilm
             dbStruct.DBDefaultName = String.Empty;
             dbStruct.DBIPs = new List<String>();
             dbStruct.DBNames = new List<String>();
+
+            if (!Directory.Exists(CommonString.AppDataFolder))
+                Directory.CreateDirectory(CommonString.AppDataFolder);
         }
 
         private void LoadXml()

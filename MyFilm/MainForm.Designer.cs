@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.comboBoxDisk = new System.Windows.Forms.ComboBox();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
             this.btnSearch = new System.Windows.Forms.Button();
@@ -67,6 +67,7 @@
             this.contextMenuStripNotify = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemShowContent = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
             this.contextMenuStripNotify.SuspendLayout();
@@ -145,14 +146,14 @@
             this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
             this.dataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ColumnIndex,
@@ -163,14 +164,14 @@
             this.ColumnModify,
             this.ColumnDelete,
             this.ColumnWatch});
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridView.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView.Location = new System.Drawing.Point(12, 78);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.RowHeadersVisible = false;
@@ -256,50 +257,51 @@
             this.toolStripMenuItemSetWatch,
             this.toolStripMenuItemCancelWatch,
             this.toolStripMenuItemOpenFolder,
-            this.toolStripMenuItemPrintFolderTree});
+            this.toolStripMenuItemPrintFolderTree,
+            this.toolStripMenuItemShowContent});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(137, 136);
+            this.contextMenuStrip.Size = new System.Drawing.Size(153, 180);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // toolStripMenuItemSetDelete
             // 
             this.toolStripMenuItemSetDelete.Name = "toolStripMenuItemSetDelete";
-            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetDelete.Text = "设为待删";
             this.toolStripMenuItemSetDelete.Click += new System.EventHandler(this.toolStripMenuItemSetDelete_Click);
             // 
             // toolStripMenuItemCancelDelete
             // 
             this.toolStripMenuItemCancelDelete.Name = "toolStripMenuItemCancelDelete";
-            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelDelete.Text = "取消待删";
             this.toolStripMenuItemCancelDelete.Click += new System.EventHandler(this.toolStripMenuItemCancelDelete_Click);
             // 
             // toolStripMenuItemSetWatch
             // 
             this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
-            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetWatch.Text = "设为待看";
             this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelWatch
             // 
             this.toolStripMenuItemCancelWatch.Name = "toolStripMenuItemCancelWatch";
-            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelWatch.Text = "取消待看";
             this.toolStripMenuItemCancelWatch.Click += new System.EventHandler(this.toolStripMenuItemCancelWatch_Click);
             // 
             // toolStripMenuItemOpenFolder
             // 
             this.toolStripMenuItemOpenFolder.Name = "toolStripMenuItemOpenFolder";
-            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemOpenFolder.Text = "打开位置";
             this.toolStripMenuItemOpenFolder.Click += new System.EventHandler(this.toolStripMenuItemOpenFolder_Click);
             // 
             // toolStripMenuItemPrintFolderTree
             // 
             this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
-            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(136, 22);
+            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
             this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
             // 
@@ -413,21 +415,28 @@
             this.toolStripMenuItemShowWindow,
             this.toolStripMenuItemExitWindow});
             this.contextMenuStripNotify.Name = "contextMenuStripNotify";
-            this.contextMenuStripNotify.Size = new System.Drawing.Size(153, 70);
+            this.contextMenuStripNotify.Size = new System.Drawing.Size(101, 48);
             // 
             // toolStripMenuItemShowWindow
             // 
             this.toolStripMenuItemShowWindow.Name = "toolStripMenuItemShowWindow";
-            this.toolStripMenuItemShowWindow.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemShowWindow.Size = new System.Drawing.Size(100, 22);
             this.toolStripMenuItemShowWindow.Text = "显示";
             this.toolStripMenuItemShowWindow.Click += new System.EventHandler(this.toolStripMenuItemShowWindow_Click);
             // 
             // toolStripMenuItemExitWindow
             // 
             this.toolStripMenuItemExitWindow.Name = "toolStripMenuItemExitWindow";
-            this.toolStripMenuItemExitWindow.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemExitWindow.Size = new System.Drawing.Size(100, 22);
             this.toolStripMenuItemExitWindow.Text = "退出";
             this.toolStripMenuItemExitWindow.Click += new System.EventHandler(this.toolStripMenuItemExitWindow_Click);
+            // 
+            // toolStripMenuItemShowContent
+            // 
+            this.toolStripMenuItemShowContent.Name = "toolStripMenuItemShowContent";
+            this.toolStripMenuItemShowContent.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemShowContent.Text = "查看文件内容";
+            this.toolStripMenuItemShowContent.Click += new System.EventHandler(this.toolStripMenuItemShowContent_Click);
             // 
             // MainForm
             // 
@@ -506,6 +515,7 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStripNotify;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowWindow;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExitWindow;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowContent;
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ namespace MyFilm
 {
     public class CommonString
     {
+        public static String AppDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
+                Environment.SpecialFolderOption.Create), "MyFilm");
+
         public static String DbIP = "127.0.0.1";
         public static String DbUserName = string.Empty;
         public static String DbPassword = string.Empty;

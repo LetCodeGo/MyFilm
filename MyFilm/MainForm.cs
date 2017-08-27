@@ -70,6 +70,11 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = new DataTable();
 
+        /// <summary>
+        /// 打开的 nfo 文件所在文件夹
+        /// </summary>
+        private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "NFO");
+
         public MainForm()
         {
             InitializeComponent();
@@ -84,6 +89,14 @@ namespace MyFilm
             this.notifyIcon.Visible = false;
             this.notifyIcon.Text = String.Format("MyFilm - {0}", CommonString.DbName);
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
+
+            // 删除NFO文件中所有的nfo文件
+            if (Directory.Exists(nfoFolder))
+            {
+                String[] nfoFiles = Directory.GetFiles(nfoFolder, "*.nfo", SearchOption.TopDirectoryOnly);
+                nfoFiles.ToList().ForEach(filePath => File.Delete(filePath));
+            }
+            else Directory.CreateDirectory(nfoFolder);
 
             // 开启线程，接收从另一进程发送的数据
             ProcessReceiveData.ShowSearchResultAction = this.ShowSearchResult;
@@ -550,19 +563,33 @@ namespace MyFilm
         private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             // 只有选中了行才弹出菜单
-            if (this.dataGridView.SelectedRows.Count == 0) e.Cancel = true;
-            else
+            if (this.dataGridView.SelectedRows.Count < 1) e.Cancel = true;
+            else if (this.dataGridView.SelectedRows.Count == 1)
             {
                 int index = this.dataGridView.SelectedRows[0].Index;
                 bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnDelete"].Value);
                 bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnWatch"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
+                String fileName = gridViewData.Rows[index]["name"].ToString();
+                bool isShowContent = (fileName.Substring(fileName.LastIndexOf('.') + 1).ToLower() == "nfo");
 
                 this.toolStripMenuItemSetDelete.Enabled = !isDelete;
                 this.toolStripMenuItemSetWatch.Enabled = !isWatch;
                 this.toolStripMenuItemCancelDelete.Enabled = isDelete;
                 this.toolStripMenuItemCancelWatch.Enabled = isWatch;
+                this.toolStripMenuItemOpenFolder.Enabled = true;
                 this.toolStripMenuItemPrintFolderTree.Enabled = isFolder;
+                this.toolStripMenuItemShowContent.Enabled = isShowContent;
+            }
+            else
+            {
+                this.toolStripMenuItemSetDelete.Enabled = true;
+                this.toolStripMenuItemSetWatch.Enabled = true;
+                this.toolStripMenuItemCancelDelete.Enabled = true;
+                this.toolStripMenuItemCancelWatch.Enabled = true;
+                this.toolStripMenuItemOpenFolder.Enabled = false;
+                this.toolStripMenuItemPrintFolderTree.Enabled = false;
+                this.toolStripMenuItemShowContent.Enabled = false;
             }
         }
 
@@ -618,7 +645,13 @@ namespace MyFilm
                 return;
             }
 
-            String folderPath = gridViewData.Rows[dataGridView.SelectedRows[0].Index]["path"].ToString();
+            int index = dataGridView.SelectedRows[0].Index;
+            bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
+            String fileName = gridViewData.Rows[index]["name"].ToString();
+            String upFolderPath = gridViewData.Rows[index]["path"].ToString();
+            // 文件时打开其所在文件夹，文件夹时打开此文件夹
+            String folderPath = upFolderPath;
+            if (isFolder) folderPath = Path.Combine(upFolderPath, fileName);
             System.Diagnostics.Process.Start(folderPath);
         }
 
@@ -641,7 +674,11 @@ namespace MyFilm
             String strResult = String.Empty;
             PrintFolder(Convert.ToInt32(gridViewData.Rows[selectIndex]["id"]),
                 gridViewData.Rows[selectIndex]["name"].ToString(), 0, "", ref strResult);
-            Helper.OpenEdit(strResult);
+
+            String filePath = Path.Combine(CommonString.AppDataFolder, "myfilm.temp");
+            File.WriteAllText(filePath, strResult, System.Text.Encoding.UTF8);
+
+            Helper.OpenEdit(filePath, strResult);
         }
 
         private void dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -880,6 +917,23 @@ namespace MyFilm
         private void toolStripMenuItemExitWindow_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void toolStripMenuItemShowContent_Click(object sender, EventArgs e)
+        {
+            if (dataGridView.SelectedRows.Count != 1)
+            {
+                MessageBox.Show("请选中一行！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            String content = gridViewData.Rows[dataGridView.SelectedRows[0].Index]["content"].ToString();
+
+            String filePath = Path.Combine(nfoFolder,
+                gridViewData.Rows[dataGridView.SelectedRows[0].Index]["name"].ToString());
+            File.WriteAllText(filePath, content, System.Text.Encoding.GetEncoding("IBM437"));
+
+            Helper.OpenEdit(filePath, content);
         }
     }
 }

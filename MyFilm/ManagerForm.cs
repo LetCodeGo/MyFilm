@@ -258,7 +258,10 @@ namespace MyFilm
             log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
                 moveSuccess, logSuccess, moveFailed, logFailed);
 
-            Helper.OpenEdit(log);
+            String filePath = Path.Combine(CommonString.AppDataFolder, "myfilm.temp");
+            File.WriteAllText(filePath, log, System.Text.Encoding.UTF8);
+
+            Helper.OpenEdit(filePath, log);
         }
 
         private void btnUpdateLocalDisk_Click(object sender, EventArgs e)

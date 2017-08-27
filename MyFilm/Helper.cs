@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MyFilm
 {
@@ -70,55 +72,96 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// 用记事本打开内容
+        /// 用记事本打开文件路径或内容
         /// </summary>
+        /// <param name="filePath"></param>
         /// <param name="strContext"></param>
-        public static void OpenEdit(String strContext)
+        public static void OpenEdit(String filePath, String strContext)
         {
-            #region [ 启动记事本 ] 
+            #region 启动 notepad++
 
-            System.Diagnostics.Process Proc;
+            System.Diagnostics.Process ProcNotePad = null;
 
-            try
+            List<String> programFolderList = new List<String>();
+            programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+            if (Environment.Is64BitOperatingSystem)
+                programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+
+            foreach (String programFolder in programFolderList)
             {
-                // 启动记事本 
-                Proc = new System.Diagnostics.Process();
-                Proc.StartInfo.FileName = "notepad.exe";
-                Proc.StartInfo.UseShellExecute = false;
-                Proc.StartInfo.RedirectStandardInput = true;
-                Proc.StartInfo.RedirectStandardOutput = true;
+                if (String.IsNullOrWhiteSpace(programFolder)) continue;
 
-                Proc.Start();
-            }
-            catch
-            {
-                Proc = null;
-            }
+                String notePadPath = Path.Combine(programFolder, "Notepad++", "notepad++.exe");
 
+                if (File.Exists(notePadPath))
+                {
+                    try
+                    {
+                        ProcNotePad = new System.Diagnostics.Process();
+                        ProcNotePad.StartInfo.FileName = notePadPath;
+                        ProcNotePad.StartInfo.Arguments = filePath;
+                        ProcNotePad.StartInfo.UseShellExecute = true;
+                        ProcNotePad.StartInfo.RedirectStandardInput = false;
+                        ProcNotePad.StartInfo.RedirectStandardOutput = false;
+
+                        ProcNotePad.Start();
+                        return;
+                    }
+                    catch
+                    {
+                        ProcNotePad = null;
+                    }
+                }
+            }
             #endregion
 
-            #region [ 传递数据给记事本 ] 
-
-            if (Proc != null)
+            if (ProcNotePad == null)
             {
-                // 调用 API, 传递数据 
-                while (Proc.MainWindowHandle == IntPtr.Zero)
+                #region [ 启动记事本 ] 
+
+                System.Diagnostics.Process Proc;
+
+                try
                 {
-                    Proc.Refresh();
+                    // 启动记事本 
+                    Proc = new System.Diagnostics.Process();
+                    Proc.StartInfo.FileName = "notepad.exe";
+                    Proc.StartInfo.UseShellExecute = false;
+                    Proc.StartInfo.RedirectStandardInput = true;
+                    Proc.StartInfo.RedirectStandardOutput = true;
+
+                    Proc.Start();
+                }
+                catch
+                {
+                    Proc = null;
                 }
 
-                IntPtr vHandle = Win32API.FindWindowEx(Proc.MainWindowHandle, IntPtr.Zero, "Edit", null);
+                #endregion
 
-                // 传递数据给记事本 
-                Win32API.SendMessage(vHandle, Win32API.WM_SETTEXT, 0, strContext);
-            }
-            else
-            {
-                LogForm form = new LogForm(strContext);
-                form.ShowDialog();
-            }
+                #region [ 传递数据给记事本 ] 
 
-            #endregion
+                if (Proc != null)
+                {
+                    // 调用 API, 传递数据 
+                    while (Proc.MainWindowHandle == IntPtr.Zero)
+                    {
+                        Proc.Refresh();
+                    }
+
+                    IntPtr vHandle = Win32API.FindWindowEx(Proc.MainWindowHandle, IntPtr.Zero, "Edit", null);
+
+                    // 传递数据给记事本 
+                    Win32API.SendMessage(vHandle, Win32API.WM_SETTEXT, 0, strContext);
+                }
+                else
+                {
+                    LogForm form = new LogForm(strContext);
+                    form.ShowDialog();
+                }
+
+                #endregion
+            }
         }
     }
 }

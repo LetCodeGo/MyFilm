@@ -60,6 +60,7 @@ namespace MyFilm
         /// | disk_desc | varchar(256)  | NO   |     | NULL    |                |
         /// | to_watch  | tinyint(1)    | NO   |     | NULL    |                |
         /// | to_delete | tinyint(1)    | NO   |     | NULL    |                |
+        /// | content   | text          | NO   |     | NULL    |                |
         /// +-----------+---------------+------+-----+---------+----------------+
         /// </summary>
         private void CreateFilmInfoTable()
@@ -75,7 +76,8 @@ namespace MyFilm
             sqlText += String.Format(@"{0} integer not null, ", "pid");
             sqlText += String.Format(@"{0} varchar(256) not null, ", "disk_desc");
             sqlText += String.Format(@"{0} bool not null, ", "to_watch");
-            sqlText += String.Format(@"{0} bool not null );", "to_delete");
+            sqlText += String.Format(@"{0} bool not null, ", "to_delete");
+            sqlText += String.Format(@"{0} text not null );", "content");
 
             MySqlCommand sqlCom = new MySqlCommand(sqlText, sqlCon);
             sqlCom.ExecuteNonQuery();
@@ -161,6 +163,7 @@ namespace MyFilm
             dr[8] = diskDescribe;
             dr[9] = false;
             dr[10] = false;
+            dr[11] = String.Empty;
             dt.Rows.Add(dr);
 
             InsertDataToFilmInfo(dt);
@@ -202,6 +205,7 @@ namespace MyFilm
                 dr[8] = diskDescribe;
                 dr[9] = false;
                 dr[10] = false;
+                dr[11] = String.Empty;
                 dt.Rows.Add(dr);
 
                 InsertDataToFilmInfo(dt);
@@ -229,6 +233,10 @@ namespace MyFilm
                     dr[8] = diskDescribe;
                     dr[9] = false;
                     dr[10] = false;
+                    // 只读取 30KB 以下 nfo 文件内容
+                    if (fileInfo.Extension.ToLower() == ".nfo" && fileInfo.Length <= 30720)
+                        dr[11] = File.ReadAllText(fileInfo.FullName, System.Text.Encoding.GetEncoding("IBM437"));
+                    else dr[11] = String.Empty;
                     dt.Rows.Add(dr);
                 }
 
@@ -277,14 +285,15 @@ namespace MyFilm
             sqlCom.Connection = sqlCon;
             sqlCom.CommandText = String.Format(
                 @"insert into {0} (
-                name, path, size, create_t, modify_t, is_folder, pid, disk_desc, to_watch, to_delete)
+                name, path, size, create_t, modify_t, is_folder, pid, disk_desc, to_watch, to_delete, content)
                 values", "film_info");
 
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 sqlCom.CommandText += String.Format(
                     @"(@name{0}, @path{0}, @size{0}, @create_t{0}, @modify_t{0}, @is_folder{0}, @pid{0}, 
-                    @disk_desc{0},@to_watch{0}, @to_delete{0}){1}", i, i == dt.Rows.Count - 1 ? ";" : ",");
+                    @disk_desc{0},@to_watch{0}, @to_delete{0}, @content{0}){1}",
+                    i, i == dt.Rows.Count - 1 ? ";" : ",");
 
                 sqlCom.Parameters.AddWithValue(string.Format("@name{0}", i), dt.Rows[i][1]);
                 sqlCom.Parameters.AddWithValue(string.Format("@path{0}", i), dt.Rows[i][2]);
@@ -296,6 +305,7 @@ namespace MyFilm
                 sqlCom.Parameters.AddWithValue(string.Format("@disk_desc{0}", i), dt.Rows[i][8]);
                 sqlCom.Parameters.AddWithValue(string.Format("@to_watch{0}", i), dt.Rows[i][9]);
                 sqlCom.Parameters.AddWithValue(string.Format("@to_delete{0}", i), dt.Rows[i][10]);
+                sqlCom.Parameters.AddWithValue(string.Format("@content{0}", i), dt.Rows[i][11]);
             }
 
             int affectedRows = sqlCom.ExecuteNonQuery();

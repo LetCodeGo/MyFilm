@@ -28,6 +28,7 @@ namespace MyFilm
             dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("to_watch", typeof(Boolean));
             dt.Columns.Add("to_delete", typeof(Boolean));
+            dt.Columns.Add("content", typeof(String));
 
             return dt;
         }
@@ -70,6 +71,7 @@ namespace MyFilm
             dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("to_watch", typeof(Boolean));
             dt.Columns.Add("to_delete", typeof(Boolean));
+            dt.Columns.Add("content", typeof(String));
 
             return dt;
         }
