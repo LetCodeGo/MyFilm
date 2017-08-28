@@ -54,6 +54,7 @@
             this.toolStripMenuItemCancelWatch = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemOpenFolder = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemPrintFolderTree = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemShowContent = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRootDirectory = new System.Windows.Forms.Button();
             this.comboBoxPage = new System.Windows.Forms.ComboBox();
             this.btnLastPage = new System.Windows.Forms.Button();
@@ -67,7 +68,6 @@
             this.contextMenuStripNotify = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemShowContent = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
             this.contextMenuStripNotify.SuspendLayout();
@@ -260,50 +260,57 @@
             this.toolStripMenuItemPrintFolderTree,
             this.toolStripMenuItemShowContent});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(153, 180);
+            this.contextMenuStrip.Size = new System.Drawing.Size(149, 158);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // toolStripMenuItemSetDelete
             // 
             this.toolStripMenuItemSetDelete.Name = "toolStripMenuItemSetDelete";
-            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemSetDelete.Text = "设为待删";
             this.toolStripMenuItemSetDelete.Click += new System.EventHandler(this.toolStripMenuItemSetDelete_Click);
             // 
             // toolStripMenuItemCancelDelete
             // 
             this.toolStripMenuItemCancelDelete.Name = "toolStripMenuItemCancelDelete";
-            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemCancelDelete.Text = "取消待删";
             this.toolStripMenuItemCancelDelete.Click += new System.EventHandler(this.toolStripMenuItemCancelDelete_Click);
             // 
             // toolStripMenuItemSetWatch
             // 
             this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
-            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemSetWatch.Text = "设为待看";
             this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelWatch
             // 
             this.toolStripMenuItemCancelWatch.Name = "toolStripMenuItemCancelWatch";
-            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemCancelWatch.Text = "取消待看";
             this.toolStripMenuItemCancelWatch.Click += new System.EventHandler(this.toolStripMenuItemCancelWatch_Click);
             // 
             // toolStripMenuItemOpenFolder
             // 
             this.toolStripMenuItemOpenFolder.Name = "toolStripMenuItemOpenFolder";
-            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemOpenFolder.Text = "打开位置";
             this.toolStripMenuItemOpenFolder.Click += new System.EventHandler(this.toolStripMenuItemOpenFolder_Click);
             // 
             // toolStripMenuItemPrintFolderTree
             // 
             this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
-            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(148, 22);
             this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
             this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
+            // 
+            // toolStripMenuItemShowContent
+            // 
+            this.toolStripMenuItemShowContent.Name = "toolStripMenuItemShowContent";
+            this.toolStripMenuItemShowContent.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemShowContent.Text = "查看文件内容";
+            this.toolStripMenuItemShowContent.Click += new System.EventHandler(this.toolStripMenuItemShowContent_Click);
             // 
             // btnRootDirectory
             // 
@@ -431,13 +438,6 @@
             this.toolStripMenuItemExitWindow.Text = "退出";
             this.toolStripMenuItemExitWindow.Click += new System.EventHandler(this.toolStripMenuItemExitWindow_Click);
             // 
-            // toolStripMenuItemShowContent
-            // 
-            this.toolStripMenuItemShowContent.Name = "toolStripMenuItemShowContent";
-            this.toolStripMenuItemShowContent.Size = new System.Drawing.Size(152, 22);
-            this.toolStripMenuItemShowContent.Text = "查看文件内容";
-            this.toolStripMenuItemShowContent.Click += new System.EventHandler(this.toolStripMenuItemShowContent_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -461,7 +461,7 @@
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.comboBoxDisk);
             this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(1000, 618);
+            this.MinimumSize = new System.Drawing.Size(1200, 742);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "文件";

@@ -50,6 +50,7 @@
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             this.tbeLayer = new MyFilm.TextBoxEx();
             this.btnUpdateDiskFolderSize = new System.Windows.Forms.Button();
+            this.labelScanDepth = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -57,8 +58,8 @@
             // 
             this.dataGridView.AllowUserToAddRows = false;
             this.dataGridView.AllowUserToDeleteRows = false;
-            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
@@ -101,7 +102,7 @@
             this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.RowTemplate.Height = 23;
             this.dataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView.Size = new System.Drawing.Size(595, 433);
+            this.dataGridView.Size = new System.Drawing.Size(750, 556);
             this.dataGridView.TabIndex = 0;
             this.dataGridView.SelectionChanged += new System.EventHandler(this.dataGridView_SelectionChanged);
             // 
@@ -157,9 +158,9 @@
             // btnAddDisk
             // 
             this.btnAddDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddDisk.Location = new System.Drawing.Point(622, 61);
+            this.btnAddDisk.Location = new System.Drawing.Point(768, 61);
             this.btnAddDisk.Name = "btnAddDisk";
-            this.btnAddDisk.Size = new System.Drawing.Size(150, 25);
+            this.btnAddDisk.Size = new System.Drawing.Size(204, 25);
             this.btnAddDisk.TabIndex = 1;
             this.btnAddDisk.Text = "添加磁盘";
             this.btnAddDisk.UseVisualStyleBackColor = true;
@@ -168,9 +169,9 @@
             // btnUpdateDisk
             // 
             this.btnUpdateDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateDisk.Location = new System.Drawing.Point(622, 92);
+            this.btnUpdateDisk.Location = new System.Drawing.Point(768, 92);
             this.btnUpdateDisk.Name = "btnUpdateDisk";
-            this.btnUpdateDisk.Size = new System.Drawing.Size(150, 25);
+            this.btnUpdateDisk.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateDisk.TabIndex = 2;
             this.btnUpdateDisk.Text = "更新磁盘";
             this.btnUpdateDisk.UseVisualStyleBackColor = true;
@@ -179,9 +180,9 @@
             // btnDeleteDisk
             // 
             this.btnDeleteDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteDisk.Location = new System.Drawing.Point(622, 123);
+            this.btnDeleteDisk.Location = new System.Drawing.Point(768, 123);
             this.btnDeleteDisk.Name = "btnDeleteDisk";
-            this.btnDeleteDisk.Size = new System.Drawing.Size(150, 25);
+            this.btnDeleteDisk.Size = new System.Drawing.Size(204, 25);
             this.btnDeleteDisk.TabIndex = 3;
             this.btnDeleteDisk.Text = "删除磁盘";
             this.btnDeleteDisk.UseVisualStyleBackColor = true;
@@ -190,9 +191,9 @@
             // btnMoveFolderOrFile
             // 
             this.btnMoveFolderOrFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(622, 335);
+            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(768, 458);
             this.btnMoveFolderOrFile.Name = "btnMoveFolderOrFile";
-            this.btnMoveFolderOrFile.Size = new System.Drawing.Size(150, 25);
+            this.btnMoveFolderOrFile.Size = new System.Drawing.Size(204, 25);
             this.btnMoveFolderOrFile.TabIndex = 4;
             this.btnMoveFolderOrFile.Text = "移动待删文件夹或文件";
             this.btnMoveFolderOrFile.UseVisualStyleBackColor = true;
@@ -201,25 +202,25 @@
             // textBoxDiskDescribe
             // 
             this.textBoxDiskDescribe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxDiskDescribe.Location = new System.Drawing.Point(622, 12);
+            this.textBoxDiskDescribe.Location = new System.Drawing.Point(768, 12);
             this.textBoxDiskDescribe.Name = "textBoxDiskDescribe";
-            this.textBoxDiskDescribe.Size = new System.Drawing.Size(150, 21);
+            this.textBoxDiskDescribe.Size = new System.Drawing.Size(204, 21);
             this.textBoxDiskDescribe.TabIndex = 6;
             // 
             // textBoxNewDiskDescribe
             // 
             this.textBoxNewDiskDescribe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxNewDiskDescribe.Location = new System.Drawing.Point(622, 424);
+            this.textBoxNewDiskDescribe.Location = new System.Drawing.Point(768, 547);
             this.textBoxNewDiskDescribe.Name = "textBoxNewDiskDescribe";
-            this.textBoxNewDiskDescribe.Size = new System.Drawing.Size(150, 21);
+            this.textBoxNewDiskDescribe.Size = new System.Drawing.Size(204, 21);
             this.textBoxNewDiskDescribe.TabIndex = 8;
             // 
             // btnChangeDiskDescribe
             // 
             this.btnChangeDiskDescribe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnChangeDiskDescribe.Location = new System.Drawing.Point(622, 393);
+            this.btnChangeDiskDescribe.Location = new System.Drawing.Point(768, 516);
             this.btnChangeDiskDescribe.Name = "btnChangeDiskDescribe";
-            this.btnChangeDiskDescribe.Size = new System.Drawing.Size(150, 25);
+            this.btnChangeDiskDescribe.Size = new System.Drawing.Size(204, 25);
             this.btnChangeDiskDescribe.TabIndex = 7;
             this.btnChangeDiskDescribe.Text = "更改磁盘描述";
             this.btnChangeDiskDescribe.UseVisualStyleBackColor = true;
@@ -230,7 +231,7 @@
             this.comboBoxLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxLocalDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLocalDisk.FormattingEnabled = true;
-            this.comboBoxLocalDisk.Location = new System.Drawing.Point(686, 366);
+            this.comboBoxLocalDisk.Location = new System.Drawing.Point(886, 489);
             this.comboBoxLocalDisk.Name = "comboBoxLocalDisk";
             this.comboBoxLocalDisk.Size = new System.Drawing.Size(86, 20);
             this.comboBoxLocalDisk.TabIndex = 9;
@@ -238,11 +239,11 @@
             // btnUpdateLocalDisk
             // 
             this.btnUpdateLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateLocalDisk.Location = new System.Drawing.Point(622, 364);
+            this.btnUpdateLocalDisk.Location = new System.Drawing.Point(768, 487);
             this.btnUpdateLocalDisk.Name = "btnUpdateLocalDisk";
-            this.btnUpdateLocalDisk.Size = new System.Drawing.Size(58, 23);
+            this.btnUpdateLocalDisk.Size = new System.Drawing.Size(112, 23);
             this.btnUpdateLocalDisk.TabIndex = 10;
-            this.btnUpdateLocalDisk.Text = "刷新";
+            this.btnUpdateLocalDisk.Text = "刷新本地磁盘";
             this.btnUpdateLocalDisk.UseVisualStyleBackColor = true;
             this.btnUpdateLocalDisk.Click += new System.EventHandler(this.btnUpdateLocalDisk_Click);
             // 
@@ -250,7 +251,7 @@
             // 
             this.checkBoxBriefScan.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxBriefScan.AutoSize = true;
-            this.checkBoxBriefScan.Location = new System.Drawing.Point(622, 40);
+            this.checkBoxBriefScan.Location = new System.Drawing.Point(768, 40);
             this.checkBoxBriefScan.Name = "checkBoxBriefScan";
             this.checkBoxBriefScan.Size = new System.Drawing.Size(72, 16);
             this.checkBoxBriefScan.TabIndex = 11;
@@ -262,7 +263,7 @@
             // 
             this.tbeLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tbeLayer.Enabled = false;
-            this.tbeLayer.Location = new System.Drawing.Point(697, 37);
+            this.tbeLayer.Location = new System.Drawing.Point(897, 37);
             this.tbeLayer.Name = "tbeLayer";
             this.tbeLayer.Size = new System.Drawing.Size(75, 21);
             this.tbeLayer.TabIndex = 26;
@@ -273,19 +274,31 @@
             // btnUpdateDiskFolderSize
             // 
             this.btnUpdateDiskFolderSize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateDiskFolderSize.Location = new System.Drawing.Point(622, 154);
+            this.btnUpdateDiskFolderSize.Location = new System.Drawing.Point(768, 154);
             this.btnUpdateDiskFolderSize.Name = "btnUpdateDiskFolderSize";
-            this.btnUpdateDiskFolderSize.Size = new System.Drawing.Size(150, 25);
+            this.btnUpdateDiskFolderSize.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateDiskFolderSize.TabIndex = 27;
             this.btnUpdateDiskFolderSize.Text = "更新磁盘中各文件夹大小";
             this.btnUpdateDiskFolderSize.UseVisualStyleBackColor = true;
             this.btnUpdateDiskFolderSize.Click += new System.EventHandler(this.btnUpdateDiskFolderSize_Click);
             // 
-            // Setting
+            // labelScanDepth
+            // 
+            this.labelScanDepth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelScanDepth.AutoSize = true;
+            this.labelScanDepth.Enabled = false;
+            this.labelScanDepth.Location = new System.Drawing.Point(865, 41);
+            this.labelScanDepth.Name = "labelScanDepth";
+            this.labelScanDepth.Size = new System.Drawing.Size(29, 12);
+            this.labelScanDepth.TabIndex = 28;
+            this.labelScanDepth.Text = "深度";
+            // 
+            // ManagerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 457);
+            this.ClientSize = new System.Drawing.Size(984, 580);
+            this.Controls.Add(this.labelScanDepth);
             this.Controls.Add(this.btnUpdateDiskFolderSize);
             this.Controls.Add(this.tbeLayer);
             this.Controls.Add(this.checkBoxBriefScan);
@@ -299,8 +312,8 @@
             this.Controls.Add(this.btnUpdateDisk);
             this.Controls.Add(this.btnAddDisk);
             this.Controls.Add(this.dataGridView);
-            this.MinimumSize = new System.Drawing.Size(800, 495);
-            this.Name = "Setting";
+            this.MinimumSize = new System.Drawing.Size(1000, 618);
+            this.Name = "ManagerForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "管理";
             this.Load += new System.EventHandler(this.Setting_Load);
@@ -331,5 +344,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCompleteScan;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnMaxLayer;
         private System.Windows.Forms.Button btnUpdateDiskFolderSize;
+        private System.Windows.Forms.Label labelScanDepth;
     }
 }

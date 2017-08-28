@@ -318,6 +318,7 @@ namespace MyFilm
 
         private void checkBoxBriefScan_CheckedChanged(object sender, EventArgs e)
         {
+            this.labelScanDepth.Enabled = this.checkBoxBriefScan.Checked;
             this.tbeLayer.Enabled = this.checkBoxBriefScan.Checked;
         }
 
