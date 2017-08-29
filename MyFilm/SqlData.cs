@@ -879,5 +879,18 @@ namespace MyFilm
 
             return dt;
         }
+
+        /// <summary>
+        /// 查询 search_log 表行数
+        /// </summary>
+        /// <returns></returns>
+        public Int32 CountRowsFormSearchLog()
+        {
+            string sqlStr = string.Format("select count(1) from {0};", "search_log");
+
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+
+            return Convert.ToInt32(sqlCom.ExecuteScalar());
+        }
     }
 }

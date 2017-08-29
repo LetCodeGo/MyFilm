@@ -75,6 +75,8 @@ namespace MyFilm
         /// </summary>
         private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "NFO");
 
+        private bool heartBeatFlag = true;
+
         public MainForm()
         {
             InitializeComponent();
@@ -114,6 +116,10 @@ namespace MyFilm
             InitPageCombox();
             sourceType = SourceType.DATATABLE_LOCAL;
 
+            // 开启心跳线程
+            Thread thread1 = new Thread(new ThreadStart(MySqlHeartBeat));
+            thread1.Start();
+
             InitDiskCombox();
 
             // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
@@ -128,6 +134,8 @@ namespace MyFilm
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            heartBeatFlag = false;
+
             ProcessReceiveData.receiveExit = true;
             ProcessSendData.SendData("quit");
 
@@ -934,6 +942,22 @@ namespace MyFilm
             File.WriteAllText(filePath, content, System.Text.Encoding.GetEncoding("IBM437"));
 
             Helper.OpenEdit(filePath, content);
+        }
+
+        private void MySqlHeartBeat()
+        {
+            while (heartBeatFlag)
+            {
+                int msTime = 0;
+                while (heartBeatFlag && msTime < 1800000)
+                {
+                    Thread.Sleep(500);
+                    msTime += 500;
+                }
+                if (!heartBeatFlag) break;
+
+                sqlData.CountRowsFormSearchLog();
+            }
         }
     }
 }
