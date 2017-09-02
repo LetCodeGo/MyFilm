@@ -482,7 +482,11 @@ namespace MyFilm
 
         private void dataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
+            bool needLocation = false;
+            int locationId = int.MinValue;
+
             int pid = int.MinValue;
+
             // 如果是文件夹就浏览文件夹下内容
             if (e.ColumnIndex == 1 && Convert.ToBoolean(gridViewData.Rows[e.RowIndex]["is_folder"]))
             {
@@ -496,6 +500,9 @@ namespace MyFilm
             {
                 pid = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["pid"]);
                 actionParam.FolderPath = gridViewData.Rows[e.RowIndex]["path"].ToString();
+
+                needLocation = true;
+                locationId = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["id"]);
             }
 
             if (pid != int.MinValue)
@@ -505,9 +512,25 @@ namespace MyFilm
 
                 totalRowCount = sqlData.CountPidFromFilmInfo(actionParam.Pid);
 
+                int offset = 0;
+                if (needLocation)
+                {
+                    offset = sqlData.GetIdOffsetByPidFromFilmInfo(locationId, actionParam.Pid);
+                    Debug.Assert(offset >= 0 && offset < totalRowCount);
+                }
+
                 InitPageCombox();
 
-                ShowDataGridViewPage(0);
+                int selectPage = offset / pageRowCount;
+                int selectRow = offset % pageRowCount;
+
+                ShowDataGridViewPage(selectPage);
+                if (selectRow != 0)
+                {
+                    this.dataGridView.ClearSelection();
+                    // 这里第0行时，不知什么原因选不上
+                    this.dataGridView.CurrentCell = this.dataGridView.Rows[selectRow].Cells[0];
+                }
             }
         }
 
