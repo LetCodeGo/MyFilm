@@ -33,8 +33,8 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.labelDataBase = new System.Windows.Forms.Label();
             this.labelPwd = new System.Windows.Forms.Label();
-            this.textBoxPwd = new System.Windows.Forms.TextBox();
-            this.textBoxUser = new System.Windows.Forms.TextBox();
+            this.comboBoxPwd = new System.Windows.Forms.ComboBox();
+            this.comboBoxUser = new System.Windows.Forms.ComboBox();
             this.labelUser = new System.Windows.Forms.Label();
             this.comboBoxIP = new System.Windows.Forms.ComboBox();
             this.labelIP = new System.Windows.Forms.Label();
@@ -86,19 +86,19 @@
             this.labelPwd.TabIndex = 5;
             this.labelPwd.Text = "密  码";
             // 
-            // textBoxPwd
+            // comboBoxPwd
             // 
-            this.textBoxPwd.Location = new System.Drawing.Point(222, 120);
-            this.textBoxPwd.Name = "textBoxPwd";
-            this.textBoxPwd.Size = new System.Drawing.Size(121, 21);
-            this.textBoxPwd.TabIndex = 6;
+            this.comboBoxPwd.Location = new System.Drawing.Point(222, 120);
+            this.comboBoxPwd.Name = "comboBoxPwd";
+            this.comboBoxPwd.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxPwd.TabIndex = 6;
             // 
-            // textBoxUser
+            // comboBoxUser
             // 
-            this.textBoxUser.Location = new System.Drawing.Point(222, 86);
-            this.textBoxUser.Name = "textBoxUser";
-            this.textBoxUser.Size = new System.Drawing.Size(121, 21);
-            this.textBoxUser.TabIndex = 8;
+            this.comboBoxUser.Location = new System.Drawing.Point(222, 86);
+            this.comboBoxUser.Name = "comboBoxUser";
+            this.comboBoxUser.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxUser.TabIndex = 8;
             // 
             // labelUser
             // 
@@ -133,9 +133,9 @@
             this.ClientSize = new System.Drawing.Size(484, 281);
             this.Controls.Add(this.comboBoxIP);
             this.Controls.Add(this.labelIP);
-            this.Controls.Add(this.textBoxUser);
+            this.Controls.Add(this.comboBoxUser);
             this.Controls.Add(this.labelUser);
-            this.Controls.Add(this.textBoxPwd);
+            this.Controls.Add(this.comboBoxPwd);
             this.Controls.Add(this.labelPwd);
             this.Controls.Add(this.labelDataBase);
             this.Controls.Add(this.btnCancel);
@@ -158,8 +158,8 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Label labelDataBase;
         private System.Windows.Forms.Label labelPwd;
-        private System.Windows.Forms.TextBox textBoxPwd;
-        private System.Windows.Forms.TextBox textBoxUser;
+        private System.Windows.Forms.ComboBox comboBoxPwd;
+        private System.Windows.Forms.ComboBox comboBoxUser;
         private System.Windows.Forms.Label labelUser;
         private System.Windows.Forms.ComboBox comboBoxIP;
         private System.Windows.Forms.Label labelIP;

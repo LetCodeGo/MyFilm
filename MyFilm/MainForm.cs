@@ -312,6 +312,7 @@ namespace MyFilm
                                 .AsEnumerable()
                                 .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
                                 .CopyToDataTable();
+                        else gridViewData.Clear();
                         explain2 = "索引 根目录";
                         break;
                     }
@@ -566,26 +567,25 @@ namespace MyFilm
             for (int i = 0; i < fiDt.Rows.Count; i++)
             {
                 DataRow dr = dt.NewRow();
-                for (int j = 0; j < fiDt.Columns.Count; j++)
-                {
-                    // path
-                    if (j == 2)
-                    {
-                        // 用父文件夹
-                        dr[j + 1] = Helper.GetUpFolder(fiDt.Rows[i][j].ToString());
-                    }
-                    // size
-                    else if (j == 3)
-                    {
-                        long size = Convert.ToInt64(fiDt.Rows[i][j]);
-                        if (size == -1) dr[j + 1] = "---";
-                        else dr[j + 1] = Helper.GetSizeString(size);
-                    }
-                    else if (j == 4 || j == 5)
-                        dr[j + 1] = Convert.ToDateTime(fiDt.Rows[i][j]).ToString("yyyy-MM-dd HHH:mm:ss");
-                    else dr[j + 1] = fiDt.Rows[i][j];
-                }
-                dr[0] = i + 1;
+                dr["index"] = i + 1;
+                dr["id"] = fiDt.Rows[i]["id"];
+                dr["name"] = fiDt.Rows[i]["name"];
+                // 用父文件夹
+                dr["path"] = Helper.GetUpFolder(fiDt.Rows[i]["path"].ToString());
+
+                long size = Convert.ToInt64(fiDt.Rows[i]["size"]);
+                if (size == -1) dr["size"] = "---";
+                else dr["size"] = Helper.GetSizeString(size);
+
+                dr["create_t"] = Convert.ToDateTime(fiDt.Rows[i]["create_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
+                dr["modify_t"] = Convert.ToDateTime(fiDt.Rows[i]["modify_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
+                dr["is_folder"] = fiDt.Rows[i]["is_folder"];
+                dr["to_watch"] = fiDt.Rows[i]["to_watch"];
+                dr["to_delete"] = fiDt.Rows[i]["to_delete"];
+                dr["content"] = fiDt.Rows[i]["content"];
+                dr["pid"] = fiDt.Rows[i]["pid"];
+                dr["max_cid"] = fiDt.Rows[i]["max_cid"];
+                dr["disk_desc"] = fiDt.Rows[i]["disk_desc"];
                 dt.Rows.Add(dr);
             }
             return dt;

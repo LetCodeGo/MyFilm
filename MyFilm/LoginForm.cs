@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace MyFilm
@@ -11,29 +12,36 @@ namespace MyFilm
         /// <summary>
         /// 配置文件路径
         /// </summary>
-        private static String configPath = Path.Combine(CommonString.AppDataFolder, "myfilm.xml");
+        private static String configPath = Path.Combine(
+            CommonString.AppDataFolder, "myfilm1.xml");
 
         [Serializable]
         [XmlRoot("DBCONFIG")]
         public class DBStruct
         {
-            [XmlAttribute("DBUserName")]
-            public String DBUserName;
+            [XmlElement("DefaultDataBaseIP")]
+            public String DefaultDataBaseIP;
 
-            [XmlAttribute("DBPassword")]
-            public String DBPassword;
+            [XmlElement("DefaultDataBaseUserName")]
+            public String DefaultDataBaseUserName;
 
-            [XmlAttribute("DBDefaultIP")]
-            public String DBDefaultIP;
+            [XmlElement("DefaultDataBasePassWord")]
+            public String DefaultDataBasePassWord;
 
-            [XmlAttribute("DBDefaultName")]
-            public String DBDefaultName;
+            [XmlElement("DefaultDataBaseName")]
+            public String DefaultDataBaseName;
 
-            [XmlArrayItem("DBIP")]
-            public List<String> DBIPs;
+            [XmlArrayItem("DataBaseIP")]
+            public List<String> DataBaseIPs;
 
-            [XmlArrayItem("DBName")]
-            public List<String> DBNames;
+            [XmlArrayItem("DataBaseUserName")]
+            public List<String> DataBaseUserNames;
+
+            [XmlArrayItem("DataBasePassWord")]
+            public List<String> DataBasePassWords;
+
+            [XmlArrayItem("DataBaseName")]
+            public List<String> DataBaseNames;
         }
 
         private DBStruct dbStruct = null;
@@ -43,12 +51,14 @@ namespace MyFilm
             InitializeComponent();
 
             dbStruct = new DBStruct();
-            dbStruct.DBUserName = String.Empty;
-            dbStruct.DBPassword = String.Empty;
-            dbStruct.DBDefaultIP = String.Empty;
-            dbStruct.DBDefaultName = String.Empty;
-            dbStruct.DBIPs = new List<String>();
-            dbStruct.DBNames = new List<String>();
+            dbStruct.DefaultDataBaseIP = String.Empty;
+            dbStruct.DefaultDataBaseUserName = String.Empty;
+            dbStruct.DefaultDataBasePassWord = String.Empty;
+            dbStruct.DefaultDataBaseName = String.Empty;
+            dbStruct.DataBaseIPs = new List<String>();
+            dbStruct.DataBaseUserNames = new List<String>();
+            dbStruct.DataBasePassWords = new List<String>();
+            dbStruct.DataBaseNames = new List<String>();
 
             if (!Directory.Exists(CommonString.AppDataFolder))
                 Directory.CreateDirectory(CommonString.AppDataFolder);
@@ -69,7 +79,8 @@ namespace MyFilm
                 }
             }
 
-            if (String.IsNullOrWhiteSpace(dbStruct.DBDefaultIP)) dbStruct.DBDefaultIP = "127.0.0.1";
+            if (String.IsNullOrWhiteSpace(dbStruct.DefaultDataBaseIP))
+                dbStruct.DefaultDataBaseIP = "127.0.0.1";
         }
 
         private void SaveXml()
@@ -85,17 +96,35 @@ namespace MyFilm
         {
             this.comboBoxIP.SuspendLayout();
             this.comboBoxIP.Items.Clear();
-            this.comboBoxIP.Items.AddRange(dbStruct.DBIPs.ToArray());
-            this.comboBoxIP.Text = dbStruct.DBDefaultIP;
+            this.comboBoxIP.Items.AddRange(dbStruct.DataBaseIPs.ToArray());
+            this.comboBoxIP.Text = dbStruct.DefaultDataBaseIP;
             this.comboBoxIP.ResumeLayout();
+        }
+
+        private void InitComboxUser()
+        {
+            this.comboBoxUser.SuspendLayout();
+            this.comboBoxUser.Items.Clear();
+            this.comboBoxUser.Items.AddRange(dbStruct.DataBaseUserNames.ToArray());
+            this.comboBoxUser.Text = dbStruct.DefaultDataBaseUserName;
+            this.comboBoxUser.ResumeLayout();
+        }
+
+        private void InitComboxPwd()
+        {
+            this.comboBoxPwd.SuspendLayout();
+            this.comboBoxPwd.Items.Clear();
+            this.comboBoxPwd.Items.AddRange(dbStruct.DataBasePassWords.ToArray());
+            this.comboBoxPwd.Text = dbStruct.DefaultDataBasePassWord;
+            this.comboBoxPwd.ResumeLayout();
         }
 
         private void InitComboxDataBase()
         {
             this.comboBoxDataBase.SuspendLayout();
             this.comboBoxDataBase.Items.Clear();
-            this.comboBoxDataBase.Items.AddRange(dbStruct.DBNames.ToArray());
-            this.comboBoxDataBase.Text = dbStruct.DBDefaultName;
+            this.comboBoxDataBase.Items.AddRange(dbStruct.DataBaseNames.ToArray());
+            this.comboBoxDataBase.Text = dbStruct.DefaultDataBaseName;
             this.comboBoxDataBase.ResumeLayout();
         }
 
@@ -105,17 +134,16 @@ namespace MyFilm
 
             LoadXml();
             InitComboxIP();
+            InitComboxUser();
+            InitComboxPwd();
             InitComboxDataBase();
-
-            this.textBoxUser.Text = dbStruct.DBUserName;
-            this.textBoxPwd.Text = dbStruct.DBPassword;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
             CommonString.DbIP = this.comboBoxIP.Text;
-            CommonString.DbUserName = this.textBoxUser.Text;
-            CommonString.DbPassword = this.textBoxPwd.Text;
+            CommonString.DbUserName = this.comboBoxUser.Text;
+            CommonString.DbPassword = this.comboBoxPwd.Text;
             CommonString.DbName = this.comboBoxDataBase.Text;
 
             try
@@ -124,15 +152,19 @@ namespace MyFilm
                 sqlData.OpenMySql();
                 sqlData.CloseMySql();
 
-                this.dbStruct.DBUserName = CommonString.DbUserName;
-                this.dbStruct.DBPassword = CommonString.DbPassword;
-                this.dbStruct.DBDefaultIP = CommonString.DbIP;
-                this.dbStruct.DBDefaultName = CommonString.DbName;
+                this.dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
+                this.dbStruct.DefaultDataBasePassWord = CommonString.DbPassword;
+                this.dbStruct.DefaultDataBaseIP = CommonString.DbIP;
+                this.dbStruct.DefaultDataBaseName = CommonString.DbName;
 
-                if (!dbStruct.DBIPs.Contains(CommonString.DbIP))
-                    dbStruct.DBIPs.Add(CommonString.DbIP);
-                if (!dbStruct.DBNames.Contains(CommonString.DbName))
-                    dbStruct.DBNames.Add(CommonString.DbName);
+                if (!dbStruct.DataBaseIPs.Contains(CommonString.DbIP))
+                    dbStruct.DataBaseIPs.Add(CommonString.DbIP);
+                if (!dbStruct.DataBaseUserNames.Contains(CommonString.DbUserName))
+                    dbStruct.DataBaseUserNames.Add(CommonString.DbUserName);
+                if (!dbStruct.DataBasePassWords.Contains(CommonString.DbPassword))
+                    dbStruct.DataBasePassWords.Add(CommonString.DbPassword);
+                if (!dbStruct.DataBaseNames.Contains(CommonString.DbName))
+                    dbStruct.DataBaseNames.Add(CommonString.DbName);
 
                 SaveXml();
 

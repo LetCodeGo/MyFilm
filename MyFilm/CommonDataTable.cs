@@ -20,11 +20,12 @@ namespace MyFilm
             dt.Columns.Add("create_t", typeof(DateTime));
             dt.Columns.Add("modify_t", typeof(DateTime));
             dt.Columns.Add("is_folder", typeof(Boolean));
-            dt.Columns.Add("pid", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("to_watch", typeof(Boolean));
             dt.Columns.Add("to_delete", typeof(Boolean));
             dt.Columns.Add("content", typeof(String));
+            dt.Columns.Add("pid", typeof(Int32));
+            dt.Columns.Add("max_cid", typeof(Int32));
+            dt.Columns.Add("disk_desc", typeof(String));
 
             return dt;
         }
@@ -63,11 +64,12 @@ namespace MyFilm
             dt.Columns.Add("create_t", typeof(String));
             dt.Columns.Add("modify_t", typeof(String));
             dt.Columns.Add("is_folder", typeof(Boolean));
-            dt.Columns.Add("pid", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
             dt.Columns.Add("to_watch", typeof(Boolean));
             dt.Columns.Add("to_delete", typeof(Boolean));
             dt.Columns.Add("content", typeof(String));
+            dt.Columns.Add("pid", typeof(Int32));
+            dt.Columns.Add("max_cid", typeof(Int32));
+            dt.Columns.Add("disk_desc", typeof(String));
 
             return dt;
         }
