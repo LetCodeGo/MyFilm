@@ -68,7 +68,7 @@ namespace MyFilm
         /// <summary>
         /// 表格关联的数据
         /// </summary>
-        private DataTable gridViewData = new DataTable();
+        private DataTable gridViewData = null;
 
         /// <summary>
         /// 打开的 nfo 文件所在文件夹
@@ -312,7 +312,7 @@ namespace MyFilm
                                 .AsEnumerable()
                                 .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
                                 .CopyToDataTable();
-                        else gridViewData.Clear();
+                        else gridViewData = CommonDataTable.GetMainFormGridDataTable();
                         explain2 = "索引 根目录";
                         break;
                     }
@@ -563,7 +563,6 @@ namespace MyFilm
         private DataTable ConvertFilmInfoToGrid(DataTable fiDt)
         {
             DataTable dt = CommonDataTable.GetMainFormGridDataTable();
-
             for (int i = 0; i < fiDt.Rows.Count; i++)
             {
                 DataRow dr = dt.NewRow();
