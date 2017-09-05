@@ -43,7 +43,7 @@ namespace MyFilm
             dt.Columns.Add("free_space", typeof(Int64));
             dt.Columns.Add("total_size", typeof(Int64));
             dt.Columns.Add("complete_scan", typeof(Boolean));
-            dt.Columns.Add("max_layer", typeof(Int32));
+            dt.Columns.Add("scan_layer", typeof(Int32));
 
             return dt;
         }
@@ -87,7 +87,7 @@ namespace MyFilm
             dt.Columns.Add("free_space", typeof(String));
             dt.Columns.Add("total_size", typeof(String));
             dt.Columns.Add("complete_scan", typeof(String));
-            dt.Columns.Add("max_layer", typeof(String));
+            dt.Columns.Add("scan_layer", typeof(Int32));
 
             return dt;
         }

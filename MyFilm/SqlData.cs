@@ -20,6 +20,21 @@ namespace MyFilm
         private int startIdGlobal = 0;
 
         /// <summary>
+        /// 实际扫描的磁盘最大深度
+        /// </summary>
+        private int actualMaxScanLayer = 0;
+
+        /// <summary>
+        /// 是否为完全扫描
+        /// </summary>
+        private bool bCompleteScan = true;
+
+        /// <summary>
+        /// 设定的最大扫描深度
+        /// </summary>
+        private int setMaxScanLayer = Int32.MaxValue;
+
+        /// <summary>
         /// 打开数据库
         /// </summary>
         public void OpenMySql()
@@ -100,7 +115,7 @@ namespace MyFilm
         /// | free_space    | bigint(20)   | NO   |     | NULL    |                |
         /// | total_size    | bigint(20)   | NO   |     | NULL    |                |
         /// | complete_scan | tinyint(1)   | NO   |     | NULL    |                |
-        /// | max_layer     | int(11)      | NO   |     | NULL    |                |
+        /// | scan_layer    | int(11)      | NO   |     | NULL    |                |
         /// +---------------+--------------+------+-----+---------+----------------+
         /// </summary>
         private void CreateDiskInfoTable()
@@ -111,7 +126,7 @@ namespace MyFilm
             sqlText += String.Format(@"{0} bigint not null, ", "free_space");
             sqlText += String.Format(@"{0} bigint not null, ", "total_size");
             sqlText += String.Format(@"{0} bool not null, ", "complete_scan");
-            sqlText += String.Format(@"{0} integer not null );", "max_layer");
+            sqlText += String.Format(@"{0} integer not null );", "scan_layer");
 
             MySqlCommand sqlCom = new MySqlCommand(sqlText, sqlCon);
             sqlCom.ExecuteNonQuery();
@@ -145,28 +160,27 @@ namespace MyFilm
         /// </summary>
         /// <param name="diskPath">磁盘路径</param>
         /// <param name="diskDescribe">磁盘描述</param>
-        /// <param name="brifeScan">简略扫描</param>
-        /// <param name="maxLayer">最多扫描层数，brifeScan为true时起作用</param>
-        public void ScanDisk(
-            String diskPath, String diskDescribe, Boolean brifeScan, Int32 maxLayer = Int32.MaxValue)
+        /// <param name="setScanLayer">设定的最多扫描层数</param>
+        /// <returns>是否为完全扫描</returns>
+        public Boolean ScanDisk(
+            String diskPath, String diskDescribe, Int32 setScanLayer = Int32.MaxValue)
         {
+            this.actualMaxScanLayer = 0;
+            this.bCompleteScan = true;
+            this.setMaxScanLayer = setScanLayer;
+
             string sqlStr = string.Format("select max(id) from {0};", "film_info");
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             object maxIdObj = sqlCom.ExecuteScalar();
             int maxId = 0;
             if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(sqlCom.ExecuteScalar());
             int startId = maxId + 1;
-            startIdGlobal = startId;
+            this.startIdGlobal = startId;
 
             DriveInfo driveInfo = new DriveInfo(diskPath);
-            if (!brifeScan) maxLayer = Int32.MaxValue;
-            // 更新磁盘信息
-            InsertOrUpdateDataToDiskInfo(
-                diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize, brifeScan, maxLayer);
-
             DataTable dt = CommonDataTable.GetFilmInfoDataTable();
             DataRow dr = dt.NewRow();
-            dr["id"] = startIdGlobal++;
+            dr["id"] = this.startIdGlobal++;
             dr["name"] = driveInfo.RootDirectory.Name;
             dr["path"] = driveInfo.RootDirectory.FullName;
             dr["size"] = -1;
@@ -181,10 +195,10 @@ namespace MyFilm
             dt.Rows.Add(dr);
 
             Dictionary<string, int> maxCidDic = new Dictionary<string, int>();
-            maxCidDic.Add(driveInfo.RootDirectory.FullName, startIdGlobal - 1);
+            maxCidDic.Add(driveInfo.RootDirectory.FullName, this.startIdGlobal - 1);
 
             ScanAllInFolder(driveInfo.RootDirectory, diskDescribe,
-                startIdGlobal - 1, maxLayer, ref dt, ref maxCidDic);
+                this.startIdGlobal - 1, setScanLayer, ref dt, ref maxCidDic);
 
             Dictionary<int, long> sizeDic = new Dictionary<int, long>();
 
@@ -195,7 +209,7 @@ namespace MyFilm
                     int maxCid = maxCidDic[dt.Rows[i]["path"].ToString()];
                     dt.Rows[i]["max_cid"] = maxCid;
 
-                    if (!brifeScan)
+                    if (bCompleteScan)
                     {
                         sizeDic.Add(i, 0);
                         for (int j = i + 1; j + startId <= maxCid; j++)
@@ -209,7 +223,7 @@ namespace MyFilm
             }
 
             // 简略扫描不计算文件夹大小
-            if (!brifeScan)
+            if (bCompleteScan)
             {
                 foreach (KeyValuePair<int, long> kv in sizeDic)
                     dt.Rows[kv.Key]["size"] = kv.Value;
@@ -223,6 +237,13 @@ namespace MyFilm
             {
                 InsertDataToFilmInfo(dt, i * maxInsertRows, maxInsertRows);
             }
+
+            // 更新磁盘信息
+            InsertOrUpdateDataToDiskInfo(
+                diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize,
+                bCompleteScan, bCompleteScan ? actualMaxScanLayer : setScanLayer);
+
+            return bCompleteScan;
         }
 
         /// <summary>
@@ -231,15 +252,26 @@ namespace MyFilm
         /// <param name="directoryInfo">此文件夹信息</param>
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="pid">此文件夹数据库id</param>
-        /// <param name="maxLayer">最多扫描层数</param>
+        /// <param name="setScanLayer">设定的最多扫描层数</param>
+        /// <param name="dt">记录要向film_info表中插入的数据</param>
+        /// <param name="maxCidDic">记录文件夹下递归的子文件夹或文件的最大id号</param>
         private void ScanAllInFolder(
             DirectoryInfo directoryInfo, String diskDescribe,
-            Int32 pid, Int32 maxLayer, ref DataTable dt,
+            Int32 pid, Int32 setScanLayer, ref DataTable dt,
             ref Dictionary<string, int> maxCidDic)
         {
-            if (maxLayer <= 0) return;
-
             DirectoryInfo[] directoryInfoArray = directoryInfo.GetDirectories();
+            FileInfo[] fileInfoArray = directoryInfo.GetFiles();
+
+            if (setScanLayer <= 0)
+            {
+                if (directoryInfoArray.Length > 0 || fileInfoArray.Length > 0) bCompleteScan = false;
+                return;
+            }
+
+            if (directoryInfoArray.Length > 0 || fileInfoArray.Length > 0)
+                actualMaxScanLayer = Math.Max(actualMaxScanLayer, this.setMaxScanLayer - setScanLayer + 1);
+
             int i = 0;
             foreach (DirectoryInfo childDirectoryInfo in directoryInfoArray)
             {
@@ -247,7 +279,7 @@ namespace MyFilm
                 if ((childDirectoryInfo.Attributes & FileAttributes.System) == FileAttributes.System) continue;
 
                 DataRow dr = dt.NewRow();
-                dr["id"] = startIdGlobal++;
+                dr["id"] = this.startIdGlobal++;
                 dr["name"] = childDirectoryInfo.Name;
                 dr["path"] = childDirectoryInfo.FullName;
                 dr["size"] = -1;
@@ -261,28 +293,27 @@ namespace MyFilm
                 dr["disk_desc"] = diskDescribe;
                 dt.Rows.Add(dr);
 
-                maxCidDic.Add(childDirectoryInfo.FullName, startIdGlobal - 1);
+                maxCidDic.Add(childDirectoryInfo.FullName, this.startIdGlobal - 1);
                 if (i == directoryInfoArray.Length)
                 {
                     List<String> keyPathArray = new List<String>(maxCidDic.Keys);
                     foreach (String keyPath in keyPathArray)
                     {
                         if (childDirectoryInfo.FullName.Contains(keyPath.TrimEnd('\\') + "\\"))
-                            maxCidDic[keyPath] = startIdGlobal - 1;
+                            maxCidDic[keyPath] = this.startIdGlobal - 1;
                     }
                 }
 
                 ScanAllInFolder(childDirectoryInfo, diskDescribe,
-                    startIdGlobal - 1, maxLayer - 1, ref dt, ref maxCidDic);
+                    this.startIdGlobal - 1, setScanLayer - 1, ref dt, ref maxCidDic);
             }
 
-            FileInfo[] fileInfoArray = directoryInfo.GetFiles();
             int j = 0;
             foreach (FileInfo fileInfo in fileInfoArray)
             {
                 j++;
                 DataRow dr = dt.NewRow();
-                dr["id"] = startIdGlobal++;
+                dr["id"] = this.startIdGlobal++;
                 dr["name"] = fileInfo.Name;
                 dr["path"] = fileInfo.FullName;
                 dr["size"] = fileInfo.Length;
@@ -306,7 +337,7 @@ namespace MyFilm
                     foreach (String keyPath in keyPathArray)
                     {
                         if (fileInfo.FullName.Contains(keyPath.TrimEnd('\\') + "\\"))
-                            maxCidDic[keyPath] = startIdGlobal - 1;
+                            maxCidDic[keyPath] = this.startIdGlobal - 1;
                     }
                 }
             }
@@ -391,27 +422,25 @@ namespace MyFilm
         /// <param name="diskDescribe">磁盘描述</param>
         /// <param name="freeSpace">剩余大小</param>
         /// <param name="totalSize">总大小</param>
-        /// <param name="brifeScan">简略扫描</param>
-        /// <param name="maxLayer">brifeScan为true时起作用</param>
+        /// <param name="completeScan">完全扫描</param>
+        /// <param name="scanLayer">扫描的层数</param>
         private void InsertOrUpdateDataToDiskInfo(
             String diskDescribe, Int64 freeSpace, Int64 totalSize,
-            Boolean brifeScan, Int32 maxLayer = Int32.MaxValue)
+            Boolean completeScan, Int32 scanLayer)
         {
-            if (!brifeScan) maxLayer = Int32.MaxValue;
-
             MySqlCommand sqlCom = new MySqlCommand();
             sqlCom.Connection = sqlCon;
             sqlCom.CommandText = String.Format(
-                @"insert into {0} (disk_desc, free_space, total_size, complete_scan, max_layer) values(
-                @disk_desc, @free_space, @total_size, @complete_scan, @max_layer) 
+                @"insert into {0} (disk_desc, free_space, total_size, complete_scan, scan_layer) values(
+                @disk_desc, @free_space, @total_size, @complete_scan, @scan_layer) 
                 on duplicate key update free_space = values(free_space),
                 total_size = values(total_size), complete_scan = values(complete_scan),
-                max_layer = values(max_layer);", "disk_info");
+                scan_layer = values(scan_layer);", "disk_info");
             sqlCom.Parameters.AddWithValue("@disk_desc", diskDescribe);
             sqlCom.Parameters.AddWithValue("@free_space", freeSpace);
             sqlCom.Parameters.AddWithValue("@total_size", totalSize);
-            sqlCom.Parameters.AddWithValue("@complete_scan", !brifeScan);
-            sqlCom.Parameters.AddWithValue("@max_layer", maxLayer);
+            sqlCom.Parameters.AddWithValue("@complete_scan", completeScan);
+            sqlCom.Parameters.AddWithValue("@scan_layer", scanLayer);
 
             int affectedRows = sqlCom.ExecuteNonQuery();
             Debug.Assert(affectedRows == 1 || affectedRows == 2);

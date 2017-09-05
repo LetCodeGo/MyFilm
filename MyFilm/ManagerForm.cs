@@ -31,7 +31,7 @@ namespace MyFilm
             this.ColumnFreeSpace.DataPropertyName = "free_space";
             this.ColumnTotalSize.DataPropertyName = "total_size";
             this.ColumnCompleteScan.DataPropertyName = "complete_scan";
-            this.ColumnMaxLayer.DataPropertyName = "max_layer";
+            this.ColumnScanLayer.DataPropertyName = "scan_layer";
 
             this.dataGridView.AutoGenerateColumns = false;
 
@@ -77,7 +77,7 @@ namespace MyFilm
                 dr[3] = Helper.GetSizeString(Convert.ToInt64(diDt.Rows[i][3]));
                 Boolean completeScan = Convert.ToBoolean(diDt.Rows[i][4]);
                 dr[4] = completeScan ? "✔" : "✘";
-                dr[5] = completeScan ? "---" : diDt.Rows[i][5].ToString();
+                dr[5] = diDt.Rows[i][5];
                 dt.Rows.Add(dr);
             }
 
@@ -116,14 +116,19 @@ namespace MyFilm
                     return;
                 }
 
-                sqlData.ScanDisk(
+                bool bBriefScan = this.checkBoxBriefScan.Checked;
+                int setLayer = Convert.ToInt32(this.tbeLayer.Text);
+                bool bCompleteScan = sqlData.ScanDisk(
                     dlg.SelectedPath, diskDescribe,
-                    this.checkBoxBriefScan.Checked, Convert.ToInt32(this.tbeLayer.Text));
+                    bBriefScan ? setLayer : Int32.MaxValue);
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
-                MessageBox.Show(String.Format("添加磁盘 {0} 完成！", diskDescribe),
+                string extraMsg = string.Empty;
+                if (bBriefScan && bCompleteScan)
+                    extraMsg = string.Format("\n设定扫描层数 {0} 足以进行完全扫描！", setLayer);
+                MessageBox.Show(String.Format("添加磁盘 \'{0}\' 完成！{1}", diskDescribe, extraMsg),
                     "提示", MessageBoxButtons.OK);
             }
         }
@@ -150,14 +155,19 @@ namespace MyFilm
                 int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
                 int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
-                sqlData.ScanDisk(
+                bool bBriefScan = this.checkBoxBriefScan.Checked;
+                int setLayer = Convert.ToInt32(this.tbeLayer.Text);
+                bool bCompleteScan = sqlData.ScanDisk(
                     dlg.SelectedPath, diskDescribe,
-                    this.checkBoxBriefScan.Checked, Convert.ToInt32(this.tbeLayer.Text));
+                    bBriefScan ? setLayer : Int32.MaxValue);
 
                 gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
-                MessageBox.Show(String.Format("更新磁盘 {0} 完成！", diskDescribe),
+                string extraMsg = string.Empty;
+                if (bBriefScan && bCompleteScan)
+                    extraMsg = string.Format("\n设定扫描层数 {0} 足以进行完全扫描！", setLayer);
+                MessageBox.Show(String.Format("更新磁盘 \'{0}\' 完成！{1}", diskDescribe, extraMsg),
                     "提示", MessageBoxButtons.OK);
             }
         }
@@ -177,7 +187,7 @@ namespace MyFilm
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
-            MessageBox.Show(String.Format("删除磁盘 {0} 完成！", diskDescribe),
+            MessageBox.Show(String.Format("删除磁盘 \'{0}\' 完成！", diskDescribe),
                 "提示", MessageBoxButtons.OK);
         }
 
@@ -299,7 +309,7 @@ namespace MyFilm
             gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
-            MessageBox.Show(String.Format("更改磁盘描述 {0} 为 {1} 完成！", diskDescribe, diskNewDescribe),
+            MessageBox.Show(String.Format("更改磁盘描述 \'{0}\' 为 \'{1}\' 完成！", diskDescribe, diskNewDescribe),
                 "提示", MessageBoxButtons.OK);
         }
 
@@ -312,6 +322,12 @@ namespace MyFilm
                 {
                     int index = dgv.SelectedRows[0].Index;
                     this.textBoxDiskDescribe.Text = this.gridViewData.Rows[index]["disk_desc"].ToString();
+
+                    bool bCompleteScan = this.gridViewData.Rows[index]["complete_scan"].ToString() == "✔";
+                    this.checkBoxBriefScan.Checked = !bCompleteScan;
+                    this.tbeLayer.Text = this.gridViewData.Rows[index]["scan_layer"].ToString();
+                    this.labelScanDepth.Enabled = !bCompleteScan;
+                    this.tbeLayer.Enabled = !bCompleteScan;
                 }
             }
         }
