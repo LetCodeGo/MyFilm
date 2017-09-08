@@ -75,6 +75,9 @@ namespace MyFilm
         /// </summary>
         private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "NFO");
 
+        /// <summary>
+        /// 定时发送心跳包
+        /// </summary>
         private bool heartBeatFlag = true;
 
         public MainForm()
@@ -85,11 +88,12 @@ namespace MyFilm
         private void MainForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.ico;
-            this.Text = CommonString.DbName;
+            this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
+                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
 
             this.notifyIcon.Icon = Properties.Resources.ico;
             this.notifyIcon.Visible = false;
-            this.notifyIcon.Text = String.Format("MyFilm - {0}", CommonString.DbName);
+            this.notifyIcon.Text = String.Format("{0}@{1}", CommonString.DbName, CommonString.DbIP);
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
             // 删除NFO文件中所有的nfo文件
