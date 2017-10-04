@@ -13,7 +13,7 @@ namespace MyFilm
         /// 配置文件路径
         /// </summary>
         private static String configPath = Path.Combine(
-            CommonString.AppDataFolder, "myfilm1.xml");
+            CommonString.AppDataFolder, "myfilm.xml");
 
         [Serializable]
         [XmlRoot("DBCONFIG")]

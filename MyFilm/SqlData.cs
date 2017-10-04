@@ -263,6 +263,9 @@ namespace MyFilm
             DirectoryInfo[] directoryInfoArray = directoryInfo.GetDirectories();
             FileInfo[] fileInfoArray = directoryInfo.GetFiles();
 
+            Array.Sort<DirectoryInfo>(directoryInfoArray, (d1, d2) => d1.Name.CompareTo(d2.Name));
+            Array.Sort<FileInfo>(fileInfoArray, (f1, f2) => f1.Name.CompareTo(f2.Name));
+
             if (setScanLayer <= 0)
             {
                 if (directoryInfoArray.Length > 0 || fileInfoArray.Length > 0) bCompleteScan = false;
