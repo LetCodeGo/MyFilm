@@ -96,7 +96,7 @@ namespace MyFilm
             this.notifyIcon.Text = String.Format("{0}@{1}", CommonString.DbName, CommonString.DbIP);
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
-            // 删除NFO文件中所有的nfo文件
+            // 删除NFO文件夹中所有的nfo文件
             if (Directory.Exists(nfoFolder))
             {
                 String[] nfoFiles = Directory.GetFiles(nfoFolder, "*.nfo", SearchOption.TopDirectoryOnly);
@@ -605,7 +605,7 @@ namespace MyFilm
                 bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnWatch"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
                 String fileName = gridViewData.Rows[index]["name"].ToString();
-                bool isShowContent = (fileName.Substring(fileName.LastIndexOf('.') + 1).ToLower() == "nfo");
+                bool isShowContent = (fileName.ToLower() == "__game_version_info__.gvi");
 
                 this.toolStripMenuItemSetDelete.Enabled = !isDelete;
                 this.toolStripMenuItemSetWatch.Enabled = !isWatch;
@@ -967,7 +967,7 @@ namespace MyFilm
 
             String filePath = Path.Combine(nfoFolder,
                 gridViewData.Rows[dataGridView.SelectedRows[0].Index]["name"].ToString());
-            File.WriteAllText(filePath, content, System.Text.Encoding.GetEncoding("IBM437"));
+            File.WriteAllText(filePath, content, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, content);
         }

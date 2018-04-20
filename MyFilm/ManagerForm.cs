@@ -48,12 +48,16 @@ namespace MyFilm
             this.comboBoxLocalDisk.Items.Clear();
 
             System.IO.DriveInfo[] drives = System.IO.DriveInfo.GetDrives();
+            // 是否含磁盘E
+            bool eDrive = false;
             for (int i = 0; i < drives.Length; i++)
             {
+                if ((!eDrive) && drives[i].Name == @"E:\") eDrive = true;
                 this.comboBoxLocalDisk.Items.Add(drives[i].Name);
             }
 
-            this.comboBoxLocalDisk.SelectedIndex = 0;
+            if (eDrive) this.comboBoxLocalDisk.SelectedValue = @"E:\";
+            else this.comboBoxLocalDisk.SelectedIndex = drives.Length - 1;
             this.comboBoxLocalDisk.ResumeLayout();
         }
 
@@ -350,12 +354,12 @@ namespace MyFilm
             {
                 if (this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Value.ToString() == "✘")
                 {
-                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor = 
+                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor =
                         System.Drawing.Color.Red;
                 }
                 else
                 {
-                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor = 
+                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor =
                         System.Drawing.Color.Empty;
                 }
             }

@@ -325,10 +325,9 @@ namespace MyFilm
                 dr["is_folder"] = false;
                 dr["to_watch"] = false;
                 dr["to_delete"] = false;
-                // 只读取 30KB 以下 nfo 文件内容
-                if (fileInfo.Extension.ToLower() == ".nfo" && fileInfo.Length <= 30720)
-                    dr["content"] = File.ReadAllText(
-                        fileInfo.FullName, System.Text.Encoding.GetEncoding("IBM437"));
+                // 只读取 10KB 以下 __game_version_info__.gvi 文件内容
+                if (fileInfo.Name.ToLower() == "__game_version_info__.gvi" && fileInfo.Length <= 10240)
+                    dr["content"] = File.ReadAllText(fileInfo.FullName);
                 else dr["content"] = String.Empty;
                 dr["pid"] = pid;
                 dr["disk_desc"] = diskDescribe;
