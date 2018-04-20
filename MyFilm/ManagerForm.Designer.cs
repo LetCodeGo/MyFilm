@@ -32,6 +32,12 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.dataGridView = new System.Windows.Forms.DataGridView();
+            this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnFreeSpace = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnTotalSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnCompleteScan = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnScanLayer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAddDisk = new System.Windows.Forms.Button();
             this.btnUpdateDisk = new System.Windows.Forms.Button();
             this.btnDeleteDisk = new System.Windows.Forms.Button();
@@ -44,12 +50,6 @@
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             this.tbeLayer = new MyFilm.TextBoxEx();
             this.labelScanDepth = new System.Windows.Forms.Label();
-            this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnFreeSpace = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnTotalSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnCompleteScan = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnScanLayer = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -103,7 +103,57 @@
             this.dataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView.Size = new System.Drawing.Size(750, 556);
             this.dataGridView.TabIndex = 0;
+            this.dataGridView.DataSourceChanged += new System.EventHandler(this.dataGridView_DataSourceChanged);
             this.dataGridView.SelectionChanged += new System.EventHandler(this.dataGridView_SelectionChanged);
+            // 
+            // ColumnIndex
+            // 
+            this.ColumnIndex.FillWeight = 40F;
+            this.ColumnIndex.HeaderText = "索引";
+            this.ColumnIndex.MinimumWidth = 40;
+            this.ColumnIndex.Name = "ColumnIndex";
+            this.ColumnIndex.ReadOnly = true;
+            // 
+            // ColumnDisk
+            // 
+            this.ColumnDisk.HeaderText = "磁盘";
+            this.ColumnDisk.MinimumWidth = 100;
+            this.ColumnDisk.Name = "ColumnDisk";
+            this.ColumnDisk.ReadOnly = true;
+            // 
+            // ColumnFreeSpace
+            // 
+            this.ColumnFreeSpace.FillWeight = 80F;
+            this.ColumnFreeSpace.HeaderText = "可用空间";
+            this.ColumnFreeSpace.MinimumWidth = 80;
+            this.ColumnFreeSpace.Name = "ColumnFreeSpace";
+            this.ColumnFreeSpace.ReadOnly = true;
+            // 
+            // ColumnTotalSize
+            // 
+            this.ColumnTotalSize.FillWeight = 60F;
+            this.ColumnTotalSize.HeaderText = "总空间";
+            this.ColumnTotalSize.MinimumWidth = 60;
+            this.ColumnTotalSize.Name = "ColumnTotalSize";
+            this.ColumnTotalSize.ReadOnly = true;
+            // 
+            // ColumnCompleteScan
+            // 
+            this.ColumnCompleteScan.FillWeight = 80F;
+            this.ColumnCompleteScan.HeaderText = "完全扫描";
+            this.ColumnCompleteScan.MinimumWidth = 40;
+            this.ColumnCompleteScan.Name = "ColumnCompleteScan";
+            this.ColumnCompleteScan.ReadOnly = true;
+            this.ColumnCompleteScan.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.ColumnCompleteScan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ColumnScanLayer
+            // 
+            this.ColumnScanLayer.FillWeight = 80F;
+            this.ColumnScanLayer.HeaderText = "扫描层数";
+            this.ColumnScanLayer.MinimumWidth = 40;
+            this.ColumnScanLayer.Name = "ColumnScanLayer";
+            this.ColumnScanLayer.ReadOnly = true;
             // 
             // btnAddDisk
             // 
@@ -231,55 +281,6 @@
             this.labelScanDepth.Size = new System.Drawing.Size(29, 12);
             this.labelScanDepth.TabIndex = 28;
             this.labelScanDepth.Text = "深度";
-            // 
-            // ColumnIndex
-            // 
-            this.ColumnIndex.FillWeight = 40F;
-            this.ColumnIndex.HeaderText = "索引";
-            this.ColumnIndex.MinimumWidth = 40;
-            this.ColumnIndex.Name = "ColumnIndex";
-            this.ColumnIndex.ReadOnly = true;
-            // 
-            // ColumnDisk
-            // 
-            this.ColumnDisk.HeaderText = "磁盘";
-            this.ColumnDisk.MinimumWidth = 100;
-            this.ColumnDisk.Name = "ColumnDisk";
-            this.ColumnDisk.ReadOnly = true;
-            // 
-            // ColumnFreeSpace
-            // 
-            this.ColumnFreeSpace.FillWeight = 80F;
-            this.ColumnFreeSpace.HeaderText = "可用空间";
-            this.ColumnFreeSpace.MinimumWidth = 80;
-            this.ColumnFreeSpace.Name = "ColumnFreeSpace";
-            this.ColumnFreeSpace.ReadOnly = true;
-            // 
-            // ColumnTotalSize
-            // 
-            this.ColumnTotalSize.FillWeight = 60F;
-            this.ColumnTotalSize.HeaderText = "总空间";
-            this.ColumnTotalSize.MinimumWidth = 60;
-            this.ColumnTotalSize.Name = "ColumnTotalSize";
-            this.ColumnTotalSize.ReadOnly = true;
-            // 
-            // ColumnCompleteScan
-            // 
-            this.ColumnCompleteScan.FillWeight = 80F;
-            this.ColumnCompleteScan.HeaderText = "完全扫描";
-            this.ColumnCompleteScan.MinimumWidth = 40;
-            this.ColumnCompleteScan.Name = "ColumnCompleteScan";
-            this.ColumnCompleteScan.ReadOnly = true;
-            this.ColumnCompleteScan.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.ColumnCompleteScan.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ColumnScanLayer
-            // 
-            this.ColumnScanLayer.FillWeight = 80F;
-            this.ColumnScanLayer.HeaderText = "扫描层数";
-            this.ColumnScanLayer.MinimumWidth = 40;
-            this.ColumnScanLayer.Name = "ColumnScanLayer";
-            this.ColumnScanLayer.ReadOnly = true;
             // 
             // ManagerForm
             // 

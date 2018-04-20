@@ -850,40 +850,40 @@ namespace MyFilm
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode)
-            {
-                case Keys.Escape:
-                    btnRootDirectory_Click(null, null);
-                    break;
-                case Keys.F1:
-                    btnDelete_Click(null, null);
-                    break;
-                case Keys.F2:
-                    btnWatch_Click(null, null);
-                    break;
-                case Keys.F3:
-                    btnManager_Click(null, null);
-                    break;
-                case Keys.F4:
-                    btnSearch_Click(null, null);
-                    break;
-                case Keys.Space:
-                    btnUpFolder_Click(null, null);
-                    break;
-                case Keys.Left:
-                    if (this.btnPrePage.Enabled) btnPrePage_Click(null, null);
-                    break;
-                case Keys.Right:
-                    if (this.btnNextPage.Enabled) btnNextPage_Click(null, null);
-                    break;
-                case Keys.Home:
-                    if (this.btnFirstPage.Enabled) btnFirstPage_Click(null, null);
-                    break;
-                case Keys.End:
-                    if (this.btnLastPage.Enabled) btnLastPage_Click(null, null);
-                    break;
-                default: break;
-            }
+            //switch (e.KeyCode)
+            //{
+            //    case Keys.Escape:
+            //        btnRootDirectory_Click(null, null);
+            //        break;
+            //    case Keys.F1:
+            //        btnDelete_Click(null, null);
+            //        break;
+            //    case Keys.F2:
+            //        btnWatch_Click(null, null);
+            //        break;
+            //    case Keys.F3:
+            //        btnManager_Click(null, null);
+            //        break;
+            //    case Keys.F4:
+            //        btnSearch_Click(null, null);
+            //        break;
+            //    case Keys.Space:
+            //        btnUpFolder_Click(null, null);
+            //        break;
+            //    case Keys.Left:
+            //        if (this.btnPrePage.Enabled) btnPrePage_Click(null, null);
+            //        break;
+            //    case Keys.Right:
+            //        if (this.btnNextPage.Enabled) btnNextPage_Click(null, null);
+            //        break;
+            //    case Keys.Home:
+            //        if (this.btnFirstPage.Enabled) btnFirstPage_Click(null, null);
+            //        break;
+            //    case Keys.End:
+            //        if (this.btnLastPage.Enabled) btnLastPage_Click(null, null);
+            //        break;
+            //    default: break;
+            //}
         }
 
         private void MainForm_SizeChanged(object sender, EventArgs e)
@@ -927,6 +927,8 @@ namespace MyFilm
                     notifyIcon.Visible = false;
                 }
 
+                // 命令行搜索时为全盘
+                this.comboBoxDisk.SelectedIndex = 0;
                 this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
                 btnSearch_Click(null, null);
                 // 窗口切换到最前

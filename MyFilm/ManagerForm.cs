@@ -343,5 +343,22 @@ namespace MyFilm
             if (Convert.ToInt32(this.tbeLayer.Text) == 0)
                 this.tbeLayer.Text = "1";
         }
+
+        private void dataGridView_DataSourceChanged(object sender, EventArgs e)
+        {
+            for (int i = 0; i < this.dataGridView.RowCount; i++)
+            {
+                if (this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Value.ToString() == "✘")
+                {
+                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor = 
+                        System.Drawing.Color.Red;
+                }
+                else
+                {
+                    this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor = 
+                        System.Drawing.Color.Empty;
+                }
+            }
+        }
     }
 }
