@@ -56,7 +56,7 @@ namespace MyFilm
                 this.comboBoxLocalDisk.Items.Add(drives[i].Name);
             }
 
-            if (eDrive) this.comboBoxLocalDisk.SelectedValue = @"E:\";
+            if (eDrive) this.comboBoxLocalDisk.SelectedItem = @"E:\";
             else this.comboBoxLocalDisk.SelectedIndex = drives.Length - 1;
             this.comboBoxLocalDisk.ResumeLayout();
         }
