@@ -41,7 +41,7 @@ namespace MyFilm
         public void OpenMySql()
         {
             String sqlText = String.Format(
-                "server = {0}; uid = {1}; pwd = {2}; database = {3}; SslMode = none;",
+                "server = {0}; uid = {1}; pwd = {2}; database = {3}; SslMode = none; convert zero datetime=true; allow zero datetime=true;",
                 CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword, CommonString.DbName);
             sqlCon = new MySqlConnection(sqlText);
             sqlCon.Open();
@@ -78,7 +78,9 @@ namespace MyFilm
         /// | modify_t  | datetime      | NO   |     | NULL    |       |
         /// | is_folder | tinyint(1)    | NO   |     | NULL    |       |
         /// | to_watch  | tinyint(1)    | NO   |     | NULL    |       |
+        /// | s_w_t     | datetime      | NO   |     | NULL    |       |
         /// | to_delete | tinyint(1)    | NO   |     | NULL    |       |
+        /// | s_d_t     | datetime      | NO   |     | NULL    |       |
         /// | content   | text          | NO   |     | NULL    |       |
         /// | pid       | int(11)       | NO   |     | NULL    |       |
         /// | max_cid   | int(11)       | NO   |     | NULL    |       |
@@ -96,7 +98,9 @@ namespace MyFilm
             sqlText += String.Format(@"{0} datetime not null, ", "modify_t");
             sqlText += String.Format(@"{0} bool not null, ", "is_folder");
             sqlText += String.Format(@"{0} bool not null, ", "to_watch");
+            sqlText += String.Format(@"{0} datetime not null, ", "s_w_t");
             sqlText += String.Format(@"{0} bool not null, ", "to_delete");
+            sqlText += String.Format(@"{0} datetime not null, ", "s_d_t");
             sqlText += String.Format(@"{0} text not null, ", "content");
             sqlText += String.Format(@"{0} integer not null, ", "pid");
             sqlText += String.Format(@"{0} integer not null, ", "max_cid");
@@ -189,7 +193,9 @@ namespace MyFilm
             dr["modify_t"] = driveInfo.RootDirectory.LastWriteTime;
             dr["is_folder"] = true;
             dr["to_watch"] = false;
+            dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
             dr["to_delete"] = false;
+            dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
             dr["content"] = String.Empty;
             dr["pid"] = -1;
             dr["disk_desc"] = diskDescribe;
@@ -291,7 +297,9 @@ namespace MyFilm
                 dr["modify_t"] = childDirectoryInfo.LastWriteTime;
                 dr["is_folder"] = true;
                 dr["to_watch"] = false;
+                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["to_delete"] = false;
+                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["content"] = String.Empty;
                 dr["pid"] = pid;
                 dr["disk_desc"] = diskDescribe;
@@ -325,7 +333,9 @@ namespace MyFilm
                 dr["modify_t"] = fileInfo.LastWriteTime;
                 dr["is_folder"] = false;
                 dr["to_watch"] = false;
+                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["to_delete"] = false;
+                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 // 只读取 10KB 以下 __game_version_info__.gvi 文件内容
                 if (fileInfo.Name.ToLower() == "__game_version_info__.gvi" && fileInfo.Length <= 10240)
                     dr["content"] = File.ReadAllText(fileInfo.FullName);
@@ -389,7 +399,7 @@ namespace MyFilm
             sqlCom.Connection = sqlCon;
             sqlCom.CommandText = String.Format(
                 @"insert into {0} (
-                id, name, path, size, create_t, modify_t, is_folder, to_watch, to_delete, 
+                id, name, path, size, create_t, modify_t, is_folder, to_watch, s_w_t, to_delete, s_d_t, 
                 content, pid, max_cid, disk_desc) values", "film_info");
 
             int j = 0;
@@ -397,7 +407,7 @@ namespace MyFilm
             {
                 sqlCom.CommandText += String.Format(
                     @"(@id{0}, @name{0}, @path{0}, @size{0}, @create_t{0}, @modify_t{0}, @is_folder{0}, 
-                    @to_watch{0}, @to_delete{0}, @content{0}, @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
+                    @to_watch{0}, @s_w_t{0}, @to_delete{0}, @s_d_t{0}, @content{0}, @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
                     i, i == dt.Rows.Count - 1 || j == count - 1 ? ";" : ",");
 
                 sqlCom.Parameters.AddWithValue(string.Format("@id{0}", i), dt.Rows[i]["id"]);
@@ -408,7 +418,9 @@ namespace MyFilm
                 sqlCom.Parameters.AddWithValue(string.Format("@modify_t{0}", i), dt.Rows[i]["modify_t"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@is_folder{0}", i), dt.Rows[i]["is_folder"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@to_watch{0}", i), dt.Rows[i]["to_watch"]);
+                sqlCom.Parameters.AddWithValue(string.Format("@s_w_t{0}", i), dt.Rows[i]["s_w_t"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@to_delete{0}", i), dt.Rows[i]["to_delete"]);
+                sqlCom.Parameters.AddWithValue(string.Format("@s_d_t{0}", i), dt.Rows[i]["s_d_t"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@content{0}", i), dt.Rows[i]["content"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@pid{0}", i), dt.Rows[i]["pid"]);
                 sqlCom.Parameters.AddWithValue(string.Format("@max_cid{0}", i), dt.Rows[i]["max_cid"]);
@@ -794,10 +806,10 @@ namespace MyFilm
         public DataTable GetWatchDataFromFilmInfo(Int32 offset, Int32 rows, String diskDescribe = null)
         {
             string sqlStr = string.Format(
-                "select * from {0} where to_watch = 1 and disk_desc = @disk_desc limit {1}, {2};",
+                "select * from {0} where to_watch = 1 and disk_desc = @disk_desc order by s_w_t desc, id asc limit {1}, {2};",
                 "film_info", offset, rows);
             if (diskDescribe == null)
-                sqlStr = string.Format("select * from {0} where to_watch = 1 limit {1}, {2};",
+                sqlStr = string.Format("select * from {0} where to_watch = 1 order by s_w_t desc, id asc limit {1}, {2};",
                     "film_info", offset, rows);
 
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
@@ -840,10 +852,10 @@ namespace MyFilm
         public DataTable GetDeleteDataFromFilmInfo(Int32 offset, Int32 rows, String diskDescribe = null)
         {
             string sqlStr = string.Format(
-                "select * from {0} where to_delete = 1 and disk_desc = @disk_desc limit {1}, {2};",
+                "select * from {0} where to_delete = 1 and disk_desc = @disk_desc order by s_d_t desc, id asc limit {1}, {2};",
                 "film_info", offset, rows);
             if (diskDescribe == null)
-                sqlStr = string.Format("select * from {0} where to_delete = 1 limit {1}, {2};",
+                sqlStr = string.Format("select * from {0} where to_delete = 1 order by s_d_t desc, id asc limit {1}, {2};",
                     "film_info", offset, rows);
 
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
@@ -867,10 +879,12 @@ namespace MyFilm
         public int UpdateWatchStateFromFilmInfo(List<Int32> idList, Boolean toWatch)
         {
             string sqlStr = "set sql_safe_updates = 0;";
-            sqlStr += String.Format("update {0} set to_watch = @to_watch where id in ({1});",
+            sqlStr += String.Format("update {0} set to_watch = @to_watch, s_w_t = @s_w_t where id in ({1});",
                 "film_info", String.Join(",", idList));
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             sqlCom.Parameters.AddWithValue("@to_watch", toWatch);
+            if (toWatch) sqlCom.Parameters.AddWithValue("@s_w_t", DateTime.Now);
+            else sqlCom.Parameters.AddWithValue("@s_w_t", System.Data.SqlTypes.SqlDateTime.MinValue.Value);
 
             return sqlCom.ExecuteNonQuery();
         }
@@ -884,10 +898,12 @@ namespace MyFilm
         public int UpdateDeleteStateFromFilmInfo(List<Int32> idList, Boolean toDelete)
         {
             string sqlStr = "set sql_safe_updates = 0;";
-            sqlStr += String.Format("update {0} set to_delete = @to_delete where id in ({1});",
+            sqlStr += String.Format("update {0} set to_delete = @to_delete, s_d_t = @s_d_t where id in ({1});",
                 "film_info", String.Join(",", idList));
             MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
             sqlCom.Parameters.AddWithValue("@to_delete", toDelete);
+            if (toDelete) sqlCom.Parameters.AddWithValue("@s_d_t", DateTime.Now);
+            else sqlCom.Parameters.AddWithValue("@s_d_t", System.Data.SqlTypes.SqlDateTime.MinValue.Value);
 
             return sqlCom.ExecuteNonQuery();
         }

@@ -585,7 +585,9 @@ namespace MyFilm
                 dr["modify_t"] = Convert.ToDateTime(fiDt.Rows[i]["modify_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
                 dr["is_folder"] = fiDt.Rows[i]["is_folder"];
                 dr["to_watch"] = fiDt.Rows[i]["to_watch"];
+                dr["s_w_t"] = Convert.ToDateTime(fiDt.Rows[i]["s_w_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
                 dr["to_delete"] = fiDt.Rows[i]["to_delete"];
+                dr["s_d_t"] = Convert.ToDateTime(fiDt.Rows[i]["s_d_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
                 dr["content"] = fiDt.Rows[i]["content"];
                 dr["pid"] = fiDt.Rows[i]["pid"];
                 dr["max_cid"] = fiDt.Rows[i]["max_cid"];

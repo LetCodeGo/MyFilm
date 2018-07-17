@@ -23,7 +23,9 @@ namespace MyFilm
             dt.Columns.Add("modify_t", typeof(DateTime));
             dt.Columns.Add("is_folder", typeof(Boolean));
             dt.Columns.Add("to_watch", typeof(Boolean));
+            dt.Columns.Add("s_w_t", typeof(DateTime));
             dt.Columns.Add("to_delete", typeof(Boolean));
+            dt.Columns.Add("s_d_t", typeof(DateTime));
             dt.Columns.Add("content", typeof(String));
             dt.Columns.Add("pid", typeof(Int32));
             dt.Columns.Add("max_cid", typeof(Int32));
@@ -67,7 +69,9 @@ namespace MyFilm
             dt.Columns.Add("modify_t", typeof(String));
             dt.Columns.Add("is_folder", typeof(Boolean));
             dt.Columns.Add("to_watch", typeof(Boolean));
+            dt.Columns.Add("s_w_t", typeof(String));
             dt.Columns.Add("to_delete", typeof(Boolean));
+            dt.Columns.Add("s_d_t", typeof(String));
             dt.Columns.Add("content", typeof(String));
             dt.Columns.Add("pid", typeof(Int32));
             dt.Columns.Add("max_cid", typeof(Int32));
