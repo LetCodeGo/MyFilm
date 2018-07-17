@@ -26,7 +26,7 @@ namespace MyFilm
         /// <summary>
         /// 每页记录数
         /// </summary>
-        private int pageRowCount = 30;
+        private int pageRowCount = 20;
 
         /// <summary>
         /// 当前页面索引数（从0开始）
@@ -90,6 +90,7 @@ namespace MyFilm
             this.Icon = Properties.Resources.ico;
             this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
                 CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            this.tbePageRowCount.Text = this.pageRowCount.ToString();
 
             this.notifyIcon.Icon = Properties.Resources.ico;
             this.notifyIcon.Visible = false;
@@ -850,6 +851,12 @@ namespace MyFilm
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Control && e.KeyCode == Keys.Q)
+            {
+                string str = sqlData.GetDescriptionOfFilmInfo();
+                SqlForm form = new SqlForm(sqlData, str);
+                form.ShowDialog();
+            }
             //switch (e.KeyCode)
             //{
             //    case Keys.Escape:

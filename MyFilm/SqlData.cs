@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace MyFilm
 {
@@ -40,7 +41,7 @@ namespace MyFilm
         public void OpenMySql()
         {
             String sqlText = String.Format(
-                "server = {0}; uid = {1}; pwd = {2}; database = {3};",
+                "server = {0}; uid = {1}; pwd = {2}; database = {3}; SslMode = none;",
                 CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword, CommonString.DbName);
             sqlCon = new MySqlConnection(sqlText);
             sqlCon.Open();
@@ -538,6 +539,103 @@ namespace MyFilm
                 DataRow dr = dt.NewRow();
                 for (int i = 0; i < dt.Columns.Count; i++) dr[i] = sqlDataReader[i];
                 dt.Rows.Add(dr);
+            }
+        }
+
+        /// <summary>
+        /// 查看film_info表结构的详细信息
+        /// </summary>
+        /// <returns></returns>
+        public string GetDescriptionOfFilmInfo()
+        {
+            //string sqlStr = string.Format("select * from information_schema.columns where table_schema = @db and table_name = @tb;");
+            //MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+            //sqlCom.Parameters.AddWithValue("@db", CommonString.DbName);
+            //sqlCom.Parameters.AddWithValue("@tb", "film_info");
+
+            string sqlStr = string.Format("desc {0}", "film_info");
+            MySqlCommand sqlCom = new MySqlCommand(sqlStr, sqlCon);
+
+            MySqlDataReader sqlDataReader = sqlCom.ExecuteReader();
+            DataTable dt = new DataTable();
+            for (int i = 0; i < sqlDataReader.FieldCount; i++)
+            {
+                dt.Columns.Add(sqlDataReader.GetName(i), sqlDataReader.GetFieldType(i));
+            }
+            GetDataFromSqlDataReader(ref dt, sqlDataReader);
+            sqlDataReader.Close();
+
+            return CommonDataTable.DataTableFormatToString(dt);
+        }
+
+        public string GetDataBySql(String sqlStr)
+        {
+            SortedDictionary<int, char> dict1 = new SortedDictionary<int, char>();
+            int a1 = sqlStr.IndexOf('\'', 0);
+            while (a1 != -1)
+            {
+                dict1.Add(a1, '\'');
+                a1 = sqlStr.IndexOf('\'', a1 + 1);
+            }
+            int a2 = sqlStr.IndexOf('"', 0);
+            while (a2 != -1)
+            {
+                dict1.Add(a2, '"');
+                a2 = sqlStr.IndexOf('"', a2 + 1);
+            }
+
+            SortedDictionary<int, int> dict2 = new SortedDictionary<int, int>();
+            char tempChar = ' ';
+            int tempInt = 0;
+            foreach (KeyValuePair<int, char> kv in dict1)
+            {
+                if (tempChar == ' ') { tempChar = kv.Value; tempInt = kv.Key; }
+                else
+                {
+                    if (tempChar == kv.Value)
+                    {
+                        dict2.Add(tempInt, kv.Key);
+                        tempChar = ' ';
+                    }
+                }
+            }
+            if (tempChar != ' ') { return "error sql statement"; }
+
+            int index = 0;
+            int n = 0;
+            string strSqlNew = string.Empty;
+            foreach (KeyValuePair<int, int> kv in dict2)
+            {
+                strSqlNew += sqlStr.Substring(index, kv.Key - index);
+                strSqlNew += string.Format("@{0}", n++);
+                index = kv.Value + 1;
+            }
+            strSqlNew += sqlStr.Substring(index);
+
+            MySqlCommand sqlCom = new MySqlCommand(strSqlNew, sqlCon);
+            n = 0;
+            foreach (KeyValuePair<int, int> kv in dict2)
+            {
+                sqlCom.Parameters.AddWithValue(string.Format("@{0}", n++), sqlStr.Substring(kv.Key + 1, kv.Value - kv.Key - 1));
+            }
+
+            try
+            {
+                DataTable dt = null;
+                using (MySqlDataReader sqlDataReader = sqlCom.ExecuteReader())
+                {
+                    dt = new DataTable();
+                    for (int i = 0; i < sqlDataReader.FieldCount; i++)
+                    {
+                        dt.Columns.Add(sqlDataReader.GetName(i), sqlDataReader.GetFieldType(i));
+                    }
+                    GetDataFromSqlDataReader(ref dt, sqlDataReader);
+                }
+                return CommonDataTable.DataTableFormatToString(dt);
+            }
+            catch (Exception e)
+            {
+                return e.Message;
             }
         }
 

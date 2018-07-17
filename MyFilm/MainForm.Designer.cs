@@ -64,10 +64,10 @@
             this.btnUpFolder = new System.Windows.Forms.Button();
             this.labelPageRowCount = new System.Windows.Forms.Label();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.tbePageRowCount = new MyFilm.TextBoxEx();
             this.contextMenuStripNotify = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
             this.contextMenuStripNotify.SuspendLayout();
@@ -177,7 +177,7 @@
             this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.RowTemplate.Height = 23;
             this.dataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView.Size = new System.Drawing.Size(1160, 581);
+            this.dataGridView.Size = new System.Drawing.Size(1160, 513);
             this.dataGridView.TabIndex = 6;
             this.dataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellDoubleClick);
             this.dataGridView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView_CellFormatting);
@@ -315,7 +315,7 @@
             // btnRootDirectory
             // 
             this.btnRootDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRootDirectory.Location = new System.Drawing.Point(196, 669);
+            this.btnRootDirectory.Location = new System.Drawing.Point(196, 601);
             this.btnRootDirectory.Name = "btnRootDirectory";
             this.btnRootDirectory.Size = new System.Drawing.Size(75, 23);
             this.btnRootDirectory.TabIndex = 23;
@@ -328,7 +328,7 @@
             this.comboBoxPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxPage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPage.FormattingEnabled = true;
-            this.comboBoxPage.Location = new System.Drawing.Point(1097, 671);
+            this.comboBoxPage.Location = new System.Drawing.Point(1097, 603);
             this.comboBoxPage.Name = "comboBoxPage";
             this.comboBoxPage.Size = new System.Drawing.Size(75, 20);
             this.comboBoxPage.TabIndex = 22;
@@ -337,7 +337,7 @@
             // btnLastPage
             // 
             this.btnLastPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLastPage.Location = new System.Drawing.Point(1016, 669);
+            this.btnLastPage.Location = new System.Drawing.Point(1016, 601);
             this.btnLastPage.Name = "btnLastPage";
             this.btnLastPage.Size = new System.Drawing.Size(75, 23);
             this.btnLastPage.TabIndex = 21;
@@ -348,7 +348,7 @@
             // btnNextPage
             // 
             this.btnNextPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnNextPage.Location = new System.Drawing.Point(935, 669);
+            this.btnNextPage.Location = new System.Drawing.Point(935, 601);
             this.btnNextPage.Name = "btnNextPage";
             this.btnNextPage.Size = new System.Drawing.Size(75, 23);
             this.btnNextPage.TabIndex = 20;
@@ -359,7 +359,7 @@
             // btnPrePage
             // 
             this.btnPrePage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPrePage.Location = new System.Drawing.Point(854, 669);
+            this.btnPrePage.Location = new System.Drawing.Point(854, 601);
             this.btnPrePage.Name = "btnPrePage";
             this.btnPrePage.Size = new System.Drawing.Size(75, 23);
             this.btnPrePage.TabIndex = 19;
@@ -370,7 +370,7 @@
             // btnFirstPage
             // 
             this.btnFirstPage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnFirstPage.Location = new System.Drawing.Point(773, 669);
+            this.btnFirstPage.Location = new System.Drawing.Point(773, 601);
             this.btnFirstPage.Name = "btnFirstPage";
             this.btnFirstPage.Size = new System.Drawing.Size(75, 23);
             this.btnFirstPage.TabIndex = 18;
@@ -381,7 +381,7 @@
             // btnUpFolder
             // 
             this.btnUpFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnUpFolder.Location = new System.Drawing.Point(12, 669);
+            this.btnUpFolder.Location = new System.Drawing.Point(12, 601);
             this.btnUpFolder.Name = "btnUpFolder";
             this.btnUpFolder.Size = new System.Drawing.Size(178, 23);
             this.btnUpFolder.TabIndex = 17;
@@ -405,17 +405,6 @@
             this.notifyIcon.Visible = true;
             this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDoubleClick);
             // 
-            // tbePageRowCount
-            // 
-            this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbePageRowCount.Location = new System.Drawing.Point(1097, 51);
-            this.tbePageRowCount.Name = "tbePageRowCount";
-            this.tbePageRowCount.Size = new System.Drawing.Size(75, 21);
-            this.tbePageRowCount.TabIndex = 25;
-            this.tbePageRowCount.Text = "30";
-            this.tbePageRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.tbePageRowCount.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbePageRowCount_KeyDown);
-            // 
             // contextMenuStripNotify
             // 
             this.contextMenuStripNotify.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -438,11 +427,22 @@
             this.toolStripMenuItemExitWindow.Text = "退出";
             this.toolStripMenuItemExitWindow.Click += new System.EventHandler(this.toolStripMenuItemExitWindow_Click);
             // 
+            // tbePageRowCount
+            // 
+            this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbePageRowCount.Location = new System.Drawing.Point(1097, 51);
+            this.tbePageRowCount.Name = "tbePageRowCount";
+            this.tbePageRowCount.Size = new System.Drawing.Size(75, 21);
+            this.tbePageRowCount.TabIndex = 25;
+            this.tbePageRowCount.Text = "20";
+            this.tbePageRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tbePageRowCount.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbePageRowCount_KeyDown);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1184, 704);
+            this.ClientSize = new System.Drawing.Size(1184, 636);
             this.Controls.Add(this.tbePageRowCount);
             this.Controls.Add(this.labelPageRowCount);
             this.Controls.Add(this.btnRootDirectory);
@@ -461,7 +461,7 @@
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.comboBoxDisk);
             this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(1200, 742);
+            this.MinimumSize = new System.Drawing.Size(1200, 675);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "文件";
