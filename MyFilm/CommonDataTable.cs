@@ -90,7 +90,7 @@ namespace MyFilm
             return dt;
         }
 
-        public static String DataTableFormatToString(DataTable dt)
+        public static String DataTableFormatToString(DataTable dt, HashSet<String> noOutSet)
         {
             char angle = '+';
             char horizontal = '-';
@@ -99,8 +99,12 @@ namespace MyFilm
             List<int> lenList = new List<int>();
             List<string> strList = new List<string>();
             List<bool> padList = new List<bool>();
+            List<int> colIndex = new List<int>();
+
             for (int i = 0; i < dt.Columns.Count; i++)
             {
+                if ((noOutSet != null) && noOutSet.Contains(dt.Columns[i].ColumnName)) continue;
+
                 int maxLen = System.Text.Encoding.Default.GetBytes(
                     dt.Columns[i].ColumnName.ToString()).Length;
                 for (int j = 0; j < dt.Rows.Count; j++)
@@ -112,18 +116,19 @@ namespace MyFilm
                 lenList.Add(maxLen + 2);
                 strList.Add(new string(horizontal, maxLen + 2));
                 padList.Add(dt.Columns[i].DataType != typeof(int));
+                colIndex.Add(i);
             }
 
             string rstStr = string.Empty;
             string tmpStr = string.Empty;
             string spcStr = angle + string.Join(angle.ToString(), strList) + angle;
 
-            for (int i = 0; i < dt.Columns.Count; i++)
+            for (int i = 0; i < colIndex.Count; i++)
             {
                 if (padList[i])
-                    strList[i] = " " + PadRightWhileDouble(dt.Columns[i].ColumnName, lenList[i] - 1);
+                    strList[i] = " " + PadRightWhileDouble(dt.Columns[colIndex[i]].ColumnName, lenList[i] - 1);
                 else
-                    strList[i] = PadLeftWhileDouble(dt.Columns[i].ColumnName, lenList[i] - 1) + " ";
+                    strList[i] = PadLeftWhileDouble(dt.Columns[colIndex[i]].ColumnName, lenList[i] - 1) + " ";
                 tmpStr = vertical + string.Join(vertical.ToString(), strList) + vertical;
             }
             rstStr += (spcStr + Environment.NewLine);
@@ -132,12 +137,12 @@ namespace MyFilm
 
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                for (int j = 0; j < dt.Columns.Count; j++)
+                for (int j = 0; j < colIndex.Count; j++)
                 {
                     if (padList[j])
-                        strList[j] = " " + PadRightWhileDouble(dt.Rows[i][j].ToString(), lenList[j] - 1);
+                        strList[j] = " " + PadRightWhileDouble(dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1);
                     else
-                        strList[j] = PadLeftWhileDouble(dt.Rows[i][j].ToString(), lenList[j] - 1) + " ";
+                        strList[j] = PadLeftWhileDouble(dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1) + " ";
                 }
                 tmpStr = vertical + string.Join(vertical.ToString(), strList) + vertical;
 

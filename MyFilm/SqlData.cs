@@ -577,10 +577,10 @@ namespace MyFilm
             GetDataFromSqlDataReader(ref dt, sqlDataReader);
             sqlDataReader.Close();
 
-            return CommonDataTable.DataTableFormatToString(dt);
+            return CommonDataTable.DataTableFormatToString(dt, null);
         }
 
-        public string GetDataBySql(String sqlStr)
+        public DataTable GetDataBySql(String sqlStr, ref String errStr)
         {
             SortedDictionary<int, char> dict1 = new SortedDictionary<int, char>();
             int a1 = sqlStr.IndexOf('\'', 0);
@@ -611,7 +611,7 @@ namespace MyFilm
                     }
                 }
             }
-            if (tempChar != ' ') { return "error sql statement"; }
+            if (tempChar != ' ') { errStr = "error sql statement"; return null; }
 
             int index = 0;
             int n = 0;
@@ -639,15 +639,18 @@ namespace MyFilm
                     dt = new DataTable();
                     for (int i = 0; i < sqlDataReader.FieldCount; i++)
                     {
-                        dt.Columns.Add(sqlDataReader.GetName(i), sqlDataReader.GetFieldType(i));
+                        dt.Columns.Add(sqlDataReader.GetName(i),
+                            sqlDataReader.GetFieldType(i) == typeof(MySql.Data.Types.MySqlDateTime) ?
+                            typeof(DateTime) : sqlDataReader.GetFieldType(i));
                     }
                     GetDataFromSqlDataReader(ref dt, sqlDataReader);
                 }
-                return CommonDataTable.DataTableFormatToString(dt);
+                return dt;
             }
             catch (Exception e)
             {
-                return e.Message;
+                errStr = e.Message;
+                return null;
             }
         }
 

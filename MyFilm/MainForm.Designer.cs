@@ -38,14 +38,6 @@
             this.btnWatch = new System.Windows.Forms.Button();
             this.btnManager = new System.Windows.Forms.Button();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.ColumnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnDisk = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnModify = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnDelete = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.ColumnWatch = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.labelExplain = new System.Windows.Forms.Label();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemSetDelete = new System.Windows.Forms.ToolStripMenuItem();
@@ -155,15 +147,6 @@
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ColumnIndex,
-            this.ColumnName,
-            this.ColumnPath,
-            this.ColumnSize,
-            this.ColumnDisk,
-            this.ColumnModify,
-            this.ColumnDelete,
-            this.ColumnWatch});
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle2.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
@@ -181,62 +164,6 @@
             this.dataGridView.TabIndex = 6;
             this.dataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_CellDoubleClick);
             this.dataGridView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView_CellFormatting);
-            // 
-            // ColumnIndex
-            // 
-            this.ColumnIndex.FillWeight = 30F;
-            this.ColumnIndex.HeaderText = "索引";
-            this.ColumnIndex.MinimumWidth = 30;
-            this.ColumnIndex.Name = "ColumnIndex";
-            this.ColumnIndex.ReadOnly = true;
-            // 
-            // ColumnName
-            // 
-            this.ColumnName.HeaderText = "名称";
-            this.ColumnName.Name = "ColumnName";
-            this.ColumnName.ReadOnly = true;
-            // 
-            // ColumnPath
-            // 
-            this.ColumnPath.HeaderText = "路径";
-            this.ColumnPath.Name = "ColumnPath";
-            this.ColumnPath.ReadOnly = true;
-            // 
-            // ColumnSize
-            // 
-            this.ColumnSize.FillWeight = 50F;
-            this.ColumnSize.HeaderText = "大小";
-            this.ColumnSize.MinimumWidth = 50;
-            this.ColumnSize.Name = "ColumnSize";
-            this.ColumnSize.ReadOnly = true;
-            // 
-            // ColumnDisk
-            // 
-            this.ColumnDisk.FillWeight = 60F;
-            this.ColumnDisk.HeaderText = "磁盘";
-            this.ColumnDisk.MinimumWidth = 60;
-            this.ColumnDisk.Name = "ColumnDisk";
-            this.ColumnDisk.ReadOnly = true;
-            // 
-            // ColumnModify
-            // 
-            this.ColumnModify.FillWeight = 50F;
-            this.ColumnModify.HeaderText = "修改日期";
-            this.ColumnModify.MinimumWidth = 50;
-            this.ColumnModify.Name = "ColumnModify";
-            this.ColumnModify.ReadOnly = true;
-            // 
-            // ColumnDelete
-            // 
-            this.ColumnDelete.HeaderText = "待删";
-            this.ColumnDelete.Name = "ColumnDelete";
-            this.ColumnDelete.Visible = false;
-            // 
-            // ColumnWatch
-            // 
-            this.ColumnWatch.HeaderText = "待看";
-            this.ColumnWatch.Name = "ColumnWatch";
-            this.ColumnWatch.Visible = false;
             // 
             // labelExplain
             // 
@@ -493,14 +420,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCancelDelete;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCancelWatch;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemOpenFolder;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnIndex;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnName;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnPath;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnSize;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnDisk;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ColumnModify;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnDelete;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn ColumnWatch;
         private System.Windows.Forms.Button btnRootDirectory;
         private System.Windows.Forms.ComboBox comboBoxPage;
         private System.Windows.Forms.Button btnLastPage;

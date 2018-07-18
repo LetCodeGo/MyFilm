@@ -80,6 +80,16 @@ namespace MyFilm
         /// </summary>
         private bool heartBeatFlag = true;
 
+        /// <summary>
+        /// 是否为直接用sql语句查询
+        /// </summary>
+        private bool sqlQueryFlag = false;
+
+        /// <summary>
+        /// sql查询语句
+        /// </summary>
+        private string sqlQueryString = string.Empty;
+
         public MainForm()
         {
             InitializeComponent();
@@ -113,8 +123,7 @@ namespace MyFilm
             // 连接数据库创建表
             sqlData.OpenMySql();
             sqlData.CreateTables();
-            // 设置 DataGridView
-            SetDataGridView();
+
             // 获取根目录数据源
             sourceDataTable = GetDiskRootDirectoryInfo();
             totalRowCount = sourceDataTable.Rows.Count;
@@ -126,10 +135,14 @@ namespace MyFilm
             thread1.Start();
 
             InitDiskCombox();
+            SetGridView();
 
             // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
             if (String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
+            {
+                sqlQueryFlag = false;
                 ShowDataGridViewPage(0);
+            }
             else
             {
                 this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
@@ -147,29 +160,74 @@ namespace MyFilm
             sqlData.CloseMySql();
         }
 
-        /// <summary>
-        /// 设置 DataGridView 关联数据源及样式
-        /// </summary>
-        private void SetDataGridView()
+        private void SetGridView()
         {
-            this.ColumnName.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            this.ColumnPath.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            this.ColumnDisk.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            this.dataGridView.Columns.Clear();
 
-            this.ColumnIndex.DataPropertyName = "index";
-            this.ColumnName.DataPropertyName = "name";
-            this.ColumnPath.DataPropertyName = "path";
-            this.ColumnSize.DataPropertyName = "size";
-            this.ColumnDisk.DataPropertyName = "disk_desc";
-            this.ColumnModify.DataPropertyName = "modify_t";
-            this.ColumnDelete.DataPropertyName = "to_delete";
-            this.ColumnWatch.DataPropertyName = "to_watch";
+            string[] defaultCols = new string[] {
+                "index", "name", "path", "size", "modify_t" , "disk_desc", "to_watch", "to_delete"};
+
+            foreach (string strCol in defaultCols)
+            {
+                DataGridViewColumn dgvCl = null;
+
+                if (strCol == "to_watch" || strCol == "to_delete")
+                {
+                    dgvCl = new DataGridViewCheckBoxColumn();
+                    dgvCl.ReadOnly = false;
+                    dgvCl.Visible = false;
+                }
+                else
+                {
+                    dgvCl = new DataGridViewTextBoxColumn();
+                    dgvCl.ReadOnly = true;
+                    dgvCl.Visible = true;
+                }
+
+                dgvCl.DataPropertyName = strCol;
+                dgvCl.Name = strCol;
+                dgvCl.SortMode = DataGridViewColumnSortMode.NotSortable;
+
+                switch (strCol)
+                {
+                    case "index":
+                        dgvCl.FillWeight = 30F;
+                        dgvCl.HeaderText = "索引";
+                        dgvCl.MinimumWidth = 30;
+                        break;
+                    case "name":
+                        dgvCl.HeaderText = "名称";
+                        dgvCl.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                        break;
+                    case "path":
+                        dgvCl.HeaderText = "路径";
+                        dgvCl.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                        break;
+                    case "size":
+                        dgvCl.FillWeight = 50F;
+                        dgvCl.HeaderText = "大小";
+                        dgvCl.MinimumWidth = 50;
+                        dgvCl.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        break;
+                    case "disk_desc":
+                        dgvCl.FillWeight = 60F;
+                        dgvCl.HeaderText = "磁盘";
+                        dgvCl.MinimumWidth = 60;
+                        dgvCl.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                        break;
+                    case "modify_t":
+                        dgvCl.FillWeight = 50F;
+                        dgvCl.HeaderText = "修改日期";
+                        dgvCl.MinimumWidth = 50;
+                        break;
+                    default: break;
+                }
+
+                this.dataGridView.Columns.Add(dgvCl);
+            }
 
             this.dataGridView.AutoGenerateColumns = false;
             this.dataGridView.ContextMenuStrip = this.contextMenuStrip;
-
-            foreach (DataGridViewColumn col in this.dataGridView.Columns)
-                col.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
 
         /// <summary>
@@ -318,7 +376,8 @@ namespace MyFilm
                                 .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
                                 .CopyToDataTable();
                         else gridViewData = CommonDataTable.GetMainFormGridDataTable(sourceDataTable);
-                        explain2 = "索引 根目录";
+                        if (sqlQueryFlag) explain2 = sqlQueryString;
+                        else explain2 = "索引 根目录";
                         break;
                     }
                 default: break;
@@ -342,8 +401,34 @@ namespace MyFilm
             this.dataGridView.DataSource = gridViewData;
         }
 
+        private string SqlQuery(string sqlStr, HashSet<String> noOutSet)
+        {
+            sqlQueryFlag = true;
+            sqlQueryString = sqlStr;
+
+            String errStr = String.Empty;
+            DataTable dt = sqlData.GetDataBySql(sqlStr, ref errStr);
+
+            if (dt == null) return errStr;
+            else
+            {
+                sourceDataTable = ConvertFilmInfoToGrid(dt);
+
+                sourceType = SourceType.DATATABLE_LOCAL;
+                totalRowCount = sourceDataTable.Rows.Count;
+
+                InitPageCombox();
+
+                ShowDataGridViewPage(0);
+
+                return CommonDataTable.DataTableFormatToString(sourceDataTable, noOutSet);
+            }
+        }
+
         private void btnSearch_Click(object sender, EventArgs e)
         {
+            sqlQueryFlag = false;
+
             String keyWord = this.textBoxSearch.Text;
             // 为空时直接显示根目录
             if (String.IsNullOrWhiteSpace(keyWord))
@@ -372,6 +457,8 @@ namespace MyFilm
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
+            sqlQueryFlag = false;
+
             actionParam.DiskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             sourceType = SourceType.DATABASE_DELETE;
 
@@ -385,6 +472,8 @@ namespace MyFilm
 
         private void btnWatch_Click(object sender, EventArgs e)
         {
+            sqlQueryFlag = false;
+
             actionParam.DiskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             sourceType = SourceType.DATABASE_WATCH;
 
@@ -436,6 +525,7 @@ namespace MyFilm
                 int selectRow = offset % pageRowCount;
 
                 ShowDataGridViewPage(selectPage);
+
                 if (selectRow != 0)
                 {
                     this.dataGridView.ClearSelection();
@@ -477,6 +567,8 @@ namespace MyFilm
 
         private void btnRootDirectory_Click(object sender, EventArgs e)
         {
+            sqlQueryFlag = false;
+
             sourceType = SourceType.DATATABLE_LOCAL;
             sourceDataTable = GetDiskRootDirectoryInfo();
             totalRowCount = sourceDataTable.Rows.Count;
@@ -494,15 +586,16 @@ namespace MyFilm
             int pid = int.MinValue;
 
             // 如果是文件夹就浏览文件夹下内容
-            if (e.ColumnIndex == 1 && Convert.ToBoolean(gridViewData.Rows[e.RowIndex]["is_folder"]))
+            if (dataGridView.Columns[e.ColumnIndex].DataPropertyName == "name" &&
+                Convert.ToBoolean(gridViewData.Rows[e.RowIndex]["is_folder"]))
             {
                 pid = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["id"]);
                 actionParam.FolderPath = Path.Combine(
                     gridViewData.Rows[e.RowIndex]["path"].ToString(),
                     gridViewData.Rows[e.RowIndex]["name"].ToString());
             }
-            // 浏览此文件或文件夹所在文件夹下的全部内容
-            else if (e.ColumnIndex == 2)
+            // 浏览此文件或文件夹所在文件夹下的全部内容，会自动跳转到当前的选中行
+            else if (dataGridView.Columns[e.ColumnIndex].DataPropertyName == "path")
             {
                 pid = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["pid"]);
                 actionParam.FolderPath = gridViewData.Rows[e.RowIndex]["path"].ToString();
@@ -619,8 +712,8 @@ namespace MyFilm
             else if (this.dataGridView.SelectedRows.Count == 1)
             {
                 int index = this.dataGridView.SelectedRows[0].Index;
-                bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnDelete"].Value);
-                bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["ColumnWatch"].Value);
+                bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_delete"].Value);
+                bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_watch"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
                 String fileName = gridViewData.Rows[index]["name"].ToString();
                 bool isShowContent = (fileName.ToLower() == "__game_version_info__.gvi");
@@ -651,7 +744,7 @@ namespace MyFilm
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
                 idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["ColumnDelete"].Value = true;
+                this.dataGridView.Rows[row.Index].Cells["to_delete"].Value = true;
             }
             sqlData.UpdateDeleteStateFromFilmInfo(idList, true);
         }
@@ -662,7 +755,7 @@ namespace MyFilm
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
                 idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["ColumnWatch"].Value = true;
+                this.dataGridView.Rows[row.Index].Cells["to_watch"].Value = true;
             }
             sqlData.UpdateWatchStateFromFilmInfo(idList, true);
         }
@@ -673,7 +766,7 @@ namespace MyFilm
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
                 idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["ColumnDelete"].Value = false;
+                this.dataGridView.Rows[row.Index].Cells["to_delete"].Value = false;
             }
             sqlData.UpdateDeleteStateFromFilmInfo(idList, false);
         }
@@ -684,7 +777,7 @@ namespace MyFilm
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
                 idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["ColumnWatch"].Value = false;
+                this.dataGridView.Rows[row.Index].Cells["to_watch"].Value = false;
             }
             sqlData.UpdateWatchStateFromFilmInfo(idList, false);
         }
@@ -736,9 +829,9 @@ namespace MyFilm
         private void dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             Boolean toWatch = Convert.ToBoolean(
-                this.dataGridView.Rows[e.RowIndex].Cells["ColumnWatch"].Value);
+                this.dataGridView.Rows[e.RowIndex].Cells["to_watch"].Value);
             Boolean toDelete = Convert.ToBoolean(
-                this.dataGridView.Rows[e.RowIndex].Cells["ColumnDelete"].Value);
+                this.dataGridView.Rows[e.RowIndex].Cells["to_delete"].Value);
 
             if (toDelete && toWatch)
             {
@@ -872,7 +965,8 @@ namespace MyFilm
             {
                 string str = sqlData.GetDescriptionOfFilmInfo();
                 SqlForm form = new SqlForm(sqlData, str);
-                form.ShowDialog();
+                form.SqlQueryFunc = this.SqlQuery;
+                form.Show();
             }
             //switch (e.KeyCode)
             //{
