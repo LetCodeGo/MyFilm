@@ -56,26 +56,18 @@ namespace MyFilm
         /// MainForm DataGridView 数据源格式
         /// </summary>
         /// <returns></returns>
-        public static DataTable GetMainFormGridDataTable()
+        public static DataTable GetMainFormGridDataTable(DataTable filmInfoDt)
         {
             DataTable dt = new DataTable();
 
             dt.Columns.Add("index", typeof(Int32));
-            dt.Columns.Add("id", typeof(Int32));
-            dt.Columns.Add("name", typeof(String));
-            dt.Columns.Add("path", typeof(String));
-            dt.Columns.Add("size", typeof(String));
-            dt.Columns.Add("create_t", typeof(String));
-            dt.Columns.Add("modify_t", typeof(String));
-            dt.Columns.Add("is_folder", typeof(Boolean));
-            dt.Columns.Add("to_watch", typeof(Boolean));
-            dt.Columns.Add("s_w_t", typeof(String));
-            dt.Columns.Add("to_delete", typeof(Boolean));
-            dt.Columns.Add("s_d_t", typeof(String));
-            dt.Columns.Add("content", typeof(String));
-            dt.Columns.Add("pid", typeof(Int32));
-            dt.Columns.Add("max_cid", typeof(Int32));
-            dt.Columns.Add("disk_desc", typeof(String));
+
+            foreach (DataColumn cl in filmInfoDt.Columns)
+            {
+                dt.Columns.Add(cl.ColumnName,
+                    cl.ColumnName == "size" || cl.DataType == typeof(DateTime) ?
+                    typeof(String) : cl.DataType);
+            }
 
             return dt;
         }

@@ -317,7 +317,7 @@ namespace MyFilm
                                 .AsEnumerable()
                                 .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
                                 .CopyToDataTable();
-                        else gridViewData = CommonDataTable.GetMainFormGridDataTable();
+                        else gridViewData = CommonDataTable.GetMainFormGridDataTable(sourceDataTable);
                         explain2 = "索引 根目录";
                         break;
                     }
@@ -567,31 +567,46 @@ namespace MyFilm
 
         private DataTable ConvertFilmInfoToGrid(DataTable fiDt)
         {
-            DataTable dt = CommonDataTable.GetMainFormGridDataTable();
+            DataTable dt = CommonDataTable.GetMainFormGridDataTable(fiDt);
             for (int i = 0; i < fiDt.Rows.Count; i++)
             {
                 DataRow dr = dt.NewRow();
                 dr["index"] = i + 1;
-                dr["id"] = fiDt.Rows[i]["id"];
-                dr["name"] = fiDt.Rows[i]["name"];
-                // 用父文件夹
-                dr["path"] = Helper.GetUpFolder(fiDt.Rows[i]["path"].ToString());
 
-                long size = Convert.ToInt64(fiDt.Rows[i]["size"]);
-                if (size == -1) dr["size"] = "---";
-                else dr["size"] = Helper.GetSizeString(size);
-
-                dr["create_t"] = Convert.ToDateTime(fiDt.Rows[i]["create_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
-                dr["modify_t"] = Convert.ToDateTime(fiDt.Rows[i]["modify_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
-                dr["is_folder"] = fiDt.Rows[i]["is_folder"];
-                dr["to_watch"] = fiDt.Rows[i]["to_watch"];
-                dr["s_w_t"] = Convert.ToDateTime(fiDt.Rows[i]["s_w_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
-                dr["to_delete"] = fiDt.Rows[i]["to_delete"];
-                dr["s_d_t"] = Convert.ToDateTime(fiDt.Rows[i]["s_d_t"]).ToString("yyyy-MM-dd HHH:mm:ss");
-                dr["content"] = fiDt.Rows[i]["content"];
-                dr["pid"] = fiDt.Rows[i]["pid"];
-                dr["max_cid"] = fiDt.Rows[i]["max_cid"];
-                dr["disk_desc"] = fiDt.Rows[i]["disk_desc"];
+                foreach (DataColumn cl in fiDt.Columns)
+                {
+                    switch (cl.ColumnName)
+                    {
+                        case "id":
+                        case "name":
+                        case "is_folder":
+                        case "to_watch":
+                        case "to_delete":
+                        case "content":
+                        case "pid":
+                        case "max_cid":
+                        case "disk_desc":
+                            dr[cl.ColumnName] = fiDt.Rows[i][cl.ColumnName];
+                            break;
+                        // 用父文件夹
+                        case "path":
+                            dr["path"] = Helper.GetUpFolder(fiDt.Rows[i]["path"].ToString());
+                            break;
+                        case "size":
+                            long size = Convert.ToInt64(fiDt.Rows[i]["size"]);
+                            if (size == -1) dr["size"] = "---";
+                            else dr["size"] = Helper.GetSizeString(size);
+                            break;
+                        case "create_t":
+                        case "modify_t":
+                        case "s_w_t":
+                        case "s_d_t":
+                            dr[cl.ColumnName] = Convert.ToDateTime(fiDt.Rows[i][cl.ColumnName]).ToString("yyyy-MM-dd HHH:mm:ss");
+                            break;
+                        default:
+                            throw new Exception(string.Format("未指定的列名称 {0}", cl.ColumnName));
+                    }
+                }
                 dt.Rows.Add(dr);
             }
             return dt;
