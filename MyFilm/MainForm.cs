@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using static MyFilm.CommonDataTable;
 
 namespace MyFilm
 {
@@ -77,8 +78,8 @@ namespace MyFilm
         /// </summary>
         private bool heartBeatFlag = true;
 
-        private Action<string> UpdateSqlFormRichTextBoxAction = null;
-        private HashSet<String> sqlFormRichTextOutputSettingSet = null;
+        private Action<DataTable> UpdateSqlFormRichTextBoxActionByDataTable = null;
+        private Action<String> UpdateSqlFormRichTextBoxActionByString = null;
 
         public MainForm()
         {
@@ -155,13 +156,13 @@ namespace MyFilm
             this.dataGridView.Columns.Clear();
 
             string[] defaultCols = new string[] {
-                "index", "name", "path", "size", "modify_t" , "disk_desc", "to_watch", "to_delete"};
+                "index", "name", "path", "size", "modify_t" , "disk_desc", "to_watch_ex", "to_delete_ex"};
 
             foreach (string strCol in defaultCols)
             {
                 DataGridViewColumn dgvCl = null;
 
-                if (strCol == "to_watch" || strCol == "to_delete")
+                if (strCol == "to_watch_ex" || strCol == "to_delete_ex")
                 {
                     dgvCl = new DataGridViewCheckBoxColumn();
                     dgvCl.ReadOnly = false;
@@ -313,7 +314,6 @@ namespace MyFilm
             String explain1 = String.Format(
                 "总共 {0} 条记录，当前第 {1} 页，共 {2} 页",
                 totalRowCount, currentPageIndex + 1, totalPageCount);
-            //String explain2 = String.Empty;
 
             SetPageComboxIndex();
 
@@ -353,44 +353,36 @@ namespace MyFilm
 
             this.dataGridView.DataSource = gridViewData;
 
-            UpdateSqlFormRichTextBoxAction?.Invoke(
-                CommonDataTable.DataTableFormatToString(gridViewData,
-                sqlFormRichTextOutputSettingSet));
+            UpdateSqlFormRichTextBoxActionByString?.Invoke(String.Format(
+                "mysql> {0} ({1})", queryInfo, explain1));
+            UpdateSqlFormRichTextBoxActionByDataTable?.Invoke(gridViewData);
 
             // 不是在 SqlForm 查询的话，将主界面设为焦点
             if (this.actionType != ActionType.ACTION_SQL_QUERY) this.Focus();
         }
 
-        private void SqlQuery(string sqlStr, HashSet<String> noOutSet)
+        private void SqlQuery(string cmdText)
         {
-            this.sqlFormRichTextOutputSettingSet = noOutSet;
-
-            String errStr = String.Empty;
-            int[] newIDList = sqlData.GetDataBySql(sqlStr, ref errStr);
-
-
-
-
+            String errMsg = String.Empty;
+            int[] newIDList = sqlData.SelectIDBySqlText(cmdText, ref errMsg);
 
             if (newIDList != null)
             {
-                queryInfo = sqlStr;
+                queryInfo = cmdText;
                 actionType = ActionType.ACTION_SQL_QUERY;
 
-
-
                 idList = newIDList;
-
                 totalRowCount = idList.Length;
 
                 InitPageCombox();
-
                 ShowDataGridViewPage(0);
             }
             else
             {
                 // 出错了不改变界面，还是显示原来的
-                UpdateSqlFormRichTextBoxAction?.Invoke(errStr);
+                UpdateSqlFormRichTextBoxActionByString?.Invoke(
+                    string.Format("mysql> {0}", cmdText) +
+                    Environment.NewLine + errMsg + Environment.NewLine);
             }
         }
 
@@ -465,7 +457,7 @@ namespace MyFilm
             form.ShowDialog();
 
             // 设置返回后显示根目录
-            ReLoadDiskRootDataAndShow(true);
+            ReLoadDiskRootDataAndShow();
         }
 
         private void btnUpFolder_Click(object sender, EventArgs e)
@@ -543,18 +535,19 @@ namespace MyFilm
 
         private void btnRootDirectory_Click(object sender, EventArgs e)
         {
-            ReLoadDiskRootDataAndShow(false);
+            ReLoadDiskRootDataAndShow();
         }
 
-        private void ReLoadDiskRootDataAndShow(bool needReLoadData)
+        private void ReLoadDiskRootDataAndShow()
         {
             queryInfo = "索引 根目录";
             actionType = ActionType.ACTION_DISK_ROOT;
 
-            if (needReLoadData) diskRootDataTable = GetDiskRootDirectoryInfo();
+            diskRootDataTable = GetDiskRootDirectoryInfo();
 
             totalRowCount = diskRootDataTable.Rows.Count;
 
+            this.comboBoxDisk.SelectedIndex = 0;
             InitPageCombox();
             ShowDataGridViewPage(0);
         }
@@ -652,8 +645,8 @@ namespace MyFilm
             else if (this.dataGridView.SelectedRows.Count == 1)
             {
                 int index = this.dataGridView.SelectedRows[0].Index;
-                bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_delete"].Value);
-                bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_watch"].Value);
+                bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_delete_ex"].Value);
+                bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_watch_ex"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
                 String fileName = gridViewData.Rows[index]["name"].ToString();
                 bool isShowContent = (fileName.ToLower() == "__game_version_info__.gvi");
@@ -680,46 +673,82 @@ namespace MyFilm
 
         private void toolStripMenuItemSetDelete_Click(object sender, EventArgs e)
         {
-            List<Int32> idList = new List<int>();
+            List<SetDeleteStateStruct> setDeleteStateStructList = new List<SetDeleteStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["to_delete"].Value = true;
+                SetDeleteStateStruct setDeleteStateStruct = new SetDeleteStateStruct();
+                setDeleteStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                setDeleteStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                setDeleteStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
+                setDeleteStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                setDeleteStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+                setDeleteStateStruct.set_to = true;
+                setDeleteStateStruct.set_time = DateTime.Now;
+                setDeleteStateStructList.Add(setDeleteStateStruct);
+
+                this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = true;
             }
-            sqlData.UpdateDeleteStateFromFilmInfo(idList, true);
+            sqlData.UpdateDeleteStateFromFilmInfo(setDeleteStateStructList);
         }
 
         private void toolStripMenuItemSetWatch_Click(object sender, EventArgs e)
         {
-            List<Int32> idList = new List<int>();
+            List<SetWatchStateStruct> setWatchStateStructList = new List<SetWatchStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["to_watch"].Value = true;
+                SetWatchStateStruct setWatchStateStruct = new SetWatchStateStruct();
+                setWatchStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                setWatchStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                setWatchStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
+                setWatchStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                setWatchStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+                setWatchStateStruct.set_to = true;
+                setWatchStateStruct.set_time = DateTime.Now;
+                setWatchStateStructList.Add(setWatchStateStruct);
+
+                this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = true;
             }
-            sqlData.UpdateWatchStateFromFilmInfo(idList, true);
+            sqlData.UpdateWatchStateFromFilmInfo(setWatchStateStructList);
         }
 
         private void toolStripMenuItemCancelDelete_Click(object sender, EventArgs e)
         {
-            List<Int32> idList = new List<int>();
+            List<SetDeleteStateStruct> setDeleteStateStructList = new List<SetDeleteStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["to_delete"].Value = false;
+                SetDeleteStateStruct setDeleteStateStruct = new SetDeleteStateStruct();
+                setDeleteStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                setDeleteStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                setDeleteStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
+                setDeleteStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                setDeleteStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+                setDeleteStateStruct.set_to = false;
+                setDeleteStateStruct.set_time = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                setDeleteStateStructList.Add(setDeleteStateStruct);
+
+                this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = false;
             }
-            sqlData.UpdateDeleteStateFromFilmInfo(idList, false);
+            sqlData.UpdateDeleteStateFromFilmInfo(setDeleteStateStructList);
         }
 
         private void toolStripMenuItemCancelWatch_Click(object sender, EventArgs e)
         {
-            List<Int32> idList = new List<int>();
+            List<SetWatchStateStruct> setWatchStateStructList = new List<SetWatchStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                idList.Add(Convert.ToInt32(gridViewData.Rows[row.Index]["id"]));
-                this.dataGridView.Rows[row.Index].Cells["to_watch"].Value = false;
+                SetWatchStateStruct setWatchStateStruct = new SetWatchStateStruct();
+                setWatchStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                setWatchStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                setWatchStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
+                setWatchStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                setWatchStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+                setWatchStateStruct.set_to = false;
+                setWatchStateStruct.set_time = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                setWatchStateStructList.Add(setWatchStateStruct);
+
+                this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = false;
             }
-            sqlData.UpdateWatchStateFromFilmInfo(idList, false);
+            sqlData.UpdateWatchStateFromFilmInfo(setWatchStateStructList);
         }
 
         private void toolStripMenuItemOpenFolder_Click(object sender, EventArgs e)
@@ -769,9 +798,9 @@ namespace MyFilm
         private void dataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             Boolean toWatch = Convert.ToBoolean(
-                this.dataGridView.Rows[e.RowIndex].Cells["to_watch"].Value);
+                this.dataGridView.Rows[e.RowIndex].Cells["to_watch_ex"].Value);
             Boolean toDelete = Convert.ToBoolean(
-                this.dataGridView.Rows[e.RowIndex].Cells["to_delete"].Value);
+                this.dataGridView.Rows[e.RowIndex].Cells["to_delete_ex"].Value);
 
             if (toDelete && toWatch)
             {
@@ -901,19 +930,19 @@ namespace MyFilm
 
         private void SqlFormColsed()
         {
-            this.UpdateSqlFormRichTextBoxAction = null;
-            this.sqlFormRichTextOutputSettingSet = null;
+            this.UpdateSqlFormRichTextBoxActionByDataTable = null;
+            this.UpdateSqlFormRichTextBoxActionByString = null;
         }
 
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.Q)
             {
-                string str = sqlData.GetDescriptionOfFilmInfo();
-                SqlForm form = new SqlForm(sqlData, str);
+                SqlForm form = new SqlForm(sqlData);
                 form.SqlQueryAction = this.SqlQuery;
                 form.SqlFormColsedAction = this.SqlFormColsed;
-                this.UpdateSqlFormRichTextBoxAction = form.UpdateRichTextBox;
+                this.UpdateSqlFormRichTextBoxActionByDataTable = form.UpdateRichTextBox;
+                this.UpdateSqlFormRichTextBoxActionByString = form.UpdateRichTextBox;
                 form.Show();
             }
             //switch (e.KeyCode)

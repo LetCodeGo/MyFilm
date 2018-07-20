@@ -31,6 +31,8 @@
             this.btnSearch = new System.Windows.Forms.Button();
             this.richTextBoxInfo = new System.Windows.Forms.RichTextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cbto_delete_ex = new System.Windows.Forms.CheckBox();
+            this.cbto_watch_ex = new System.Windows.Forms.CheckBox();
             this.cbdisk_desc = new System.Windows.Forms.CheckBox();
             this.cbto_delete = new System.Windows.Forms.CheckBox();
             this.cbs_w_t = new System.Windows.Forms.CheckBox();
@@ -48,13 +50,14 @@
             this.cbid = new System.Windows.Forms.CheckBox();
             this.cbNoGrid = new System.Windows.Forms.CheckBox();
             this.textBoxSql = new MyFilm.TextBoxSql();
+            this.cbindex = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSearch
             // 
             this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSearch.Location = new System.Drawing.Point(1097, 11);
+            this.btnSearch.Location = new System.Drawing.Point(1113, 11);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(75, 23);
             this.btnSearch.TabIndex = 4;
@@ -70,7 +73,7 @@
             this.richTextBoxInfo.Location = new System.Drawing.Point(12, 91);
             this.richTextBoxInfo.Name = "richTextBoxInfo";
             this.richTextBoxInfo.ReadOnly = true;
-            this.richTextBoxInfo.Size = new System.Drawing.Size(1160, 533);
+            this.richTextBoxInfo.Size = new System.Drawing.Size(1176, 542);
             this.richTextBoxInfo.TabIndex = 5;
             this.richTextBoxInfo.Text = "";
             this.richTextBoxInfo.WordWrap = false;
@@ -79,6 +82,9 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.cbindex);
+            this.groupBox1.Controls.Add(this.cbto_delete_ex);
+            this.groupBox1.Controls.Add(this.cbto_watch_ex);
             this.groupBox1.Controls.Add(this.cbdisk_desc);
             this.groupBox1.Controls.Add(this.cbto_delete);
             this.groupBox1.Controls.Add(this.cbs_w_t);
@@ -96,15 +102,35 @@
             this.groupBox1.Controls.Add(this.cbid);
             this.groupBox1.Location = new System.Drawing.Point(12, 39);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1160, 46);
+            this.groupBox1.Size = new System.Drawing.Size(1176, 46);
             this.groupBox1.TabIndex = 7;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "  选择文本信息输出的列";
             // 
+            // cbto_delete_ex
+            // 
+            this.cbto_delete_ex.AutoSize = true;
+            this.cbto_delete_ex.Location = new System.Drawing.Point(764, 20);
+            this.cbto_delete_ex.Name = "cbto_delete_ex";
+            this.cbto_delete_ex.Size = new System.Drawing.Size(96, 16);
+            this.cbto_delete_ex.TabIndex = 16;
+            this.cbto_delete_ex.Text = "to_delete_ex";
+            this.cbto_delete_ex.UseVisualStyleBackColor = true;
+            // 
+            // cbto_watch_ex
+            // 
+            this.cbto_watch_ex.AutoSize = true;
+            this.cbto_watch_ex.Location = new System.Drawing.Point(539, 20);
+            this.cbto_watch_ex.Name = "cbto_watch_ex";
+            this.cbto_watch_ex.Size = new System.Drawing.Size(90, 16);
+            this.cbto_watch_ex.TabIndex = 15;
+            this.cbto_watch_ex.Text = "to_watch_ex";
+            this.cbto_watch_ex.UseVisualStyleBackColor = true;
+            // 
             // cbdisk_desc
             // 
             this.cbdisk_desc.AutoSize = true;
-            this.cbdisk_desc.Location = new System.Drawing.Point(1064, 19);
+            this.cbdisk_desc.Location = new System.Drawing.Point(1093, 20);
             this.cbdisk_desc.Name = "cbdisk_desc";
             this.cbdisk_desc.Size = new System.Drawing.Size(78, 16);
             this.cbdisk_desc.TabIndex = 14;
@@ -114,7 +140,7 @@
             // cbto_delete
             // 
             this.cbto_delete.AutoSize = true;
-            this.cbto_delete.Location = new System.Drawing.Point(683, 19);
+            this.cbto_delete.Location = new System.Drawing.Point(685, 20);
             this.cbto_delete.Name = "cbto_delete";
             this.cbto_delete.Size = new System.Drawing.Size(78, 16);
             this.cbto_delete.TabIndex = 9;
@@ -124,7 +150,7 @@
             // cbs_w_t
             // 
             this.cbs_w_t.AutoSize = true;
-            this.cbs_w_t.Location = new System.Drawing.Point(614, 19);
+            this.cbs_w_t.Location = new System.Drawing.Point(630, 20);
             this.cbs_w_t.Name = "cbs_w_t";
             this.cbs_w_t.Size = new System.Drawing.Size(54, 16);
             this.cbs_w_t.TabIndex = 8;
@@ -134,7 +160,7 @@
             // cbmax_cid
             // 
             this.cbmax_cid.AutoSize = true;
-            this.cbmax_cid.Location = new System.Drawing.Point(983, 19);
+            this.cbmax_cid.Location = new System.Drawing.Point(1026, 20);
             this.cbmax_cid.Name = "cbmax_cid";
             this.cbmax_cid.Size = new System.Drawing.Size(66, 16);
             this.cbmax_cid.TabIndex = 13;
@@ -144,7 +170,7 @@
             // cbto_watch
             // 
             this.cbto_watch.AutoSize = true;
-            this.cbto_watch.Location = new System.Drawing.Point(527, 19);
+            this.cbto_watch.Location = new System.Drawing.Point(466, 20);
             this.cbto_watch.Name = "cbto_watch";
             this.cbto_watch.Size = new System.Drawing.Size(72, 16);
             this.cbto_watch.TabIndex = 7;
@@ -154,7 +180,7 @@
             // cbis_folder
             // 
             this.cbis_folder.AutoSize = true;
-            this.cbis_folder.Location = new System.Drawing.Point(434, 19);
+            this.cbis_folder.Location = new System.Drawing.Point(387, 20);
             this.cbis_folder.Name = "cbis_folder";
             this.cbis_folder.Size = new System.Drawing.Size(78, 16);
             this.cbis_folder.TabIndex = 6;
@@ -164,7 +190,7 @@
             // cbpid
             // 
             this.cbpid.AutoSize = true;
-            this.cbpid.Location = new System.Drawing.Point(926, 19);
+            this.cbpid.Location = new System.Drawing.Point(983, 20);
             this.cbpid.Name = "cbpid";
             this.cbpid.Size = new System.Drawing.Size(42, 16);
             this.cbpid.TabIndex = 12;
@@ -174,7 +200,7 @@
             // cbmodify_t
             // 
             this.cbmodify_t.AutoSize = true;
-            this.cbmodify_t.Location = new System.Drawing.Point(347, 19);
+            this.cbmodify_t.Location = new System.Drawing.Point(314, 20);
             this.cbmodify_t.Name = "cbmodify_t";
             this.cbmodify_t.Size = new System.Drawing.Size(72, 16);
             this.cbmodify_t.TabIndex = 5;
@@ -184,7 +210,7 @@
             // cbcreate_t
             // 
             this.cbcreate_t.AutoSize = true;
-            this.cbcreate_t.Location = new System.Drawing.Point(260, 19);
+            this.cbcreate_t.Location = new System.Drawing.Point(241, 20);
             this.cbcreate_t.Name = "cbcreate_t";
             this.cbcreate_t.Size = new System.Drawing.Size(72, 16);
             this.cbcreate_t.TabIndex = 4;
@@ -194,7 +220,7 @@
             // cbcontent
             // 
             this.cbcontent.AutoSize = true;
-            this.cbcontent.Location = new System.Drawing.Point(845, 19);
+            this.cbcontent.Location = new System.Drawing.Point(916, 20);
             this.cbcontent.Name = "cbcontent";
             this.cbcontent.Size = new System.Drawing.Size(66, 16);
             this.cbcontent.TabIndex = 11;
@@ -204,7 +230,7 @@
             // cbsize
             // 
             this.cbsize.AutoSize = true;
-            this.cbsize.Location = new System.Drawing.Point(197, 19);
+            this.cbsize.Location = new System.Drawing.Point(192, 20);
             this.cbsize.Name = "cbsize";
             this.cbsize.Size = new System.Drawing.Size(48, 16);
             this.cbsize.TabIndex = 3;
@@ -214,7 +240,7 @@
             // cbpath
             // 
             this.cbpath.AutoSize = true;
-            this.cbpath.Location = new System.Drawing.Point(134, 19);
+            this.cbpath.Location = new System.Drawing.Point(143, 20);
             this.cbpath.Name = "cbpath";
             this.cbpath.Size = new System.Drawing.Size(48, 16);
             this.cbpath.TabIndex = 2;
@@ -224,7 +250,7 @@
             // cbs_d_t
             // 
             this.cbs_d_t.AutoSize = true;
-            this.cbs_d_t.Location = new System.Drawing.Point(776, 19);
+            this.cbs_d_t.Location = new System.Drawing.Point(861, 20);
             this.cbs_d_t.Name = "cbs_d_t";
             this.cbs_d_t.Size = new System.Drawing.Size(54, 16);
             this.cbs_d_t.TabIndex = 10;
@@ -234,7 +260,7 @@
             // cbname
             // 
             this.cbname.AutoSize = true;
-            this.cbname.Location = new System.Drawing.Point(71, 19);
+            this.cbname.Location = new System.Drawing.Point(94, 20);
             this.cbname.Name = "cbname";
             this.cbname.Size = new System.Drawing.Size(48, 16);
             this.cbname.TabIndex = 1;
@@ -244,7 +270,7 @@
             // cbid
             // 
             this.cbid.AutoSize = true;
-            this.cbid.Location = new System.Drawing.Point(20, 19);
+            this.cbid.Location = new System.Drawing.Point(57, 20);
             this.cbid.Name = "cbid";
             this.cbid.Size = new System.Drawing.Size(36, 16);
             this.cbid.TabIndex = 0;
@@ -254,7 +280,7 @@
             // cbNoGrid
             // 
             this.cbNoGrid.AutoSize = true;
-            this.cbNoGrid.Location = new System.Drawing.Point(15, 15);
+            this.cbNoGrid.Location = new System.Drawing.Point(14, 15);
             this.cbNoGrid.Name = "cbNoGrid";
             this.cbNoGrid.Size = new System.Drawing.Size(144, 16);
             this.cbNoGrid.TabIndex = 8;
@@ -264,17 +290,29 @@
             // 
             // textBoxSql
             // 
+            this.textBoxSql.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSql.Location = new System.Drawing.Point(157, 12);
             this.textBoxSql.Name = "textBoxSql";
-            this.textBoxSql.Size = new System.Drawing.Size(934, 21);
+            this.textBoxSql.Size = new System.Drawing.Size(950, 21);
             this.textBoxSql.TabIndex = 9;
             this.textBoxSql.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSql_KeyDown);
+            // 
+            // cbindex
+            // 
+            this.cbindex.AutoSize = true;
+            this.cbindex.Location = new System.Drawing.Point(2, 20);
+            this.cbindex.Name = "cbindex";
+            this.cbindex.Size = new System.Drawing.Size(54, 16);
+            this.cbindex.TabIndex = 17;
+            this.cbindex.Text = "index";
+            this.cbindex.UseVisualStyleBackColor = true;
             // 
             // SqlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1184, 636);
+            this.ClientSize = new System.Drawing.Size(1200, 645);
             this.Controls.Add(this.textBoxSql);
             this.Controls.Add(this.cbNoGrid);
             this.Controls.Add(this.groupBox1);
@@ -314,5 +352,8 @@
         private System.Windows.Forms.CheckBox cbid;
         private System.Windows.Forms.CheckBox cbNoGrid;
         private TextBoxSql textBoxSql;
+        private System.Windows.Forms.CheckBox cbto_delete_ex;
+        private System.Windows.Forms.CheckBox cbto_watch_ex;
+        private System.Windows.Forms.CheckBox cbindex;
     }
 }

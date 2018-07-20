@@ -23,8 +23,14 @@ namespace MyFilm
             dt.Columns.Add("modify_t", typeof(DateTime));
             dt.Columns.Add("is_folder", typeof(Boolean));
             dt.Columns.Add("to_watch", typeof(Boolean));
+            dt.Columns.Add("to_watch_ex", typeof(Boolean));
             dt.Columns.Add("s_w_t", typeof(DateTime));
             dt.Columns.Add("to_delete", typeof(Boolean));
+            // 对一个文件夹，如果设为待删，在主界面点击待删时
+            // 此文件夹会出现(to_delete=true)，而此文件夹的子文件或子文件夹不会出现(to_delete=false)
+            // 但此文件夹或子文件、文件夹都会变红(to_delete_ex=true)
+            // 待看同理
+            dt.Columns.Add("to_delete_ex", typeof(Boolean));
             dt.Columns.Add("s_d_t", typeof(DateTime));
             dt.Columns.Add("content", typeof(String));
             dt.Columns.Add("pid", typeof(Int32));
@@ -32,6 +38,28 @@ namespace MyFilm
             dt.Columns.Add("disk_desc", typeof(String));
 
             return dt;
+        }
+
+        public struct SetWatchStateStruct
+        {
+            public int id;
+            public bool is_folder;
+            public bool to_watch_ex;
+            public int pid;
+            public int max_cid;
+            public bool set_to;
+            public DateTime set_time;
+        }
+
+        public struct SetDeleteStateStruct
+        {
+            public int id;
+            public bool is_folder;
+            public bool to_delete_ex;
+            public int pid;
+            public int max_cid;
+            public bool set_to;
+            public DateTime set_time;
         }
 
         /// <summary>
@@ -88,7 +116,9 @@ namespace MyFilm
                         case "name":
                         case "is_folder":
                         case "to_watch":
+                        case "to_watch_ex":
                         case "to_delete":
+                        case "to_delete_ex":
                         case "content":
                         case "pid":
                         case "max_cid":
@@ -137,7 +167,13 @@ namespace MyFilm
             return dt;
         }
 
-        public static String DataTableFormatToString(DataTable dt, HashSet<String> noOutSet)
+        /// <summary>
+        /// DataTable以文本输出
+        /// </summary>
+        /// <param name="dt">数据源</param>
+        /// <param name="outputSet">要输出的字段，为 null 时输出全部</param>
+        /// <returns></returns>
+        public static String DataTableFormatToString(DataTable dt, HashSet<String> outputSet)
         {
             char angle = '+';
             char horizontal = '-';
@@ -150,7 +186,8 @@ namespace MyFilm
 
             for (int i = 0; i < dt.Columns.Count; i++)
             {
-                if ((noOutSet != null) && noOutSet.Contains(dt.Columns[i].ColumnName)) continue;
+                if (outputSet != null && !outputSet.Contains(dt.Columns[i].ColumnName))
+                    continue;
 
                 int maxLen = System.Text.Encoding.Default.GetBytes(
                     dt.Columns[i].ColumnName.ToString()).Length;

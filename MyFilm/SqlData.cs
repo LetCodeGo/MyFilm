@@ -2,10 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
+using static MyFilm.CommonDataTable;
 
 namespace MyFilm
 {
@@ -73,25 +72,27 @@ namespace MyFilm
 
         /// <summary>
         /// 创建影片信息表，其中pid为其父文件夹id，disk_desc关联disk_info表
-        /// +-----------+---------------+------+-----+---------+-------+
-        /// | Field     | Type          | Null | Key | Default | Extra |
-        /// +-----------+---------------+------+-----+---------+-------+
-        /// | id        | int(11)       | NO   | PRI | NULL    |       |
-        /// | name      | varchar(256)  | NO   |     | NULL    |       |
-        /// | path      | varchar(1024) | NO   |     | NULL    |       |
-        /// | size      | bigint(20)    | NO   | MUL | NULL    |       |
-        /// | create_t  | datetime      | NO   |     | NULL    |       |
-        /// | modify_t  | datetime      | NO   |     | NULL    |       |
-        /// | is_folder | tinyint(1)    | NO   | MUL | NULL    |       |
-        /// | to_watch  | tinyint(1)    | NO   | MUL | NULL    |       |
-        /// | s_w_t     | datetime      | NO   | MUL | NULL    |       |
-        /// | to_delete | tinyint(1)    | NO   | MUL | NULL    |       |
-        /// | s_d_t     | datetime      | NO   | MUL | NULL    |       |
-        /// | content   | text          | NO   |     | NULL    |       |
-        /// | pid       | int(11)       | NO   | MUL | NULL    |       |
-        /// | max_cid   | int(11)       | NO   |     | NULL    |       |
-        /// | disk_desc | varchar(256)  | NO   | MUL | NULL    |       |
-        /// +-----------+---------------+------+-----+---------+-------+
+        /// +--------------+---------------+------+-----+---------+-------+
+        /// | Field        | Type          | Null | Key | Default | Extra |
+        /// +--------------+---------------+------+-----+---------+-------+
+        /// | id           | int(11)       | NO   | PRI | NULL    |       |
+        /// | name         | varchar(256)  | NO   |     | NULL    |       |
+        /// | path         | varchar(1024) | NO   |     | NULL    |       |
+        /// | size         | bigint(20)    | NO   | MUL | NULL    |       |
+        /// | create_t     | datetime      | NO   |     | NULL    |       |
+        /// | modify_t     | datetime      | NO   |     | NULL    |       |
+        /// | is_folder    | tinyint(1)    | NO   | MUL | NULL    |       |
+        /// | to_watch     | tinyint(1)    | NO   | MUL | NULL    |       |
+        /// | to_watch_ex  | tinyint(1)    | NO   |     | NULL    |       |
+        /// | s_w_t        | datetime      | NO   | MUL | NULL    |       |
+        /// | to_delete    | tinyint(1)    | NO   | MUL | NULL    |       |
+        /// | to_delete_ex | tinyint(1)    | NO   |     | NULL    |       |
+        /// | s_d_t        | datetime      | NO   | MUL | NULL    |       |
+        /// | content      | text          | NO   |     | NULL    |       |
+        /// | pid          | int(11)       | NO   | MUL | NULL    |       |
+        /// | max_cid      | int(11)       | NO   |     | NULL    |       |
+        /// | disk_desc    | varchar(256)  | NO   | MUL | NULL    |       |
+        /// +--------------+---------------+------+-----+---------+-------+
         /// </summary>
         private void CreateFilmInfoTable()
         {
@@ -104,8 +105,10 @@ namespace MyFilm
             cmdText += String.Format(@"{0} datetime not null, ", "modify_t");
             cmdText += String.Format(@"{0} bool not null, ", "is_folder");
             cmdText += String.Format(@"{0} bool not null, ", "to_watch");
+            cmdText += String.Format(@"{0} bool not null, ", "to_watch_ex");
             cmdText += String.Format(@"{0} datetime not null, ", "s_w_t");
             cmdText += String.Format(@"{0} bool not null, ", "to_delete");
+            cmdText += String.Format(@"{0} bool not null, ", "to_delete_ex");
             cmdText += String.Format(@"{0} datetime not null, ", "s_d_t");
             cmdText += String.Format(@"{0} text not null, ", "content");
             cmdText += String.Format(@"{0} integer not null, ", "pid");
@@ -208,8 +211,10 @@ namespace MyFilm
             dr["modify_t"] = driveInfo.RootDirectory.LastWriteTime;
             dr["is_folder"] = true;
             dr["to_watch"] = false;
+            dr["to_watch_ex"] = false;
             dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
             dr["to_delete"] = false;
+            dr["to_delete_ex"] = false;
             dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
             dr["content"] = String.Empty;
             dr["pid"] = -1;
@@ -312,8 +317,10 @@ namespace MyFilm
                 dr["modify_t"] = childDirectoryInfo.LastWriteTime;
                 dr["is_folder"] = true;
                 dr["to_watch"] = false;
+                dr["to_watch_ex"] = false;
                 dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["to_delete"] = false;
+                dr["to_delete_ex"] = false;
                 dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["content"] = String.Empty;
                 dr["pid"] = pid;
@@ -348,8 +355,10 @@ namespace MyFilm
                 dr["modify_t"] = fileInfo.LastWriteTime;
                 dr["is_folder"] = false;
                 dr["to_watch"] = false;
+                dr["to_watch_ex"] = false;
                 dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 dr["to_delete"] = false;
+                dr["to_delete_ex"] = false;
                 dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                 // 只读取 10KB 以下 __game_version_info__.gvi 文件内容
                 if (fileInfo.Name.ToLower() == "__game_version_info__.gvi" && fileInfo.Length <= 10240)
@@ -383,15 +392,17 @@ namespace MyFilm
             sqlCmd.Connection = sqlConnection;
             sqlCmd.CommandText = String.Format(
                 @"insert into {0} (
-                id, name, path, size, create_t, modify_t, is_folder, to_watch, s_w_t, to_delete, s_d_t, 
-                content, pid, max_cid, disk_desc) values", "film_info");
+                id, name, path, size, create_t, modify_t, is_folder, to_watch, to_watch_ex, s_w_t, 
+                to_delete, to_delete_ex, s_d_t, content, pid, max_cid, disk_desc) values",
+                "film_info");
 
             int j = 0;
             for (int i = start; i < dt.Rows.Count && j < count; i++, j++)
             {
                 sqlCmd.CommandText += String.Format(
                     @"(@id{0}, @name{0}, @path{0}, @size{0}, @create_t{0}, @modify_t{0}, @is_folder{0}, 
-                    @to_watch{0}, @s_w_t{0}, @to_delete{0}, @s_d_t{0}, @content{0}, @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
+                    @to_watch{0}, @to_watch_ex{0}, @s_w_t{0}, @to_delete{0}, @to_delete_ex{0}, 
+                    @s_d_t{0}, @content{0}, @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
                     i, i == dt.Rows.Count - 1 || j == count - 1 ? ";" : ",");
 
                 sqlCmd.Parameters.AddWithValue(String.Format("@id{0}", i), dt.Rows[i]["id"]);
@@ -402,8 +413,10 @@ namespace MyFilm
                 sqlCmd.Parameters.AddWithValue(String.Format("@modify_t{0}", i), dt.Rows[i]["modify_t"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@is_folder{0}", i), dt.Rows[i]["is_folder"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@to_watch{0}", i), dt.Rows[i]["to_watch"]);
+                sqlCmd.Parameters.AddWithValue(String.Format("@to_watch_ex{0}", i), dt.Rows[i]["to_watch_ex"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@s_w_t{0}", i), dt.Rows[i]["s_w_t"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@to_delete{0}", i), dt.Rows[i]["to_delete"]);
+                sqlCmd.Parameters.AddWithValue(String.Format("@to_delete_ex{0}", i), dt.Rows[i]["to_delete_ex"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@s_d_t{0}", i), dt.Rows[i]["s_d_t"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@content{0}", i), dt.Rows[i]["content"]);
                 sqlCmd.Parameters.AddWithValue(String.Format("@pid{0}", i), dt.Rows[i]["pid"]);
@@ -471,7 +484,7 @@ namespace MyFilm
         /// </summary>
         /// <param name="sqlCom"></param>
         /// <param name="errMsg">错误信息</param>
-        /// <returns></returns>
+        /// <returns>出错返回 null</returns>
         private DataTable SqlComExecuteReaderGetAllData(MySqlCommand sqlCmd, ref String errMsg)
         {
             try
@@ -507,7 +520,7 @@ namespace MyFilm
         /// </summary>
         /// <param name="sqlCom"></param>
         /// <param name="errMsg">错误信息</param>
-        /// <returns></returns>
+        /// <returns>出错返回 null</returns>
         private int[] SqlComExecuteReaderGetID(MySqlCommand sqlCmd, ref String errMsg)
         {
             try
@@ -582,20 +595,22 @@ namespace MyFilm
         /// 查看film_info表结构的详细信息
         /// </summary>
         /// <returns></returns>
-        public String GetDescriptionOfFilmInfo()
+        public DataTable GetDescriptionOfFilmInfo()
         {
-            //String cmdText = String.Format(
-            //    "select * from information_schema.columns where table_schema = @db and table_name = @tb;");
             String cmdText = String.Format("desc {0}", "film_info");
             MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
 
             String errMsg = String.Empty;
-            DataTable dt = SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
-
-            return CommonDataTable.DataTableFormatToString(dt, null);
+            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
         }
 
-        public DataTable GetDataTableDataBySql(String cmdText, ref String errMsg)
+        /// <summary>
+        /// 根据 sql 语句生成 MySqlCommand 对象
+        /// </summary>
+        /// <param name="cmdText">sql 语句</param>
+        /// <param name="errMsg">错误信息</param>
+        /// <returns>sql 语句解析出错时返回 null</returns>
+        private MySqlCommand DealWithSqlQueryText(String cmdText, ref String errMsg)
         {
             SortedDictionary<int, char> dict1 = new SortedDictionary<int, char>();
             int a1 = cmdText.IndexOf('\'', 0);
@@ -647,69 +662,43 @@ namespace MyFilm
                     cmdText.Substring(kv.Key + 1, kv.Value - kv.Key - 1));
             }
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return sqlCmd;
         }
 
         /// <summary>
-        /// 直接用 sql 查询结果
+        /// 用 sql 语句查询所有列数据
         /// </summary>
-        /// <param name="sqlStr">sql语句</param>
+        /// <param name="cmdText">sql 语句</param>
         /// <param name="errMsg">错误信息</param>
-        /// <returns></returns>
-        public int[] GetDataBySql(String cmdText, ref String errMsg)
+        /// <returns>sql 语句解析出错时返回 null</returns>
+        public DataTable SelectAllDataBySqlText(String cmdText, ref String errMsg)
         {
-            SortedDictionary<int, char> dict1 = new SortedDictionary<int, char>();
-            int a1 = cmdText.IndexOf('\'', 0);
-            while (a1 != -1)
+            MySqlCommand sqlCmd = DealWithSqlQueryText(cmdText, ref errMsg);
+
+            if (sqlCmd == null) return null;
+            else return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+        }
+
+        /// <summary>
+        /// 用 sql 查询 id 列（语句必须以 SELECT * FROM 开头）
+        /// </summary>
+        /// <param name="sqlStr">sql 语句</param>
+        /// <param name="errMsg">错误信息</param>
+        /// <returns>sql 语句解析出错时返回 null</returns>
+        public int[] SelectIDBySqlText(String cmdText, ref String errMsg)
+        {
+            String prefix = "SELECT * FROM";
+            if (!cmdText.StartsWith(prefix))
             {
-                dict1.Add(a1, '\'');
-                a1 = cmdText.IndexOf('\'', a1 + 1);
-            }
-            int a2 = cmdText.IndexOf('"', 0);
-            while (a2 != -1)
-            {
-                dict1.Add(a2, '"');
-                a2 = cmdText.IndexOf('"', a2 + 1);
+                errMsg = String.Format("语句必须以 {0} 开头", prefix);
+                return null;
             }
 
-            SortedDictionary<int, int> dict2 = new SortedDictionary<int, int>();
-            char tempChar = ' ';
-            int tempInt = 0;
-            foreach (KeyValuePair<int, char> kv in dict1)
-            {
-                if (tempChar == ' ') { tempChar = kv.Value; tempInt = kv.Key; }
-                else
-                {
-                    if (tempChar == kv.Value)
-                    {
-                        dict2.Add(tempInt, kv.Key);
-                        tempChar = ' ';
-                    }
-                }
-            }
-            if (tempChar != ' ') { errMsg = "error sql statement"; return null; }
+            MySqlCommand sqlCmd = DealWithSqlQueryText(
+                "SELECT id FROM" + cmdText.Substring(prefix.Length), ref errMsg);
 
-            int index = 0;
-            int n = 0;
-            String cmdTextActual = String.Empty;
-            foreach (KeyValuePair<int, int> kv in dict2)
-            {
-                cmdTextActual += cmdText.Substring(index, kv.Key - index);
-                cmdTextActual += String.Format("@{0}", n++);
-                index = kv.Value + 1;
-            }
-            cmdTextActual += cmdText.Substring(index);
-
-            MySqlCommand sqlCmd = new MySqlCommand(cmdTextActual.Replace(
-                "SELECT * FROM", "SELECT id FROM"), sqlConnection);
-            n = 0;
-            foreach (KeyValuePair<int, int> kv in dict2)
-            {
-                sqlCmd.Parameters.AddWithValue(String.Format("@{0}", n++),
-                    cmdText.Substring(kv.Key + 1, kv.Value - kv.Key - 1));
-            }
-
-            return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            if (sqlCmd == null) return null;
+            else return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
         }
 
         /// <summary>
@@ -807,42 +796,158 @@ namespace MyFilm
             return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
         }
 
-        /// <summary>
-        /// 更新待看状态
-        /// </summary>
-        /// <param name="idList">待更新数据的id列表</param>
-        /// <param name="toWatch">设定的待看状态</param>
-        /// <returns>影响的行数</returns>
-        public int UpdateWatchStateFromFilmInfo(List<int> idList, Boolean toWatch)
+        public void UpdateWatchStateFromFilmInfo(List<SetWatchStateStruct> setWatchStateStructList)
         {
+            MySqlCommand sqlCmd = new MySqlCommand();
             String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("update {0} set to_watch = @to_watch, s_w_t = @s_w_t where id in ({1});",
-                "film_info", String.Join(",", idList));
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@to_watch", toWatch);
-            if (toWatch) sqlCmd.Parameters.AddWithValue("@s_w_t", DateTime.Now);
-            else sqlCmd.Parameters.AddWithValue("@s_w_t", System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+            int pi = 0;
 
-            return sqlCmd.ExecuteNonQuery();
+            foreach (SetWatchStateStruct setWatchStateStruct in setWatchStateStructList)
+            {
+                if (setWatchStateStruct.set_to)
+                {
+                    // 树形结构，只向下走，不管上面
+                    cmdText += String.Format(@"update {0} set to_watch=1, 
+                        to_watch_ex=1, s_w_t=@{1} where id={2};",
+                        "film_info", pi, setWatchStateStruct.id);
+
+                    if (setWatchStateStruct.is_folder)
+                    {
+                        cmdText += String.Format(@"update {0} set to_watch=0, 
+                            to_watch_ex=1, s_w_t=@{1} where id>{2} and id<={3};",
+                            "film_info", pi, setWatchStateStruct.id, setWatchStateStruct.max_cid);
+                    }
+
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                        setWatchStateStruct.set_time);
+                }
+                else
+                {
+                    // 向下
+                    cmdText += String.Format(@"update {0} set to_watch=0, 
+                        to_watch_ex=0, s_w_t=@{1} where id>={2} and id<={3};",
+                        "film_info", pi, setWatchStateStruct.id, setWatchStateStruct.max_cid);
+
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                        System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+
+                    // 向上
+                    // 查询父文件夹信息
+                    int id = setWatchStateStruct.id;
+                    int pid = setWatchStateStruct.pid;
+                    while (pid != -1)
+                    {
+                        DataTable pdt = GetDataByIdFromFilmInfo(pid);
+                        // 如果父文件夹是待看(to_watch_ex=true)
+                        if (pdt != null && pdt.Rows.Count == 1 &&
+                            Convert.ToBoolean(pdt.Rows[0]["to_watch_ex"]))
+                        {
+                            int tid = Convert.ToInt32(pdt.Rows[0]["id"]);
+
+                            cmdText += String.Format(@"update {0} set to_watch=0, 
+                            to_watch_ex=0, s_w_t=@{1} where id={2};",
+                                "film_info", pi, tid);
+                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                                System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+
+                            cmdText += String.Format(@"update {0} set to_watch=1, 
+                            to_watch_ex=1, s_w_t=@{1} where pid={2} and id!={3};",
+                                "film_info", pi, tid, id);
+                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                                Convert.ToDateTime(pdt.Rows[0]["s_w_t"]));
+
+                            id = tid;
+                            pid = Convert.ToInt32(pdt.Rows[0]["pid"]);
+                        }
+                        else break;
+                    }
+                }
+            }
+
+            if (pi > 0)
+            {
+                sqlCmd.CommandText = cmdText;
+                sqlCmd.Connection = sqlConnection;
+
+                sqlCmd.ExecuteNonQuery();
+            }
         }
 
-        /// <summary>
-        /// 更新待删状态
-        /// </summary>
-        /// <param name="idList">待更新数据的id列表</param>
-        /// <param name="toDelete">设定的待删状态</param>
-        /// <returns>影响的行数</returns>
-        public int UpdateDeleteStateFromFilmInfo(List<int> idList, Boolean toDelete)
+        public void UpdateDeleteStateFromFilmInfo(List<SetDeleteStateStruct> setDeleteStateStructList)
         {
+            MySqlCommand sqlCmd = new MySqlCommand();
             String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("update {0} set to_delete = @to_delete, s_d_t = @s_d_t where id in ({1});",
-                "film_info", String.Join(",", idList));
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@to_delete", toDelete);
-            if (toDelete) sqlCmd.Parameters.AddWithValue("@s_d_t", DateTime.Now);
-            else sqlCmd.Parameters.AddWithValue("@s_d_t", System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+            int pi = 0;
 
-            return sqlCmd.ExecuteNonQuery();
+            foreach (SetDeleteStateStruct setDeleteStateStruct in setDeleteStateStructList)
+            {
+                if (setDeleteStateStruct.set_to)
+                {
+                    // 树形结构，只向下走，不管上面
+                    cmdText += String.Format(@"update {0} set to_delete=1, 
+                        to_delete_ex=1, s_d_t=@{1} where id={2};",
+                        "film_info", pi, setDeleteStateStruct.id);
+
+                    if (setDeleteStateStruct.is_folder)
+                    {
+                        cmdText += String.Format(@"update {0} set to_delete=0, 
+                            to_delete_ex=1, s_d_t=@{1} where id>{2} and id<={3};",
+                            "film_info", pi, setDeleteStateStruct.id, setDeleteStateStruct.max_cid);
+                    }
+
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                        setDeleteStateStruct.set_time);
+                }
+                else
+                {
+                    // 向下
+                    cmdText += String.Format(@"update {0} set to_delete=0, 
+                        to_delete_ex=0, s_d_t=@{1} where id>={2} and id<={3};",
+                        "film_info", pi, setDeleteStateStruct.id, setDeleteStateStruct.max_cid);
+
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                        System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+
+                    // 向上
+                    // 查询父文件夹信息
+                    int id = setDeleteStateStruct.id;
+                    int pid = setDeleteStateStruct.pid;
+                    while (pid != -1)
+                    {
+                        DataTable pdt = GetDataByIdFromFilmInfo(pid);
+                        // 如果父文件夹是待看(to_delete_ex=true)
+                        if (pdt != null && pdt.Rows.Count == 1 &&
+                            Convert.ToBoolean(pdt.Rows[0]["to_delete_ex"]))
+                        {
+                            int tid = Convert.ToInt32(pdt.Rows[0]["id"]);
+
+                            cmdText += String.Format(@"update {0} set to_delete=0, 
+                            to_delete_ex=0, s_d_t=@{1} where id={2};",
+                                "film_info", pi, tid);
+                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                                System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+
+                            cmdText += String.Format(@"update {0} set to_delete=1, 
+                            to_delete_ex=1, s_d_t=@{1} where pid={2} and id!={3};",
+                                "film_info", pi, tid, id);
+                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                                Convert.ToDateTime(pdt.Rows[0]["s_d_t"]));
+
+                            id = tid;
+                            pid = Convert.ToInt32(pdt.Rows[0]["pid"]);
+                        }
+                        else break;
+                    }
+                }
+            }
+
+            if (pi > 0)
+            {
+                sqlCmd.CommandText = cmdText;
+                sqlCmd.Connection = sqlConnection;
+
+                sqlCmd.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
