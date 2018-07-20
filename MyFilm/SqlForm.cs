@@ -14,12 +14,14 @@ namespace MyFilm
     {
         private SqlData sqlData = null;
 
-        public Func<string, HashSet<String>, string> SqlQueryFunc = null;
+        public Action<string, HashSet<String>> SqlQueryAction = null;
+
+        public Action SqlFormColsedAction = null;
 
         public SqlForm(SqlData sqlData, string strInfo)
         {
             InitializeComponent();
-
+            this.textBoxSql.Init("SELECT * FROM film_info WHERE ");
             this.sqlData = sqlData;
             this.richTextBoxInfo.Text = "mysql> desc film_info" + Environment.NewLine;
             this.richTextBoxInfo.AppendText(strInfo + Environment.NewLine);
@@ -53,13 +55,35 @@ namespace MyFilm
                 if (!cb.Checked) noOutSet.Add(cb.Text);
             }
 
-            String sqlStr = "SELECT * FROM film_info WHERE " + this.textBoxSql.Text;
+            String sqlStr = this.textBoxSql.Text;
             this.richTextBoxInfo.AppendText(string.Format("mysql> {0}", sqlStr) + Environment.NewLine);
-            this.richTextBoxInfo.AppendText(SqlQueryFunc(sqlStr, noOutSet) + Environment.NewLine);
+
+            if (this.cbNoGrid.Checked)
+            {
+                String errStr = String.Empty;
+                String rstStr = String.Empty;
+                DataTable dt = sqlData.GetDataTableDataBySql(sqlStr, ref errStr);
+
+                if (dt == null || dt.Rows.Count == 0) rstStr = errStr;
+                else rstStr = CommonDataTable.DataTableFormatToString(dt, noOutSet);
+                this.richTextBoxInfo.AppendText(rstStr + Environment.NewLine);
+
+                richTextBoxInfo.SelectionStart = richTextBoxInfo.Text.Length;
+                richTextBoxInfo.SelectionLength = 0;
+                richTextBoxInfo.Focus();
+            }
+            else
+            {
+                SqlQueryAction?.Invoke(sqlStr, noOutSet);
+            }
+        }
+
+        public void UpdateRichTextBox(string updateText)
+        {
+            this.richTextBoxInfo.AppendText(updateText + Environment.NewLine);
 
             richTextBoxInfo.SelectionStart = richTextBoxInfo.Text.Length;
             richTextBoxInfo.SelectionLength = 0;
-            richTextBoxInfo.Focus();
         }
 
         private void textBoxSql_KeyDown(object sender, KeyEventArgs e)
@@ -88,6 +112,16 @@ namespace MyFilm
             this.cbpid.Checked = false;
             this.cbcontent.Checked = false;
             this.cbs_d_t.Checked = true;
+        }
+
+        private void SqlForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            SqlFormColsedAction?.Invoke();
+        }
+
+        private void cbNoGrid_CheckedChanged(object sender, EventArgs e)
+        {
+            this.textBoxSql.PrefixEnabled(!this.cbNoGrid.Checked);
         }
     }
 }

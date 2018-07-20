@@ -211,9 +211,12 @@ namespace MyFilm
 
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
 
-            int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
-            DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
-            Debug.Assert(deleteNumber == dt.Rows.Count);
+            //int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
+            //DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
+
+            int[] idList = sqlData.GetDeleteDataFromFilmInfo(diskDescribe);
+            DataTable dt = sqlData.SelectDataByIDList(idList);
+            Debug.Assert(idList.Length == dt.Rows.Count);
 
             String localDisk = this.comboBoxLocalDisk.SelectedItem.ToString();
             String moveToFolder = Path.Combine(localDisk, "ToDelete");

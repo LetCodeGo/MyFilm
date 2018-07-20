@@ -72,6 +72,53 @@ namespace MyFilm
             return dt;
         }
 
+        public static DataTable ConvertFilmInfoToGrid(DataTable fiDt)
+        {
+            DataTable dt = GetMainFormGridDataTable(fiDt);
+            for (int i = 0; i < fiDt.Rows.Count; i++)
+            {
+                DataRow dr = dt.NewRow();
+                dr["index"] = i + 1;
+
+                foreach (DataColumn cl in fiDt.Columns)
+                {
+                    switch (cl.ColumnName)
+                    {
+                        case "id":
+                        case "name":
+                        case "is_folder":
+                        case "to_watch":
+                        case "to_delete":
+                        case "content":
+                        case "pid":
+                        case "max_cid":
+                        case "disk_desc":
+                            dr[cl.ColumnName] = fiDt.Rows[i][cl.ColumnName];
+                            break;
+                        // 用父文件夹
+                        case "path":
+                            dr["path"] = Helper.GetUpFolder(fiDt.Rows[i]["path"].ToString());
+                            break;
+                        case "size":
+                            long size = Convert.ToInt64(fiDt.Rows[i]["size"]);
+                            if (size == -1) dr["size"] = "------";
+                            else dr["size"] = Helper.GetSizeString(size);
+                            break;
+                        case "create_t":
+                        case "modify_t":
+                        case "s_w_t":
+                        case "s_d_t":
+                            dr[cl.ColumnName] = Convert.ToDateTime(fiDt.Rows[i][cl.ColumnName]).ToString("yyyy-MM-dd HHH:mm:ss");
+                            break;
+                        default:
+                            throw new Exception(string.Format("未指定的列名称 {0}", cl.ColumnName));
+                    }
+                }
+                dt.Rows.Add(dr);
+            }
+            return dt;
+        }
+
         /// <summary>
         /// Setting DataGridView 数据源格式
         /// </summary>

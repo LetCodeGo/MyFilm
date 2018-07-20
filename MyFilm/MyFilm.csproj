@@ -110,6 +110,9 @@
     <Compile Include="TextBoxEx.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="TextBoxSql.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Win32API.cs" />
     <EmbeddedResource Include="LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>

@@ -72,6 +72,20 @@ namespace MyFilm
         }
 
         /// <summary>
+        /// 数组切片
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public static int[] ArraySlice(int[] a, int startIndex, int len)
+        {
+            int[] r = new int[Math.Min(a.Length - startIndex, len)];
+            for (int i = startIndex, n = 0; i < a.Length && n < len; i++, n++) r[n] = a[i];
+            return r;
+        }
+
+        /// <summary>
         /// 用记事本打开文件路径或内容
         /// </summary>
         /// <param name="filePath"></param>

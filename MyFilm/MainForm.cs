@@ -33,37 +33,34 @@ namespace MyFilm
         /// </summary>
         private int currentPageIndex = 0;
 
-        /// <summary>
-        /// 分页取数据源（搜索时从数据库取，其他的从获得的datatable取）
-        /// </summary>
-        private enum SourceType
+        private enum ActionType
         {
-            DATABASE_SEARCH,
-            DATABASE_DELETE,
-            DATABASE_WATCH,
-            DATABASE_PID,
-            DATATABLE_LOCAL
+            ACTION_DISK_ROOT,
+            ACTION_KEY_WORD_SEARCH,
+            ACTION_DELETE_SEARCH,
+            ACTION_WATCH_SEARCH,
+            ACTION_SQL_QUERY,
+            ACTION_FOLDER_UP,
+            ACTION_FOLDER_DOWN
         }
 
-        /// <summary>
-        /// 记录最近一次执行时的条件
-        /// </summary>
-        public struct ActionParam
-        {
-            public int Pid;
-            public String FolderPath;
-
-            public String KeyWord;
-            public String DiskDescribe;
-        }
-
-        private SourceType sourceType = SourceType.DATATABLE_LOCAL;
-        private ActionParam actionParam = new ActionParam();
+        private ActionType actionType = ActionType.ACTION_DISK_ROOT;
+        private int folderDownID = int.MinValue;
 
         /// <summary>
-        /// 分页用的
+        /// 查询的结果（id列表）
         /// </summary>
-        private DataTable sourceDataTable = null;
+        private int[] idList = null;
+
+        /// <summary>
+        /// 磁盘根目录表
+        /// </summary>
+        private DataTable diskRootDataTable = null;
+
+        /// <summary>
+        /// 显示的查询信息
+        /// </summary>
+        private String queryInfo = String.Empty;
 
         /// <summary>
         /// 表格关联的数据
@@ -80,15 +77,8 @@ namespace MyFilm
         /// </summary>
         private bool heartBeatFlag = true;
 
-        /// <summary>
-        /// 是否为直接用sql语句查询
-        /// </summary>
-        private bool sqlQueryFlag = false;
-
-        /// <summary>
-        /// sql查询语句
-        /// </summary>
-        private string sqlQueryString = string.Empty;
+        private Action<string> UpdateSqlFormRichTextBoxAction = null;
+        private HashSet<String> sqlFormRichTextOutputSettingSet = null;
 
         public MainForm()
         {
@@ -125,22 +115,22 @@ namespace MyFilm
             sqlData.CreateTables();
 
             // 获取根目录数据源
-            sourceDataTable = GetDiskRootDirectoryInfo();
-            totalRowCount = sourceDataTable.Rows.Count;
-            InitPageCombox();
-            sourceType = SourceType.DATATABLE_LOCAL;
+            diskRootDataTable = GetDiskRootDirectoryInfo();
+            totalRowCount = diskRootDataTable.Rows.Count;
 
             // 开启心跳线程
             Thread thread1 = new Thread(new ThreadStart(MySqlHeartBeat));
             thread1.Start();
 
+            InitPageCombox();
             InitDiskCombox();
             SetGridView();
 
             // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
             if (String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord))
             {
-                sqlQueryFlag = false;
+                queryInfo = "索引 根目录";
+                actionType = ActionType.ACTION_DISK_ROOT;
                 ShowDataGridViewPage(0);
             }
             else
@@ -238,9 +228,9 @@ namespace MyFilm
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
             this.comboBoxDisk.Items.Add("全部");
-            for (int i = 0; i < sourceDataTable.Rows.Count; i++)
+            for (int i = 0; i < diskRootDataTable.Rows.Count; i++)
             {
-                this.comboBoxDisk.Items.Add(sourceDataTable.Rows[i]["disk_desc"]);
+                this.comboBoxDisk.Items.Add(diskRootDataTable.Rows[i]["disk_desc"]);
             }
             this.comboBoxDisk.SelectedIndex = 0;
             this.comboBoxDisk.ResumeLayout();
@@ -323,112 +313,89 @@ namespace MyFilm
             String explain1 = String.Format(
                 "总共 {0} 条记录，当前第 {1} 页，共 {2} 页",
                 totalRowCount, currentPageIndex + 1, totalPageCount);
-            String explain2 = String.Empty;
+            //String explain2 = String.Empty;
 
             SetPageComboxIndex();
 
-            switch (sourceType)
+            if (actionType == ActionType.ACTION_DISK_ROOT)
             {
-                case SourceType.DATABASE_SEARCH:
-                    {
-                        gridViewData = ConvertFilmInfoToGrid(
-                            sqlData.SearchKeyWordFromFilmInfo(
-                                actionParam.KeyWord, startIndex, pageRowCount,
-                                actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe));
-                        explain2 = String.Format("在 {0} 里搜索 \'{1}\'",
-                            actionParam.DiskDescribe == "全部" ? "所有磁盘" : actionParam.DiskDescribe,
-                            actionParam.KeyWord);
-                        break;
-                    }
-                case SourceType.DATABASE_DELETE:
-                    {
-                        gridViewData = ConvertFilmInfoToGrid(
-                            sqlData.GetDeleteDataFromFilmInfo(
-                                startIndex, pageRowCount,
-                                actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe));
-                        explain2 = String.Format("在 {0} 里搜索 待删",
-                            actionParam.DiskDescribe == "全部" ? "所有磁盘" : actionParam.DiskDescribe);
-                        break;
-                    }
-                case SourceType.DATABASE_WATCH:
-                    {
-                        gridViewData = ConvertFilmInfoToGrid(
-                            sqlData.GetWatchDataFromFilmInfo(
-                                startIndex, pageRowCount,
-                                actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe));
-                        explain2 = String.Format("在 {0} 里搜索 待看",
-                            actionParam.DiskDescribe == "全部" ? "所有磁盘" : actionParam.DiskDescribe);
-                        break;
-                    }
-                case SourceType.DATABASE_PID:
-                    {
-                        gridViewData = ConvertFilmInfoToGrid(
-                            sqlData.GetDataByPidFromFilmInfo(
-                                actionParam.Pid, startIndex, pageRowCount));
-                        explain2 = String.Format("索引 \'{0}\'", actionParam.FolderPath);
-                        break;
-                    }
-                case SourceType.DATATABLE_LOCAL:
-                    {
-                        if (sourceDataTable.Rows.Count != 0)
-                            gridViewData = sourceDataTable
-                                .AsEnumerable()
-                                .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
-                                .CopyToDataTable();
-                        else gridViewData = CommonDataTable.GetMainFormGridDataTable(sourceDataTable);
-                        if (sqlQueryFlag) explain2 = sqlQueryString;
-                        else explain2 = "索引 根目录";
-                        break;
-                    }
-                default: break;
+                if (diskRootDataTable.Rows.Count != 0)
+                    gridViewData = diskRootDataTable
+                        .AsEnumerable()
+                        .Where((row, index) => index >= startIndex && index < startIndex + pageRowCount)
+                        .CopyToDataTable();
+                else gridViewData = diskRootDataTable.Clone();
+            }
+            else
+            {
+                DataTable dt = sqlData.SelectDataByIDList(
+                        Helper.ArraySlice(idList, startIndex, pageRowCount));
+                if (dt != null && dt.Rows.Count > 0)
+                    gridViewData = CommonDataTable.ConvertFilmInfoToGrid(dt);
+                else
+                    gridViewData = diskRootDataTable.Clone();
             }
 
             for (int i = 0; i < gridViewData.Rows.Count; i++)
                 gridViewData.Rows[i]["index"] = currentPageIndex * pageRowCount + i + 1;
 
-            String explain = String.Format("{0} （{1}）", explain1, explain2);
+            String explain = String.Format("{0} （{1}）", explain1, queryInfo);
             Size sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
-            int length = explain2.Length;
+            int length = queryInfo.Length;
             while (sizeT.Width > this.labelExplain.Width && length > 0)
             {
                 length--;
-                explain = String.Format("{0} （{1}...）", explain1, explain2.Substring(0, length));
+                explain = String.Format("{0} （{1}...）", explain1, queryInfo.Substring(0, length));
                 sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
             }
             this.labelExplain.Text = explain;
-            this.labelExplain.Tag = String.Format("{0}|{1}", explain1, explain2);
+            this.labelExplain.Tag = String.Format("{0}|{1}", explain1, queryInfo);
 
             this.dataGridView.DataSource = gridViewData;
+
+            UpdateSqlFormRichTextBoxAction?.Invoke(
+                CommonDataTable.DataTableFormatToString(gridViewData,
+                sqlFormRichTextOutputSettingSet));
+
+            // 不是在 SqlForm 查询的话，将主界面设为焦点
+            if (this.actionType != ActionType.ACTION_SQL_QUERY) this.Focus();
         }
 
-        private string SqlQuery(string sqlStr, HashSet<String> noOutSet)
+        private void SqlQuery(string sqlStr, HashSet<String> noOutSet)
         {
-            sqlQueryFlag = true;
-            sqlQueryString = sqlStr;
+            this.sqlFormRichTextOutputSettingSet = noOutSet;
 
             String errStr = String.Empty;
-            DataTable dt = sqlData.GetDataBySql(sqlStr, ref errStr);
+            int[] newIDList = sqlData.GetDataBySql(sqlStr, ref errStr);
 
-            if (dt == null) return errStr;
-            else
+
+
+
+
+            if (newIDList != null)
             {
-                sourceDataTable = ConvertFilmInfoToGrid(dt);
+                queryInfo = sqlStr;
+                actionType = ActionType.ACTION_SQL_QUERY;
 
-                sourceType = SourceType.DATATABLE_LOCAL;
-                totalRowCount = sourceDataTable.Rows.Count;
+
+
+                idList = newIDList;
+
+                totalRowCount = idList.Length;
 
                 InitPageCombox();
 
                 ShowDataGridViewPage(0);
-
-                return CommonDataTable.DataTableFormatToString(sourceDataTable, noOutSet);
+            }
+            else
+            {
+                // 出错了不改变界面，还是显示原来的
+                UpdateSqlFormRichTextBoxAction?.Invoke(errStr);
             }
         }
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            sqlQueryFlag = false;
-
             String keyWord = this.textBoxSearch.Text;
             // 为空时直接显示根目录
             if (String.IsNullOrWhiteSpace(keyWord))
@@ -437,12 +404,16 @@ namespace MyFilm
                 return;
             }
 
-            actionParam.KeyWord = keyWord;
-            actionParam.DiskDescribe = this.comboBoxDisk.SelectedItem.ToString();
-            sourceType = SourceType.DATABASE_SEARCH;
+            String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
 
-            totalRowCount = sqlData.CountSearchKeyWordFromFilmInfo(
-                actionParam.KeyWord, actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe);
+            queryInfo = String.Format("在 {0} 里搜索 \'{1}\'",
+                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe,
+                            keyWord);
+            actionType = ActionType.ACTION_KEY_WORD_SEARCH;
+
+            idList = sqlData.SearchKeyWordFromFilmInfo(
+                keyWord, diskDescribe == "全部" ? null : diskDescribe);
+            totalRowCount = (idList == null ? 0 : idList.Length);
 
             if (totalRowCount == 0) this.textBoxSearch.ForeColor = Color.Red;
             else this.textBoxSearch.ForeColor = Color.Black;
@@ -457,13 +428,14 @@ namespace MyFilm
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            sqlQueryFlag = false;
+            String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
+            queryInfo = String.Format("在 {0} 里搜索 待删",
+                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe);
+            actionType = ActionType.ACTION_DELETE_SEARCH;
 
-            actionParam.DiskDescribe = this.comboBoxDisk.SelectedItem.ToString();
-            sourceType = SourceType.DATABASE_DELETE;
-
-            totalRowCount = sqlData.CountDeleteDataFromFilmInfo(
-                actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe);
+            idList = sqlData.GetDeleteDataFromFilmInfo(
+                diskDescribe == "全部" ? null : diskDescribe);
+            totalRowCount = idList.Length;
 
             InitPageCombox();
 
@@ -472,13 +444,15 @@ namespace MyFilm
 
         private void btnWatch_Click(object sender, EventArgs e)
         {
-            sqlQueryFlag = false;
 
-            actionParam.DiskDescribe = this.comboBoxDisk.SelectedItem.ToString();
-            sourceType = SourceType.DATABASE_WATCH;
+            String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
+            queryInfo = String.Format("在 {0} 里搜索 待看",
+                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe);
+            actionType = ActionType.ACTION_WATCH_SEARCH;
 
-            totalRowCount = sqlData.CountWatchDataFromFilmInfo(
-                actionParam.DiskDescribe == "全部" ? null : actionParam.DiskDescribe);
+            idList = sqlData.GetWatchDataFromFilmInfo(
+                diskDescribe == "全部" ? null : diskDescribe);
+            totalRowCount = idList.Length;
 
             InitPageCombox();
 
@@ -491,15 +465,15 @@ namespace MyFilm
             form.ShowDialog();
 
             // 设置返回后显示根目录
-            btnRootDirectory_Click(null, null);
+            ReLoadDiskRootDataAndShow(true);
         }
 
         private void btnUpFolder_Click(object sender, EventArgs e)
         {
-            // sourceType 为 SourceType.DATABASE_PID 时，选择的行可为0（考虑场景 空文件夹）
-            if (this.dataGridView.SelectedRows.Count == 1 || sourceType == SourceType.DATABASE_PID)
+            // 考虑场景 空文件夹
+            if (this.dataGridView.SelectedRows.Count == 1 || actionType == ActionType.ACTION_FOLDER_DOWN)
             {
-                int pid = actionParam.Pid;
+                int pid = folderDownID;
                 if (this.dataGridView.SelectedRows.Count == 1)
                     pid = Convert.ToInt32(gridViewData.Rows[this.dataGridView.SelectedRows[0].Index]["pid"]);
 
@@ -511,12 +485,14 @@ namespace MyFilm
 
                 DataTable dt = sqlData.GetDataByIdFromFilmInfo(pid);
 
-                actionParam.Pid = Convert.ToInt32(dt.Rows[0]["pid"]);
-                actionParam.FolderPath = Helper.GetUpFolder(dt.Rows[0]["path"].ToString());
-                sourceType = SourceType.DATABASE_PID;
+                int folderUpID = Convert.ToInt32(dt.Rows[0]["pid"]);
+                actionType = ActionType.ACTION_FOLDER_UP;
 
-                totalRowCount = sqlData.CountPidFromFilmInfo(actionParam.Pid);
-                int offset = sqlData.GetIdOffsetByPidFromFilmInfo(Convert.ToInt32(dt.Rows[0]["id"]), actionParam.Pid);
+                queryInfo = String.Format("索引 \'{0}\'", Helper.GetUpFolder(dt.Rows[0]["path"].ToString()));
+
+                idList = sqlData.GetDataByPidFromFilmInfo(folderUpID);
+                totalRowCount = idList.Length;
+                int offset = Array.IndexOf(idList, pid);
                 Debug.Assert(offset >= 0 && offset < totalRowCount);
 
                 InitPageCombox();
@@ -567,14 +543,19 @@ namespace MyFilm
 
         private void btnRootDirectory_Click(object sender, EventArgs e)
         {
-            sqlQueryFlag = false;
+            ReLoadDiskRootDataAndShow(false);
+        }
 
-            sourceType = SourceType.DATATABLE_LOCAL;
-            sourceDataTable = GetDiskRootDirectoryInfo();
-            totalRowCount = sourceDataTable.Rows.Count;
+        private void ReLoadDiskRootDataAndShow(bool needReLoadData)
+        {
+            queryInfo = "索引 根目录";
+            actionType = ActionType.ACTION_DISK_ROOT;
+
+            if (needReLoadData) diskRootDataTable = GetDiskRootDirectoryInfo();
+
+            totalRowCount = diskRootDataTable.Rows.Count;
 
             InitPageCombox();
-
             ShowDataGridViewPage(0);
         }
 
@@ -590,15 +571,18 @@ namespace MyFilm
                 Convert.ToBoolean(gridViewData.Rows[e.RowIndex]["is_folder"]))
             {
                 pid = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["id"]);
-                actionParam.FolderPath = Path.Combine(
+                queryInfo = String.Format("索引 \'{0}\'", Path.Combine(
                     gridViewData.Rows[e.RowIndex]["path"].ToString(),
-                    gridViewData.Rows[e.RowIndex]["name"].ToString());
+                    gridViewData.Rows[e.RowIndex]["name"].ToString()));
+
             }
             // 浏览此文件或文件夹所在文件夹下的全部内容，会自动跳转到当前的选中行
             else if (dataGridView.Columns[e.ColumnIndex].DataPropertyName == "path")
             {
                 pid = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["pid"]);
-                actionParam.FolderPath = gridViewData.Rows[e.RowIndex]["path"].ToString();
+                queryInfo = String.Format("索引 \'{0}\'",
+                    gridViewData.Rows[e.RowIndex]["path"].ToString());
+
 
                 needLocation = true;
                 locationId = Convert.ToInt32(gridViewData.Rows[e.RowIndex]["id"]);
@@ -606,15 +590,16 @@ namespace MyFilm
 
             if (pid != int.MinValue)
             {
-                actionParam.Pid = pid;
-                sourceType = SourceType.DATABASE_PID;
+                actionType = ActionType.ACTION_FOLDER_DOWN;
+                folderDownID = pid;
 
-                totalRowCount = sqlData.CountPidFromFilmInfo(actionParam.Pid);
+                idList = sqlData.GetDataByPidFromFilmInfo(pid);
+                totalRowCount = idList.Length;
 
                 int offset = 0;
                 if (needLocation)
                 {
-                    offset = sqlData.GetIdOffsetByPidFromFilmInfo(locationId, actionParam.Pid);
+                    offset = Array.IndexOf(idList, locationId);
                     Debug.Assert(offset >= 0 && offset < totalRowCount);
                 }
 
@@ -639,7 +624,7 @@ namespace MyFilm
             DataTable dt2 = sqlData.GetAllDataFromDiskInfo();
             Debug.Assert(dt1.Rows.Count == dt2.Rows.Count);
 
-            DataTable dt = ConvertFilmInfoToGrid(dt1);
+            DataTable dt = CommonDataTable.ConvertFilmInfoToGrid(dt1);
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 String diskDescribe = dt.Rows[i]["disk_desc"].ToString();
@@ -658,52 +643,7 @@ namespace MyFilm
             return dt;
         }
 
-        private DataTable ConvertFilmInfoToGrid(DataTable fiDt)
-        {
-            DataTable dt = CommonDataTable.GetMainFormGridDataTable(fiDt);
-            for (int i = 0; i < fiDt.Rows.Count; i++)
-            {
-                DataRow dr = dt.NewRow();
-                dr["index"] = i + 1;
 
-                foreach (DataColumn cl in fiDt.Columns)
-                {
-                    switch (cl.ColumnName)
-                    {
-                        case "id":
-                        case "name":
-                        case "is_folder":
-                        case "to_watch":
-                        case "to_delete":
-                        case "content":
-                        case "pid":
-                        case "max_cid":
-                        case "disk_desc":
-                            dr[cl.ColumnName] = fiDt.Rows[i][cl.ColumnName];
-                            break;
-                        // 用父文件夹
-                        case "path":
-                            dr["path"] = Helper.GetUpFolder(fiDt.Rows[i]["path"].ToString());
-                            break;
-                        case "size":
-                            long size = Convert.ToInt64(fiDt.Rows[i]["size"]);
-                            if (size == -1) dr["size"] = "---";
-                            else dr["size"] = Helper.GetSizeString(size);
-                            break;
-                        case "create_t":
-                        case "modify_t":
-                        case "s_w_t":
-                        case "s_d_t":
-                            dr[cl.ColumnName] = Convert.ToDateTime(fiDt.Rows[i][cl.ColumnName]).ToString("yyyy-MM-dd HHH:mm:ss");
-                            break;
-                        default:
-                            throw new Exception(string.Format("未指定的列名称 {0}", cl.ColumnName));
-                    }
-                }
-                dt.Rows.Add(dr);
-            }
-            return dt;
-        }
 
         private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
@@ -959,13 +899,21 @@ namespace MyFilm
             }
         }
 
+        private void SqlFormColsed()
+        {
+            this.UpdateSqlFormRichTextBoxAction = null;
+            this.sqlFormRichTextOutputSettingSet = null;
+        }
+
         private void MainForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.Q)
             {
                 string str = sqlData.GetDescriptionOfFilmInfo();
                 SqlForm form = new SqlForm(sqlData, str);
-                form.SqlQueryFunc = this.SqlQuery;
+                form.SqlQueryAction = this.SqlQuery;
+                form.SqlFormColsedAction = this.SqlFormColsed;
+                this.UpdateSqlFormRichTextBoxAction = form.UpdateRichTextBox;
                 form.Show();
             }
             //switch (e.KeyCode)
