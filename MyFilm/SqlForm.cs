@@ -18,6 +18,8 @@ namespace MyFilm
 
         public Action SqlFormColsedAction = null;
 
+        private CheckBox[] cbs = null;
+
         public SqlForm(SqlData sqlData)
         {
             InitializeComponent();
@@ -103,7 +105,7 @@ namespace MyFilm
             this.cbcontent.Checked = false;
             this.cbs_d_t.Checked = true;
 
-            CheckBox[] cbs = new CheckBox[]
+            cbs = new CheckBox[]
             {
                 this.cbindex,
                 this.cbid,
@@ -134,6 +136,9 @@ namespace MyFilm
                 cb.CheckedChanged += this.output_CheckedChanged;
             }
 
+            this.cbOutputCtl.Checked = true;
+            this.cbOutputCtl.CheckedChanged += this.outputCtl_CheckedChanged;
+
             this.richTextBoxInfo.Text = "mysql> desc film_info" + Environment.NewLine;
 
             String descFilmInfo = CommonDataTable.DataTableFormatToString(
@@ -159,6 +164,29 @@ namespace MyFilm
                 if (!this.outputSet.Contains(cb.Text)) this.outputSet.Add(cb.Text);
             }
             else if (this.outputSet.Contains(cb.Text)) this.outputSet.Remove(cb.Text);
+        }
+
+        private void outputCtl_CheckedChanged(object sender, EventArgs e)
+        {
+            if (this.cbOutputCtl.Checked)
+            {
+                this.outputSet = new HashSet<string>();
+
+                foreach (CheckBox cb in cbs)
+                {
+                    cb.Enabled = true;
+                    if (cb.Checked) this.outputSet.Add(cb.Text);
+                }
+            }
+            else
+            {
+                foreach (CheckBox cb in cbs)
+                {
+                    cb.Enabled = false;
+                }
+
+                this.outputSet = null;
+            }
         }
     }
 }

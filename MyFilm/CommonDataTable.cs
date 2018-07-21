@@ -8,6 +8,11 @@ namespace MyFilm
     public class CommonDataTable
     {
         /// <summary>
+        /// 最多输出的列（最小设为 5）
+        /// </summary>
+        private static int MaxOutputRow = 50;
+
+        /// <summary>
         /// 获取film_info数据库对应的DataTable
         /// </summary>
         /// <returns></returns>
@@ -138,10 +143,12 @@ namespace MyFilm
                         case "modify_t":
                         case "s_w_t":
                         case "s_d_t":
-                            dr[cl.ColumnName] = Convert.ToDateTime(fiDt.Rows[i][cl.ColumnName]).ToString("yyyy-MM-dd HHH:mm:ss");
+                            dr[cl.ColumnName] = Convert.ToDateTime(
+                                fiDt.Rows[i][cl.ColumnName]).ToString("yyyy-MM-dd HHH:mm:ss");
                             break;
                         default:
-                            throw new Exception(string.Format("未指定的列名称 {0}", cl.ColumnName));
+                            dr[cl.ColumnName] = fiDt.Rows[i][cl.ColumnName];
+                            break;
                     }
                 }
                 dt.Rows.Add(dr);
@@ -178,25 +185,44 @@ namespace MyFilm
             char angle = '+';
             char horizontal = '-';
             char vertical = '|';
+            char star = '*';
 
+            // 每列的最大长度
             List<int> lenList = new List<int>();
+            // 每列的字符串
             List<string> strList = new List<string>();
+            // 每列是否右对齐
             List<bool> padList = new List<bool>();
+            // dt 实际会输出的列索引
             List<int> colIndex = new List<int>();
+            // 是否会折叠输出
+            bool omitOutput = dt.Rows.Count > MaxOutputRow;
+            // 0-(tempRowCount-1) 正常输出，tempRowCount-(MaxOutputRow-2)输出*
+            // (MaxOutputRow-2) 输出 dt 最后一行
+            int tempRowCount = omitOutput ? MaxOutputRow - 4 : dt.Rows.Count;
 
             for (int i = 0; i < dt.Columns.Count; i++)
             {
                 if (outputSet != null && !outputSet.Contains(dt.Columns[i].ColumnName))
                     continue;
 
-                int maxLen = System.Text.Encoding.Default.GetBytes(
+                int maxLen = System.Text.UTF8Encoding.Default.GetBytes(
                     dt.Columns[i].ColumnName.ToString()).Length;
-                for (int j = 0; j < dt.Rows.Count; j++)
+                for (int j = 0; j < tempRowCount; j++)
                 {
                     // 单个英文长度为1，单个中文长度为2
-                    int len = System.Text.Encoding.Default.GetBytes(dt.Rows[j][i].ToString()).Length;
+                    int len = System.Text.UTF8Encoding.Default.GetBytes(
+                        dt.Rows[j][i].ToString()).Length;
                     if (maxLen < len) maxLen = len;
                 }
+                if (omitOutput)
+                {
+                    // 最后一行
+                    int len = System.Text.UTF8Encoding.Default.GetBytes(
+                        dt.Rows[dt.Rows.Count - 1][i].ToString()).Length;
+                    if (maxLen < len) maxLen = len;
+                }
+
                 lenList.Add(maxLen + 2);
                 strList.Add(new string(horizontal, maxLen + 2));
                 padList.Add(dt.Columns[i].DataType != typeof(int));
@@ -207,6 +233,7 @@ namespace MyFilm
             string tmpStr = string.Empty;
             string spcStr = angle + string.Join(angle.ToString(), strList) + angle;
 
+            // 列标题
             for (int i = 0; i < colIndex.Count; i++)
             {
                 if (padList[i])
@@ -219,14 +246,37 @@ namespace MyFilm
             rstStr += (tmpStr + Environment.NewLine);
             rstStr += (spcStr + Environment.NewLine);
 
-            for (int i = 0; i < dt.Rows.Count; i++)
+            // 列数据
+            for (int i = 0; i < tempRowCount || (omitOutput && i < MaxOutputRow); i++)
             {
+                // 星号输出
+                bool starOutput = (omitOutput && i >= tempRowCount && i < (MaxOutputRow - 1));
+                // 折叠输出最后一行为 dt 最后一行
+                if (omitOutput && (i == MaxOutputRow - 1)) i = dt.Rows.Count - 1;
+
                 for (int j = 0; j < colIndex.Count; j++)
                 {
-                    if (padList[j])
-                        strList[j] = " " + PadRightWhileDouble(dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1);
+                    if (starOutput)
+                    {
+                        if (j == 0 && dt.Columns[colIndex[j]].ColumnName == "index")
+                        {
+                            strList[j] = PadLeftWhileDouble(new string(star,
+                                i == MaxOutputRow - 2 ?
+                                dt.Rows[dt.Rows.Count - 1]["index"].ToString().Length :
+                                dt.Rows[i]["index"].ToString().Length),
+                                lenList[j] - 1) + " ";
+                        }
+                        else strList[j] = " " + new string(star, lenList[j] - 2) + " ";
+                    }
                     else
-                        strList[j] = PadLeftWhileDouble(dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1) + " ";
+                    {
+                        if (padList[j])
+                            strList[j] = " " + PadRightWhileDouble(
+                                dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1);
+                        else
+                            strList[j] = PadLeftWhileDouble(
+                                dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1) + " ";
+                    }
                 }
                 tmpStr = vertical + string.Join(vertical.ToString(), strList) + vertical;
 
@@ -234,6 +284,7 @@ namespace MyFilm
                 if (i == dt.Rows.Count - 1)
                     rstStr += (spcStr + Environment.NewLine);
             }
+
             return rstStr;
         }
 
@@ -249,6 +300,7 @@ namespace MyFilm
             var singleLength = GetSingleLength(input);
             return input.PadLeft(length - singleLength + input.Length, paddingChar);
         }
+
         private static int GetSingleLength(string input)
         {
             if (string.IsNullOrEmpty(input))
@@ -256,8 +308,10 @@ namespace MyFilm
                 return 0;
             }
             // 计算得到该字符串对应单字节字符串的长度
-            return Regex.Replace(input, @"[^\x00-\xff]", "aa").Length;
+            //return Regex.Replace(input, @"[^\x00-\xff]", "aa").Length;
+            return System.Text.UTF8Encoding.Default.GetBytes(input).Length;
         }
+
         /// <summary>
         /// 按单字节字符串向右填充长度
         /// </summary>

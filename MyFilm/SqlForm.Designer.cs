@@ -30,7 +30,9 @@
         {
             this.btnSearch = new System.Windows.Forms.Button();
             this.richTextBoxInfo = new System.Windows.Forms.RichTextBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBoxOutput = new System.Windows.Forms.GroupBox();
+            this.cbOutputCtl = new System.Windows.Forms.CheckBox();
+            this.cbindex = new System.Windows.Forms.CheckBox();
             this.cbto_delete_ex = new System.Windows.Forms.CheckBox();
             this.cbto_watch_ex = new System.Windows.Forms.CheckBox();
             this.cbdisk_desc = new System.Windows.Forms.CheckBox();
@@ -50,8 +52,7 @@
             this.cbid = new System.Windows.Forms.CheckBox();
             this.cbNoGrid = new System.Windows.Forms.CheckBox();
             this.textBoxSql = new MyFilm.TextBoxSql();
-            this.cbindex = new System.Windows.Forms.CheckBox();
-            this.groupBox1.SuspendLayout();
+            this.groupBoxOutput.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSearch
@@ -78,34 +79,55 @@
             this.richTextBoxInfo.Text = "";
             this.richTextBoxInfo.WordWrap = false;
             // 
-            // groupBox1
+            // groupBoxOutput
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.groupBoxOutput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.cbindex);
-            this.groupBox1.Controls.Add(this.cbto_delete_ex);
-            this.groupBox1.Controls.Add(this.cbto_watch_ex);
-            this.groupBox1.Controls.Add(this.cbdisk_desc);
-            this.groupBox1.Controls.Add(this.cbto_delete);
-            this.groupBox1.Controls.Add(this.cbs_w_t);
-            this.groupBox1.Controls.Add(this.cbmax_cid);
-            this.groupBox1.Controls.Add(this.cbto_watch);
-            this.groupBox1.Controls.Add(this.cbis_folder);
-            this.groupBox1.Controls.Add(this.cbpid);
-            this.groupBox1.Controls.Add(this.cbmodify_t);
-            this.groupBox1.Controls.Add(this.cbcreate_t);
-            this.groupBox1.Controls.Add(this.cbcontent);
-            this.groupBox1.Controls.Add(this.cbsize);
-            this.groupBox1.Controls.Add(this.cbpath);
-            this.groupBox1.Controls.Add(this.cbs_d_t);
-            this.groupBox1.Controls.Add(this.cbname);
-            this.groupBox1.Controls.Add(this.cbid);
-            this.groupBox1.Location = new System.Drawing.Point(12, 39);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1176, 46);
-            this.groupBox1.TabIndex = 7;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "  选择文本信息输出的列";
+            this.groupBoxOutput.Controls.Add(this.cbOutputCtl);
+            this.groupBoxOutput.Controls.Add(this.cbindex);
+            this.groupBoxOutput.Controls.Add(this.cbto_delete_ex);
+            this.groupBoxOutput.Controls.Add(this.cbto_watch_ex);
+            this.groupBoxOutput.Controls.Add(this.cbdisk_desc);
+            this.groupBoxOutput.Controls.Add(this.cbto_delete);
+            this.groupBoxOutput.Controls.Add(this.cbs_w_t);
+            this.groupBoxOutput.Controls.Add(this.cbmax_cid);
+            this.groupBoxOutput.Controls.Add(this.cbto_watch);
+            this.groupBoxOutput.Controls.Add(this.cbis_folder);
+            this.groupBoxOutput.Controls.Add(this.cbpid);
+            this.groupBoxOutput.Controls.Add(this.cbmodify_t);
+            this.groupBoxOutput.Controls.Add(this.cbcreate_t);
+            this.groupBoxOutput.Controls.Add(this.cbcontent);
+            this.groupBoxOutput.Controls.Add(this.cbsize);
+            this.groupBoxOutput.Controls.Add(this.cbpath);
+            this.groupBoxOutput.Controls.Add(this.cbs_d_t);
+            this.groupBoxOutput.Controls.Add(this.cbname);
+            this.groupBoxOutput.Controls.Add(this.cbid);
+            this.groupBoxOutput.Location = new System.Drawing.Point(12, 39);
+            this.groupBoxOutput.Name = "groupBoxOutput";
+            this.groupBoxOutput.Size = new System.Drawing.Size(1176, 46);
+            this.groupBoxOutput.TabIndex = 7;
+            this.groupBoxOutput.TabStop = false;
+            this.groupBoxOutput.Text = "             --- 选择文本信息输出的列";
+            // 
+            // cbOutputCtl
+            // 
+            this.cbOutputCtl.AutoSize = true;
+            this.cbOutputCtl.Location = new System.Drawing.Point(2, -1);
+            this.cbOutputCtl.Name = "cbOutputCtl";
+            this.cbOutputCtl.Size = new System.Drawing.Size(84, 16);
+            this.cbOutputCtl.TabIndex = 10;
+            this.cbOutputCtl.Text = "列输出控制";
+            this.cbOutputCtl.UseVisualStyleBackColor = true;
+            // 
+            // cbindex
+            // 
+            this.cbindex.AutoSize = true;
+            this.cbindex.Location = new System.Drawing.Point(2, 20);
+            this.cbindex.Name = "cbindex";
+            this.cbindex.Size = new System.Drawing.Size(54, 16);
+            this.cbindex.TabIndex = 17;
+            this.cbindex.Text = "index";
+            this.cbindex.UseVisualStyleBackColor = true;
             // 
             // cbto_delete_ex
             // 
@@ -298,16 +320,6 @@
             this.textBoxSql.TabIndex = 9;
             this.textBoxSql.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSql_KeyDown);
             // 
-            // cbindex
-            // 
-            this.cbindex.AutoSize = true;
-            this.cbindex.Location = new System.Drawing.Point(2, 20);
-            this.cbindex.Name = "cbindex";
-            this.cbindex.Size = new System.Drawing.Size(54, 16);
-            this.cbindex.TabIndex = 17;
-            this.cbindex.Text = "index";
-            this.cbindex.UseVisualStyleBackColor = true;
-            // 
             // SqlForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -315,16 +327,16 @@
             this.ClientSize = new System.Drawing.Size(1200, 645);
             this.Controls.Add(this.textBoxSql);
             this.Controls.Add(this.cbNoGrid);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.groupBoxOutput);
             this.Controls.Add(this.richTextBoxInfo);
             this.Controls.Add(this.btnSearch);
-            this.MinimumSize = new System.Drawing.Size(1200, 675);
+            this.MinimumSize = new System.Drawing.Size(1216, 684);
             this.Name = "SqlForm";
-            this.Text = "SqlForm";
+            this.ShowIcon = false;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SqlForm_FormClosed);
             this.Load += new System.EventHandler(this.SqlForm_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.groupBoxOutput.ResumeLayout(false);
+            this.groupBoxOutput.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -334,7 +346,7 @@
 
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.RichTextBox richTextBoxInfo;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBoxOutput;
         private System.Windows.Forms.CheckBox cbdisk_desc;
         private System.Windows.Forms.CheckBox cbto_delete;
         private System.Windows.Forms.CheckBox cbs_w_t;
@@ -355,5 +367,6 @@
         private System.Windows.Forms.CheckBox cbto_delete_ex;
         private System.Windows.Forms.CheckBox cbto_watch_ex;
         private System.Windows.Forms.CheckBox cbindex;
+        private System.Windows.Forms.CheckBox cbOutputCtl;
     }
 }
