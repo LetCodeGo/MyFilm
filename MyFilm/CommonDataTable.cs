@@ -201,28 +201,37 @@ namespace MyFilm
             // (MaxOutputRow-2) 输出 dt 最后一行
             int tempRowCount = omitOutput ? MaxOutputRow - 4 : dt.Rows.Count;
 
+            // 记录字符串转换为单字节与本身长度差
+            List<List<int>> lll = new List<List<int>>();
+
             for (int i = 0; i < dt.Columns.Count; i++)
             {
                 if (outputSet != null && !outputSet.Contains(dt.Columns[i].ColumnName))
                     continue;
 
-                int maxLen = System.Text.UTF8Encoding.Default.GetBytes(
-                    dt.Columns[i].ColumnName.ToString()).Length;
+                List<int> ll = new List<int>();
+
+                String strTemp = dt.Columns[i].ColumnName;
+                int maxLen = System.Text.UTF8Encoding.Default.GetBytes(strTemp).Length;
+                ll.Add(maxLen - strTemp.Length);
+
                 for (int j = 0; j < tempRowCount; j++)
                 {
-                    // 单个英文长度为1，单个中文长度为2
-                    int len = System.Text.UTF8Encoding.Default.GetBytes(
-                        dt.Rows[j][i].ToString()).Length;
+                    strTemp = dt.Rows[j][i].ToString();
+                    int len = System.Text.UTF8Encoding.Default.GetBytes(strTemp).Length;
+                    ll.Add(len - strTemp.Length);
                     if (maxLen < len) maxLen = len;
                 }
                 if (omitOutput)
                 {
                     // 最后一行
-                    int len = System.Text.UTF8Encoding.Default.GetBytes(
-                        dt.Rows[dt.Rows.Count - 1][i].ToString()).Length;
+                    strTemp = dt.Rows[dt.Rows.Count - 1][i].ToString();
+                    int len = System.Text.UTF8Encoding.Default.GetBytes(strTemp).Length;
+                    ll.Add(len - strTemp.Length);
                     if (maxLen < len) maxLen = len;
                 }
 
+                lll.Add(ll);
                 lenList.Add(maxLen + 2);
                 strList.Add(new string(horizontal, maxLen + 2));
                 padList.Add(dt.Columns[i].DataType != typeof(int));
@@ -237,9 +246,11 @@ namespace MyFilm
             for (int i = 0; i < colIndex.Count; i++)
             {
                 if (padList[i])
-                    strList[i] = " " + PadRightWhileDouble(dt.Columns[colIndex[i]].ColumnName, lenList[i] - 1);
+                    strList[i] = " " + dt.Columns[colIndex[i]].ColumnName.PadRight(
+                        lenList[i] - 1 - lll[i][0]);
                 else
-                    strList[i] = PadLeftWhileDouble(dt.Columns[colIndex[i]].ColumnName, lenList[i] - 1) + " ";
+                    strList[i] = dt.Columns[colIndex[i]].ColumnName.PadLeft(
+                        lenList[i] - 1 - lll[i][0]) + " ";
                 tmpStr = vertical + string.Join(vertical.ToString(), strList) + vertical;
             }
             rstStr += (spcStr + Environment.NewLine);
@@ -247,12 +258,17 @@ namespace MyFilm
             rstStr += (spcStr + Environment.NewLine);
 
             // 列数据
-            for (int i = 0; i < tempRowCount || (omitOutput && i < MaxOutputRow); i++)
+            for (int i = 0, nl = 1; i < tempRowCount || (omitOutput && i < MaxOutputRow);
+                i++, nl++)
             {
                 // 星号输出
                 bool starOutput = (omitOutput && i >= tempRowCount && i < (MaxOutputRow - 1));
                 // 折叠输出最后一行为 dt 最后一行
-                if (omitOutput && (i == MaxOutputRow - 1)) i = dt.Rows.Count - 1;
+                if (omitOutput && (i == MaxOutputRow - 1))
+                {
+                    i = dt.Rows.Count - 1;
+                    nl = lll[0].Count - 1;
+                }
 
                 for (int j = 0; j < colIndex.Count; j++)
                 {
@@ -260,10 +276,9 @@ namespace MyFilm
                     {
                         if (j == 0 && dt.Columns[colIndex[j]].ColumnName == "index")
                         {
-                            strList[j] = PadLeftWhileDouble(new string(star,
-                                i == MaxOutputRow - 2 ?
+                            strList[j] = new string(star, i == MaxOutputRow - 2 ?
                                 dt.Rows[dt.Rows.Count - 1]["index"].ToString().Length :
-                                dt.Rows[i]["index"].ToString().Length),
+                                dt.Rows[i]["index"].ToString().Length).PadLeft(
                                 lenList[j] - 1) + " ";
                         }
                         else strList[j] = " " + new string(star, lenList[j] - 2) + " ";
@@ -271,11 +286,11 @@ namespace MyFilm
                     else
                     {
                         if (padList[j])
-                            strList[j] = " " + PadRightWhileDouble(
-                                dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1);
+                            strList[j] = " " + dt.Rows[i][colIndex[j]].ToString().PadRight(
+                                lenList[j] - 1 - lll[j][nl]);
                         else
-                            strList[j] = PadLeftWhileDouble(
-                                dt.Rows[i][colIndex[j]].ToString(), lenList[j] - 1) + " ";
+                            strList[j] = dt.Rows[i][colIndex[j]].ToString().PadLeft(
+                                lenList[j] - 1 - lll[j][nl]) + " ";
                     }
                 }
                 tmpStr = vertical + string.Join(vertical.ToString(), strList) + vertical;
@@ -286,43 +301,6 @@ namespace MyFilm
             }
 
             return rstStr;
-        }
-
-        /// <summary>
-        /// 按单字节字符串向左填充长度
-        /// </summary>
-        ///<param name="input">
-        ///<param name="length">
-        ///<param name="paddingChar">
-        /// <returns></returns>
-        public static string PadLeftWhileDouble(string input, int length, char paddingChar = ' ')
-        {
-            var singleLength = GetSingleLength(input);
-            return input.PadLeft(length - singleLength + input.Length, paddingChar);
-        }
-
-        private static int GetSingleLength(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return 0;
-            }
-            // 计算得到该字符串对应单字节字符串的长度
-            //return Regex.Replace(input, @"[^\x00-\xff]", "aa").Length;
-            return System.Text.UTF8Encoding.Default.GetBytes(input).Length;
-        }
-
-        /// <summary>
-        /// 按单字节字符串向右填充长度
-        /// </summary>
-        ///<param name="input">
-        ///<param name="length">
-        ///<param name="paddingChar">
-        /// <returns></returns>
-        public static string PadRightWhileDouble(string input, int length, char paddingChar = ' ')
-        {
-            var singleLength = GetSingleLength(input);
-            return input.PadRight(length - singleLength + input.Length, paddingChar);
         }
     }
 }
