@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace MyFilm
@@ -45,26 +47,80 @@ namespace MyFilm
             return dt;
         }
 
-        public struct SetWatchStateStruct
+        public class CancelIDList : IEnumerable
         {
+            private List<TreeSetState> cancelIDList = null;
+
+            public CancelIDList()
+            {
+                this.cancelIDList = new List<TreeSetState>();
+            }
+
+            public TreeSetState this[int i]
+            {
+                get { return this.cancelIDList[i]; }
+                set { this.cancelIDList[i] = value; }
+            }
+
+            public int Count
+            {
+                get { return this.cancelIDList.Count; }
+            }
+
+            public List<int> SelectID()
+            {
+                return cancelIDList.Select(x => x.id).ToList();
+            }
+
+            public List<int> SelectMaxcid()
+            {
+                return cancelIDList.Select(x => x.max_cid).ToList();
+            }
+
+            public IEnumerator GetEnumerator()
+            {
+                int i = 0;
+                while (i < this.cancelIDList.Count) yield return this[i++];
+            }
+        }
+
+        public class TreeSetState
+        {
+            public string name;
+            public int id;
+            public int max_cid;
+            public List<TreeSetState> cancelIDList;
+
+            public void Add(TreeSetState nodeSetState)
+            {
+                foreach (TreeSetState _nodeSetState in this.cancelIDList)
+                {
+                    if (_nodeSetState.id == nodeSetState.id)
+                    {
+                        _nodeSetState.cancelIDList.AddRange(nodeSetState.cancelIDList);
+                        return;
+                    }
+                    else if (_nodeSetState.id > nodeSetState.id &&
+                        _nodeSetState.id <= nodeSetState.max_cid)
+                    {
+                        _nodeSetState.Add(nodeSetState);
+                        return;
+                    }
+                }
+
+                this.cancelIDList.Add(nodeSetState);
+            }
+        }
+
+        public struct SetStateStruct
+        {
+            public string name;
             public int id;
             public bool is_folder;
             public bool to_watch_ex;
-            public int pid;
-            public int max_cid;
-            public bool set_to;
-            public DateTime set_time;
-        }
-
-        public struct SetDeleteStateStruct
-        {
-            public int id;
-            public bool is_folder;
             public bool to_delete_ex;
             public int pid;
             public int max_cid;
-            public bool set_to;
-            public DateTime set_time;
         }
 
         /// <summary>

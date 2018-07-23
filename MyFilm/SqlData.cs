@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using static MyFilm.CommonDataTable;
 
 namespace MyFilm
@@ -796,158 +797,244 @@ namespace MyFilm
             return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
         }
 
-        public void UpdateWatchStateFromFilmInfo(List<SetWatchStateStruct> setWatchStateStructList)
+        public void UpdateWatchOrDeleteStateFromFilmInfo(bool isWatch,
+            List<SetStateStruct> setStateStructList, DateTime setTime, bool setTo)
         {
+            if (setStateStructList == null || setStateStructList.Count == 0) return;
+            // 用 pid 排序（最顶层的文件夹在前面）
+            setStateStructList.Sort((x, y) => x.pid.CompareTo(y.pid));
+
             MySqlCommand sqlCmd = new MySqlCommand();
-            String cmdText = "set sql_safe_updates = 0;";
+
             int pi = 0;
+            string k1 = isWatch ? "to_watch" : "to_delete";
+            string k2 = isWatch ? "to_watch_ex" : "to_delete_ex";
+            string k3 = isWatch ? "s_w_t" : "s_d_t";
 
-            foreach (SetWatchStateStruct setWatchStateStruct in setWatchStateStructList)
+            List<string> c1 = new List<string>();
+            List<string> c2 = new List<string>();
+            List<string> c3 = new List<string>();
+            List<string> c4 = new List<string>();
+            List<string> s1 = new List<string>();
+
+            // 记录已被处理过的
+            List<int> dealedIDList = new List<int>();
+
+            if (setTo)
             {
-                if (setWatchStateStruct.set_to)
+                for (int i = 0; i < setStateStructList.Count; i++)
                 {
-                    // 树形结构，只向下走，不管上面
-                    cmdText += String.Format(@"update {0} set to_watch=1, 
-                        to_watch_ex=1, s_w_t=@{1} where id={2};",
-                        "film_info", pi, setWatchStateStruct.id);
+                    if ((isWatch ? setStateStructList[i].to_watch_ex : setStateStructList[i].to_delete_ex) ||
+                        dealedIDList.Contains(setStateStructList[i].id))
+                        continue;
 
-                    if (setWatchStateStruct.is_folder)
+                    // 树形结构，只向下走，不管上面
+                    c1.Add(String.Format("(id={0})", setStateStructList[i].id));
+                    c3.Add(String.Format("(id>={0} and id<={1})",
+                        setStateStructList[i].id, setStateStructList[i].max_cid));
+                    s1.Add(String.Format("when id>={0} and id<={1} then @{2}",
+                        setStateStructList[i].id, setStateStructList[i].max_cid, pi));
+
+                    if (setStateStructList[i].is_folder)
                     {
-                        cmdText += String.Format(@"update {0} set to_watch=0, 
-                            to_watch_ex=1, s_w_t=@{1} where id>{2} and id<={3};",
-                            "film_info", pi, setWatchStateStruct.id, setWatchStateStruct.max_cid);
+                        c2.Add(String.Format("(id>{0} and id<={1})",
+                            setStateStructList[i].id, setStateStructList[i].max_cid));
+
+                        for (int j = i + 1; j < setStateStructList.Count; j++)
+                        {
+                            // 如果在当前文件夹中
+                            if (setStateStructList[j].id > setStateStructList[i].id &&
+                                setStateStructList[j].id <= setStateStructList[i].max_cid)
+                            {
+                                dealedIDList.Add(setStateStructList[j].id);
+                            }
+                        }
                     }
 
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                        setWatchStateStruct.set_time);
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++), setTime);
                 }
-                else
+            }
+            else
+            {
+                List<TreeSetState> nodeTreeSetStateList = new List<TreeSetState>();
+
+                for (int i = 0; i < setStateStructList.Count; i++)
                 {
-                    // 向下
-                    cmdText += String.Format(@"update {0} set to_watch=0, 
-                        to_watch_ex=0, s_w_t=@{1} where id>={2} and id<={3};",
-                        "film_info", pi, setWatchStateStruct.id, setWatchStateStruct.max_cid);
+                    if ((!(isWatch ? setStateStructList[i].to_watch_ex : setStateStructList[i].to_delete_ex)) ||
+                        dealedIDList.Contains(setStateStructList[i].id))
+                        continue;
 
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                        System.Data.SqlTypes.SqlDateTime.MinValue.Value);
+                    int id = setStateStructList[i].id;
+                    int pid = setStateStructList[i].pid;
+                    DateTime setTimeWithPositive = setTime;
 
-                    // 向上
-                    // 查询父文件夹信息
-                    int id = setWatchStateStruct.id;
-                    int pid = setWatchStateStruct.pid;
+                    // 记录文件信息
+                    TreeSetState nodeSetState = new TreeSetState();
+                    nodeSetState.name = setStateStructList[i].name;
+                    nodeSetState.id = id;
+                    nodeSetState.max_cid = setStateStructList[i].max_cid;
+
+                    // 向上 查询父文件夹信息
                     while (pid != -1)
                     {
                         DataTable pdt = GetDataByIdFromFilmInfo(pid);
-                        // 如果父文件夹是待看(to_watch_ex=true)
+                        // 如果父文件夹是待看待删
                         if (pdt != null && pdt.Rows.Count == 1 &&
-                            Convert.ToBoolean(pdt.Rows[0]["to_watch_ex"]))
+                            Convert.ToBoolean(pdt.Rows[0][k2]))
                         {
-                            int tid = Convert.ToInt32(pdt.Rows[0]["id"]);
-
-                            cmdText += String.Format(@"update {0} set to_watch=0, 
-                            to_watch_ex=0, s_w_t=@{1} where id={2};",
-                                "film_info", pi, tid);
-                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                                System.Data.SqlTypes.SqlDateTime.MinValue.Value);
-
-                            cmdText += String.Format(@"update {0} set to_watch=1, 
-                            to_watch_ex=1, s_w_t=@{1} where pid={2} and id!={3};",
-                                "film_info", pi, tid, id);
-                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                                Convert.ToDateTime(pdt.Rows[0]["s_w_t"]));
-
-                            id = tid;
+                            id = Convert.ToInt32(pdt.Rows[0]["id"]);
                             pid = Convert.ToInt32(pdt.Rows[0]["pid"]);
+                            setTimeWithPositive = Convert.ToDateTime(pdt.Rows[0][k3]);
+
+                            TreeSetState upNodeSetState = new TreeSetState();
+                            upNodeSetState.name = Convert.ToString(pdt.Rows[0]["name"]);
+                            upNodeSetState.id = id;
+                            upNodeSetState.max_cid = Convert.ToInt32(pdt.Rows[0]["max_cid"]);
+                            upNodeSetState.cancelIDList = new List<TreeSetState>();
+                            upNodeSetState.Add(nodeSetState);
+
+                            nodeSetState = upNodeSetState;
                         }
                         else break;
                     }
+
+                    if (setTimeWithPositive != setTime)
+                    {
+                        sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
+                            setTimeWithPositive);
+                    }
+
+                    for (int j = i + 1; j < setStateStructList.Count; j++)
+                    {
+                        // 如果在当前文件夹中
+                        if (setStateStructList[j].id > nodeSetState.id &&
+                            setStateStructList[j].id <= nodeSetState.max_cid)
+                        {
+                            dealedIDList.Add(setStateStructList[j].id);
+
+                            int _id = setStateStructList[j].id;
+                            int _pid = setStateStructList[j].pid;
+
+                            TreeSetState _nodeSetState = new TreeSetState();
+                            _nodeSetState.name = setStateStructList[j].name;
+                            _nodeSetState.id = _id;
+                            _nodeSetState.max_cid = setStateStructList[j].max_cid;
+
+                            while (_pid != nodeSetState.id)
+                            {
+                                DataTable _pdt = GetDataByIdFromFilmInfo(_pid);
+                                Debug.Assert(_pdt != null && _pdt.Rows.Count == 1);
+
+                                _id = Convert.ToInt32(_pdt.Rows[0]["id"]);
+                                _pid = Convert.ToInt32(_pdt.Rows[0]["pid"]);
+
+                                TreeSetState _upNodeSetState = new TreeSetState();
+                                _upNodeSetState.name = Convert.ToString(_pdt.Rows[0]["name"]);
+                                _upNodeSetState.id = _id;
+                                _upNodeSetState.max_cid = Convert.ToInt32(_pdt.Rows[0]["max_cid"]);
+                                _upNodeSetState.cancelIDList = new List<TreeSetState>();
+                                _upNodeSetState.Add(_nodeSetState);
+
+                                _nodeSetState = _upNodeSetState;
+                            }
+
+                            nodeSetState.Add(_nodeSetState);
+                        }
+                    }
+
+                    nodeTreeSetStateList.Add(nodeSetState);
                 }
+
+                sqlCmd.Parameters.AddWithValue("@cancel", setTime);
+
+                pi = 0;
+                foreach (TreeSetState nodeSetState in nodeTreeSetStateList)
+                {
+                    List<string> tc3 = new List<string>();
+
+                    GenerateConditionString(nodeSetState, ref c1, ref c2, ref tc3, ref c4);
+
+                    if (tc3.Count > 0)
+                        s1.Add(String.Format("when {0} then @{1}", string.Join(" or ", tc3), pi++));
+
+                    c3.AddRange(tc3);
+                }
+                s1.Add(String.Format("when {0} then @cancel", string.Join(" or ", c4)));
             }
 
-            if (pi > 0)
+            if (c1.Count > 0 || c2.Count > 0)
             {
-                sqlCmd.CommandText = cmdText;
+                string str1 = c1.Count == 0 ? " " :
+                    string.Format(" when {0} then 1 ", string.Join(" or ", c1));
+                string str2 = c2.Count == 0 ? " " :
+                    string.Format(" when {0} then 0 ", string.Join(" or ", c2));
+                string str3 = c3.Count == 0 ? " " :
+                    string.Format(" when {0} then 1 ", string.Join(" or ", c3));
+                string str4 = c4.Count == 0 ? " " :
+                    string.Format(" when {0} then 0 ", string.Join(" or ", c4));
+
                 sqlCmd.Connection = sqlConnection;
+                sqlCmd.CommandText = String.Format(@"update {0} set 
+                    {6} = (case {1} {2} else {6} end),
+                    {7} = (case {3} {4} else {7} end),
+                    {8} = (case {5} else {8} end);",
+                    "film_info", str1, str2, str3, str4, string.Join(" ", s1), k1, k2, k3);
 
                 sqlCmd.ExecuteNonQuery();
             }
         }
 
-        public void UpdateDeleteStateFromFilmInfo(List<SetDeleteStateStruct> setDeleteStateStructList)
+        private void GenerateConditionString(TreeSetState nodeSetState, ref List<string> c1,
+            ref List<string> c2, ref List<string> c3, ref List<string> c4)
         {
-            MySqlCommand sqlCmd = new MySqlCommand();
-            String cmdText = "set sql_safe_updates = 0;";
-            int pi = 0;
+            if (nodeSetState == null) return;
 
-            foreach (SetDeleteStateStruct setDeleteStateStruct in setDeleteStateStructList)
+            if (nodeSetState.cancelIDList == null)
             {
-                if (setDeleteStateStruct.set_to)
-                {
-                    // 树形结构，只向下走，不管上面
-                    cmdText += String.Format(@"update {0} set to_delete=1, 
-                        to_delete_ex=1, s_d_t=@{1} where id={2};",
-                        "film_info", pi, setDeleteStateStruct.id);
-
-                    if (setDeleteStateStruct.is_folder)
-                    {
-                        cmdText += String.Format(@"update {0} set to_delete=0, 
-                            to_delete_ex=1, s_d_t=@{1} where id>{2} and id<={3};",
-                            "film_info", pi, setDeleteStateStruct.id, setDeleteStateStruct.max_cid);
-                    }
-
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                        setDeleteStateStruct.set_time);
-                }
-                else
-                {
-                    // 向下
-                    cmdText += String.Format(@"update {0} set to_delete=0, 
-                        to_delete_ex=0, s_d_t=@{1} where id>={2} and id<={3};",
-                        "film_info", pi, setDeleteStateStruct.id, setDeleteStateStruct.max_cid);
-
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                        System.Data.SqlTypes.SqlDateTime.MinValue.Value);
-
-                    // 向上
-                    // 查询父文件夹信息
-                    int id = setDeleteStateStruct.id;
-                    int pid = setDeleteStateStruct.pid;
-                    while (pid != -1)
-                    {
-                        DataTable pdt = GetDataByIdFromFilmInfo(pid);
-                        // 如果父文件夹是待看(to_delete_ex=true)
-                        if (pdt != null && pdt.Rows.Count == 1 &&
-                            Convert.ToBoolean(pdt.Rows[0]["to_delete_ex"]))
-                        {
-                            int tid = Convert.ToInt32(pdt.Rows[0]["id"]);
-
-                            cmdText += String.Format(@"update {0} set to_delete=0, 
-                            to_delete_ex=0, s_d_t=@{1} where id={2};",
-                                "film_info", pi, tid);
-                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                                System.Data.SqlTypes.SqlDateTime.MinValue.Value);
-
-                            cmdText += String.Format(@"update {0} set to_delete=1, 
-                            to_delete_ex=1, s_d_t=@{1} where pid={2} and id!={3};",
-                                "film_info", pi, tid, id);
-                            sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                                Convert.ToDateTime(pdt.Rows[0]["s_d_t"]));
-
-                            id = tid;
-                            pid = Convert.ToInt32(pdt.Rows[0]["pid"]);
-                        }
-                        else break;
-                    }
-                }
+                c2.Add(String.Format("(pid={0} or id={0})", nodeSetState.id));
+                c4.Add(String.Format("(id>={0} and id<={1})", nodeSetState.id, nodeSetState.max_cid));
             }
-
-            if (pi > 0)
+            else
             {
-                sqlCmd.CommandText = cmdText;
-                sqlCmd.Connection = sqlConnection;
+                // 不可能为空
+                Debug.Assert(nodeSetState.cancelIDList.Count > 0);
 
-                sqlCmd.ExecuteNonQuery();
+                List<int> idList = nodeSetState.cancelIDList.Select(x => x.id).ToList();
+                List<int> maxcidList = nodeSetState.cancelIDList.Select(x => x.max_cid).ToList();
+                idList.Sort();
+                maxcidList.Sort();
+
+                string strC3Range = GenerateRangeString(nodeSetState.id,
+                    nodeSetState.max_cid, idList, maxcidList);
+
+                string strTemp = String.Join(",", idList);
+
+                c1.Add(String.Format("(pid={0} and id not in ({1}))", nodeSetState.id, strTemp));
+                c2.Add(String.Format("(id={0})", nodeSetState.id));
+                if (!string.IsNullOrEmpty(strC3Range)) c3.Add(String.Format("({0})", strC3Range));
+                c4.Add(String.Format("(id={0})", nodeSetState.id));
+
+                foreach (TreeSetState _nodeSetState in nodeSetState.cancelIDList)
+                    GenerateConditionString(_nodeSetState, ref c1, ref c2, ref c3, ref c4);
             }
+        }
+
+        private string GenerateRangeString(int id, int max_cid, List<int> idList, List<int> maxcidList)
+        {
+            Debug.Assert(idList != null && maxcidList != null && idList.Count == maxcidList.Count);
+            Debug.Assert(id <= idList[0] && max_cid >= maxcidList[maxcidList.Count - 1]);
+
+            List<string> strList = new List<string>();
+
+            int pos = id;
+            for (int i = 0; i < idList.Count; i++)
+            {
+                if (idList[i] > pos) strList.Add(string.Format("(id>{0} and id<{1})", pos, idList[i]));
+                pos = maxcidList[i];
+            }
+            if (pos < max_cid) strList.Add(string.Format("(id>{0} and id<{1})", pos, max_cid));
+
+            return string.Join(" or ", strList);
         }
 
         /// <summary>

@@ -673,82 +673,84 @@ namespace MyFilm
 
         private void toolStripMenuItemSetDelete_Click(object sender, EventArgs e)
         {
-            List<SetDeleteStateStruct> setDeleteStateStructList = new List<SetDeleteStateStruct>();
+            List<SetStateStruct> setStateStructList = new List<SetStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                SetDeleteStateStruct setDeleteStateStruct = new SetDeleteStateStruct();
-                setDeleteStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
-                setDeleteStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
-                setDeleteStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
-                setDeleteStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
-                setDeleteStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
-                setDeleteStateStruct.set_to = true;
-                setDeleteStateStruct.set_time = DateTime.Now;
-                setDeleteStateStructList.Add(setDeleteStateStruct);
+                SetStateStruct SetStateStruct = new SetStateStruct();
+                SetStateStruct.name = Convert.ToString(gridViewData.Rows[row.Index]["name"]);
+                SetStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                SetStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                SetStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
+                SetStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                SetStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+
+                setStateStructList.Add(SetStateStruct);
 
                 this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = true;
             }
-            sqlData.UpdateDeleteStateFromFilmInfo(setDeleteStateStructList);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList, DateTime.Now, true);
         }
 
         private void toolStripMenuItemSetWatch_Click(object sender, EventArgs e)
         {
-            List<SetWatchStateStruct> setWatchStateStructList = new List<SetWatchStateStruct>();
+            List<SetStateStruct> setStateStructList = new List<SetStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                SetWatchStateStruct setWatchStateStruct = new SetWatchStateStruct();
-                setWatchStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
-                setWatchStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
-                setWatchStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
-                setWatchStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
-                setWatchStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
-                setWatchStateStruct.set_to = true;
-                setWatchStateStruct.set_time = DateTime.Now;
-                setWatchStateStructList.Add(setWatchStateStruct);
+                SetStateStruct SetStateStruct = new SetStateStruct();
+                SetStateStruct.name = Convert.ToString(gridViewData.Rows[row.Index]["name"]);
+                SetStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                SetStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                SetStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
+                SetStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                SetStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+
+                setStateStructList.Add(SetStateStruct);
 
                 this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = true;
             }
-            sqlData.UpdateWatchStateFromFilmInfo(setWatchStateStructList);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList, DateTime.Now, true);
         }
 
         private void toolStripMenuItemCancelDelete_Click(object sender, EventArgs e)
         {
-            List<SetDeleteStateStruct> setDeleteStateStructList = new List<SetDeleteStateStruct>();
+            List<SetStateStruct> setStateStructList = new List<SetStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                SetDeleteStateStruct setDeleteStateStruct = new SetDeleteStateStruct();
-                setDeleteStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
-                setDeleteStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
-                setDeleteStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
-                setDeleteStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
-                setDeleteStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
-                setDeleteStateStruct.set_to = false;
-                setDeleteStateStruct.set_time = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                setDeleteStateStructList.Add(setDeleteStateStruct);
+                SetStateStruct SetStateStruct = new SetStateStruct();
+                SetStateStruct.name = Convert.ToString(gridViewData.Rows[row.Index]["name"]);
+                SetStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                SetStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                SetStateStruct.to_delete_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_delete_ex"]);
+                SetStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                SetStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+
+                setStateStructList.Add(SetStateStruct);
 
                 this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = false;
             }
-            sqlData.UpdateDeleteStateFromFilmInfo(setDeleteStateStructList);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList,
+                System.Data.SqlTypes.SqlDateTime.MinValue.Value, false);
         }
 
         private void toolStripMenuItemCancelWatch_Click(object sender, EventArgs e)
         {
-            List<SetWatchStateStruct> setWatchStateStructList = new List<SetWatchStateStruct>();
+            List<SetStateStruct> setStateStructList = new List<SetStateStruct>();
             foreach (DataGridViewRow row in dataGridView.SelectedRows)
             {
-                SetWatchStateStruct setWatchStateStruct = new SetWatchStateStruct();
-                setWatchStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
-                setWatchStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
-                setWatchStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
-                setWatchStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
-                setWatchStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
-                setWatchStateStruct.set_to = false;
-                setWatchStateStruct.set_time = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                setWatchStateStructList.Add(setWatchStateStruct);
+                SetStateStruct SetStateStruct = new SetStateStruct();
+                SetStateStruct.name = Convert.ToString(gridViewData.Rows[row.Index]["name"]);
+                SetStateStruct.id = Convert.ToInt32(gridViewData.Rows[row.Index]["id"]);
+                SetStateStruct.is_folder = Convert.ToBoolean(gridViewData.Rows[row.Index]["is_folder"]);
+                SetStateStruct.to_watch_ex = Convert.ToBoolean(gridViewData.Rows[row.Index]["to_watch_ex"]);
+                SetStateStruct.pid = Convert.ToInt32(gridViewData.Rows[row.Index]["pid"]);
+                SetStateStruct.max_cid = Convert.ToInt32(gridViewData.Rows[row.Index]["max_cid"]);
+
+                setStateStructList.Add(SetStateStruct);
 
                 this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = false;
             }
-            sqlData.UpdateWatchStateFromFilmInfo(setWatchStateStructList);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList,
+                System.Data.SqlTypes.SqlDateTime.MinValue.Value, false);
         }
 
         private void toolStripMenuItemOpenFolder_Click(object sender, EventArgs e)
