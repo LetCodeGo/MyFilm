@@ -39,7 +39,8 @@ namespace MyFilm
         /// <summary>
         /// 搜索关键字分隔符
         /// </summary>
-        private static readonly char[] searchKeyWordSplitter = " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（）".ToCharArray();
+        private static readonly char[] searchKeyWordSplitter =
+            " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·".ToCharArray();
 
         /// <summary>
         /// 打开数据库

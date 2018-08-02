@@ -93,18 +93,21 @@ namespace MyFilm
 
             public void Add(TreeSetState nodeSetState)
             {
-                foreach (TreeSetState _nodeSetState in this.cancelIDList)
+                if (nodeSetState.cancelIDList != null)
                 {
-                    if (_nodeSetState.id == nodeSetState.id)
+                    foreach (TreeSetState _nodeSetState in this.cancelIDList)
                     {
-                        _nodeSetState.cancelIDList.AddRange(nodeSetState.cancelIDList);
-                        return;
-                    }
-                    else if (_nodeSetState.id > nodeSetState.id &&
-                        _nodeSetState.id <= nodeSetState.max_cid)
-                    {
-                        _nodeSetState.Add(nodeSetState);
-                        return;
+                        if (_nodeSetState.id == nodeSetState.id)
+                        {
+                            _nodeSetState.cancelIDList.AddRange(nodeSetState.cancelIDList);
+                            return;
+                        }
+                        else if (_nodeSetState.id > nodeSetState.id &&
+                            _nodeSetState.id <= nodeSetState.max_cid)
+                        {
+                            _nodeSetState.Add(nodeSetState);
+                            return;
+                        }
                     }
                 }
 

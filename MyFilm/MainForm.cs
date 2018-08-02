@@ -34,6 +34,8 @@ namespace MyFilm
         /// </summary>
         private int currentPageIndex = 0;
 
+        private string comboxDiskDefaultString = "全部";
+
         private enum ActionType
         {
             ACTION_DISK_ROOT,
@@ -118,6 +120,8 @@ namespace MyFilm
             // 获取根目录数据源
             diskRootDataTable = GetDiskRootDirectoryInfo();
             totalRowCount = diskRootDataTable.Rows.Count;
+
+            this.comboxDiskDefaultString = string.Format("全部（共 {0} 磁盘）", totalRowCount);
 
             // 开启心跳线程
             Thread thread1 = new Thread(new ThreadStart(MySqlHeartBeat));
@@ -228,7 +232,7 @@ namespace MyFilm
         {
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
-            this.comboBoxDisk.Items.Add("全部");
+            this.comboBoxDisk.Items.Add(comboxDiskDefaultString);
             for (int i = 0; i < diskRootDataTable.Rows.Count; i++)
             {
                 this.comboBoxDisk.Items.Add(diskRootDataTable.Rows[i]["disk_desc"]);
@@ -341,13 +345,26 @@ namespace MyFilm
 
             String explain = String.Format("{0} （{1}）", explain1, queryInfo);
             Size sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
-            int length = queryInfo.Length;
-            while (sizeT.Width > this.labelExplain.Width && length > 0)
+            int lenHigh = queryInfo.Length;
+            int lenLow = 0;
+            int lenActual = lenHigh;
+            if (sizeT.Width > this.labelExplain.Width)
             {
-                length--;
-                explain = String.Format("{0} （{1}...）", explain1, queryInfo.Substring(0, length));
-                sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
+                while (lenLow < lenHigh - 1)
+                {
+                    lenActual = lenLow + (lenHigh - lenLow) / 2;
+                    explain = String.Format("{0} （{1}...）", explain1,
+                        queryInfo.Substring(0, lenActual));
+                    sizeT = TextRenderer.MeasureText(explain, this.labelExplain.Font);
+
+                    if (sizeT.Width == this.labelExplain.Width) break;
+                    else if (sizeT.Width > this.labelExplain.Width) lenHigh = lenActual;
+                    else lenLow = lenActual;
+                }
             }
+            if (sizeT.Width > this.labelExplain.Width)
+                explain = String.Format("{0} （{1}...）", explain1,
+                        queryInfo.Substring(0, lenActual - 1));
             this.labelExplain.Text = explain;
             this.labelExplain.Tag = String.Format("{0}|{1}", explain1, queryInfo);
 
@@ -399,12 +416,12 @@ namespace MyFilm
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
 
             queryInfo = String.Format("在 {0} 里搜索 \'{1}\'",
-                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe,
+                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe,
                             keyWord);
             actionType = ActionType.ACTION_KEY_WORD_SEARCH;
 
             idList = sqlData.SearchKeyWordFromFilmInfo(
-                keyWord, diskDescribe == "全部" ? null : diskDescribe);
+                keyWord, diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = (idList == null ? 0 : idList.Length);
 
             if (totalRowCount == 0) this.textBoxSearch.ForeColor = Color.Red;
@@ -422,11 +439,11 @@ namespace MyFilm
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待删",
-                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe);
+                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
             idList = sqlData.GetDeleteDataFromFilmInfo(
-                diskDescribe == "全部" ? null : diskDescribe);
+                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
 
             InitPageCombox();
@@ -439,11 +456,11 @@ namespace MyFilm
 
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待看",
-                            diskDescribe == "全部" ? "所有磁盘" : diskDescribe);
+                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_WATCH_SEARCH;
 
             idList = sqlData.GetWatchDataFromFilmInfo(
-                diskDescribe == "全部" ? null : diskDescribe);
+                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
 
             InitPageCombox();
@@ -547,8 +564,10 @@ namespace MyFilm
 
             totalRowCount = diskRootDataTable.Rows.Count;
 
-            this.comboBoxDisk.SelectedIndex = 0;
+            this.comboxDiskDefaultString = string.Format("全部（共 {0} 磁盘）", totalRowCount);
+
             InitPageCombox();
+            InitDiskCombox();
             ShowDataGridViewPage(0);
         }
 
