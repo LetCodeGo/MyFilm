@@ -243,7 +243,7 @@
             this.btnUpdateLocalDisk.Name = "btnUpdateLocalDisk";
             this.btnUpdateLocalDisk.Size = new System.Drawing.Size(112, 23);
             this.btnUpdateLocalDisk.TabIndex = 10;
-            this.btnUpdateLocalDisk.Text = "刷新本地磁盘";
+            this.btnUpdateLocalDisk.Text = "刷新磁盘盘符";
             this.btnUpdateLocalDisk.UseVisualStyleBackColor = true;
             this.btnUpdateLocalDisk.Click += new System.EventHandler(this.btnUpdateLocalDisk_Click);
             // 

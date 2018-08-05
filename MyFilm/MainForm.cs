@@ -129,6 +129,7 @@ namespace MyFilm
 
             InitPageCombox();
             InitDiskCombox();
+            InitComboxMapDisk();
             SetGridView();
 
             // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
@@ -153,6 +154,25 @@ namespace MyFilm
             ProcessSendData.SendData("quit");
 
             sqlData.CloseMySql();
+        }
+
+        private void InitComboxMapDisk()
+        {
+            this.comboBoxMapDisk.SuspendLayout();
+            this.comboBoxMapDisk.Items.Clear();
+
+            System.IO.DriveInfo[] drives = System.IO.DriveInfo.GetDrives();
+            // 是否含磁盘E
+            bool eDrive = false;
+            for (int i = 0; i < drives.Length; i++)
+            {
+                if ((!eDrive) && drives[i].Name == @"E:\") eDrive = true;
+                this.comboBoxMapDisk.Items.Add(drives[i].Name);
+            }
+
+            if (eDrive) this.comboBoxMapDisk.SelectedItem = @"E:\";
+            else this.comboBoxMapDisk.SelectedIndex = drives.Length - 1;
+            this.comboBoxMapDisk.ResumeLayout();
         }
 
         private void SetGridView()
@@ -787,7 +807,18 @@ namespace MyFilm
             // 文件时打开其所在文件夹，文件夹时打开此文件夹
             String folderPath = upFolderPath;
             if (isFolder) folderPath = Path.Combine(upFolderPath, fileName);
-            System.Diagnostics.Process.Start(folderPath);
+            // 打开位置实际磁盘
+            folderPath = this.comboBoxMapDisk.SelectedItem.ToString()[0] + folderPath.Substring(1);
+
+            try
+            {
+                System.Diagnostics.Process.Start(folderPath);
+            }
+            catch
+            {
+                MessageBox.Show(string.Format("系统找不到指定的文件夹。{0}{1}",
+                    Environment.NewLine, folderPath));
+            }
         }
 
         private void toolStripMenuItemPrintFolderTree_Click(object sender, EventArgs e)
@@ -1102,6 +1133,11 @@ namespace MyFilm
 
                 sqlData.CountRowsFormSearchLog();
             }
+        }
+
+        private void btnRefreshMapdisk_Click(object sender, EventArgs e)
+        {
+            InitComboxMapDisk();
         }
     }
 }

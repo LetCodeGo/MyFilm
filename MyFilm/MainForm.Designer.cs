@@ -59,6 +59,8 @@
             this.contextMenuStripNotify = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.comboBoxMapDisk = new System.Windows.Forms.ComboBox();
+            this.btnRefreshMapdisk = new System.Windows.Forms.Button();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
@@ -354,6 +356,26 @@
             this.toolStripMenuItemExitWindow.Text = "退出";
             this.toolStripMenuItemExitWindow.Click += new System.EventHandler(this.toolStripMenuItemExitWindow_Click);
             // 
+            // comboBoxMapDisk
+            // 
+            this.comboBoxMapDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.comboBoxMapDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxMapDisk.FormattingEnabled = true;
+            this.comboBoxMapDisk.Location = new System.Drawing.Point(453, 603);
+            this.comboBoxMapDisk.Name = "comboBoxMapDisk";
+            this.comboBoxMapDisk.Size = new System.Drawing.Size(86, 20);
+            this.comboBoxMapDisk.TabIndex = 26;
+            // 
+            // btnRefreshMapdisk
+            // 
+            this.btnRefreshMapdisk.Location = new System.Drawing.Point(277, 601);
+            this.btnRefreshMapdisk.Name = "btnRefreshMapdisk";
+            this.btnRefreshMapdisk.Size = new System.Drawing.Size(170, 23);
+            this.btnRefreshMapdisk.TabIndex = 28;
+            this.btnRefreshMapdisk.Text = "刷新（打开位置磁盘映射为）";
+            this.btnRefreshMapdisk.UseVisualStyleBackColor = true;
+            this.btnRefreshMapdisk.Click += new System.EventHandler(this.btnRefreshMapdisk_Click);
+            // 
             // tbePageRowCount
             // 
             this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -370,6 +392,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 636);
+            this.Controls.Add(this.btnRefreshMapdisk);
+            this.Controls.Add(this.comboBoxMapDisk);
             this.Controls.Add(this.tbePageRowCount);
             this.Controls.Add(this.labelPageRowCount);
             this.Controls.Add(this.btnRootDirectory);
@@ -435,6 +459,8 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowWindow;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExitWindow;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowContent;
+        private System.Windows.Forms.ComboBox comboBoxMapDisk;
+        private System.Windows.Forms.Button btnRefreshMapdisk;
     }
 }
 
