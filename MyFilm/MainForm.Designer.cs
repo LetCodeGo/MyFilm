@@ -62,6 +62,7 @@
             this.comboBoxMapDisk = new System.Windows.Forms.ComboBox();
             this.btnRefreshMapdisk = new System.Windows.Forms.Button();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
+            this.btnDeleteOrderByDisk = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
             this.contextMenuStripNotify.SuspendLayout();
@@ -82,14 +83,14 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSearch.Location = new System.Drawing.Point(196, 12);
             this.textBoxSearch.Name = "textBoxSearch";
-            this.textBoxSearch.Size = new System.Drawing.Size(652, 21);
+            this.textBoxSearch.Size = new System.Drawing.Size(586, 21);
             this.textBoxSearch.TabIndex = 1;
             this.textBoxSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSearch_KeyDown);
             // 
             // btnSearch
             // 
             this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSearch.Location = new System.Drawing.Point(854, 11);
+            this.btnSearch.Location = new System.Drawing.Point(788, 11);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(75, 23);
             this.btnSearch.TabIndex = 2;
@@ -100,18 +101,18 @@
             // btnDelete
             // 
             this.btnDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDelete.Location = new System.Drawing.Point(935, 11);
+            this.btnDelete.Location = new System.Drawing.Point(865, 11);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(75, 23);
             this.btnDelete.TabIndex = 3;
-            this.btnDelete.Text = "待删";
+            this.btnDelete.Text = "待删(时间)";
             this.btnDelete.UseVisualStyleBackColor = true;
             this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // btnWatch
             // 
             this.btnWatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnWatch.Location = new System.Drawing.Point(1016, 11);
+            this.btnWatch.Location = new System.Drawing.Point(1019, 11);
             this.btnWatch.Name = "btnWatch";
             this.btnWatch.Size = new System.Drawing.Size(75, 23);
             this.btnWatch.TabIndex = 4;
@@ -387,11 +388,23 @@
             this.tbePageRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.tbePageRowCount.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbePageRowCount_KeyDown);
             // 
+            // btnDeleteOrderByDisk
+            // 
+            this.btnDeleteOrderByDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDeleteOrderByDisk.Location = new System.Drawing.Point(942, 11);
+            this.btnDeleteOrderByDisk.Name = "btnDeleteOrderByDisk";
+            this.btnDeleteOrderByDisk.Size = new System.Drawing.Size(75, 23);
+            this.btnDeleteOrderByDisk.TabIndex = 29;
+            this.btnDeleteOrderByDisk.Text = "待删(磁盘)";
+            this.btnDeleteOrderByDisk.UseVisualStyleBackColor = true;
+            this.btnDeleteOrderByDisk.Click += new System.EventHandler(this.btnDeleteOrderByDisk_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 636);
+            this.Controls.Add(this.btnDeleteOrderByDisk);
             this.Controls.Add(this.btnRefreshMapdisk);
             this.Controls.Add(this.comboBoxMapDisk);
             this.Controls.Add(this.tbePageRowCount);
@@ -461,6 +474,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowContent;
         private System.Windows.Forms.ComboBox comboBoxMapDisk;
         private System.Windows.Forms.Button btnRefreshMapdisk;
+        private System.Windows.Forms.Button btnDeleteOrderByDisk;
     }
 }
 

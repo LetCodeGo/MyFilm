@@ -798,6 +798,35 @@ namespace MyFilm
             return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
         }
 
+        public int[] GetDeleteDataFromFilmInfoGroupByDisk(String diskDescribe = null)
+        {
+            String cmdText = String.Format(
+                @"select group_concat(id order by id), count(id) as id_count from {0} where 
+                to_delete = 1 {1} group by disk_desc order by id_count desc;",
+                "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
+            String errMsg = String.Empty;
+
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+            if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+
+            try
+            {
+                using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                {
+                    String strTemp = String.Empty;
+                    while (sqlDataReader.Read()) strTemp += ("," + sqlDataReader[0].ToString());
+                    List<String> strIdList = strTemp.Split(
+                        new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    return strIdList.ConvertAll(x => Convert.ToInt32(x)).ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                errMsg = e.Message;
+                return null;
+            }
+        }
+
         public void UpdateWatchOrDeleteStateFromFilmInfo(bool isWatch,
             List<SetStateStruct> setStateStructList, DateTime setTime, bool setTo)
         {

@@ -458,11 +458,27 @@ namespace MyFilm
         private void btnDelete_Click(object sender, EventArgs e)
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
-            queryInfo = String.Format("在 {0} 里搜索 待删",
+            queryInfo = String.Format("在 {0} 里搜索 待删（结果以设置时间倒序）",
                             diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
             idList = sqlData.GetDeleteDataFromFilmInfo(
+                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
+            totalRowCount = idList.Length;
+
+            InitPageCombox();
+
+            ShowDataGridViewPage(0);
+        }
+
+        private void btnDeleteOrderByDisk_Click(object sender, EventArgs e)
+        {
+            String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
+            queryInfo = String.Format("在 {0} 里搜索 待删（结果以磁盘分组）",
+                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
+            actionType = ActionType.ACTION_DELETE_SEARCH;
+
+            idList = sqlData.GetDeleteDataFromFilmInfoGroupByDisk(
                 diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
 
