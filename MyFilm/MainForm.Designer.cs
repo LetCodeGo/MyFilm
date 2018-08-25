@@ -369,6 +369,7 @@
             // 
             // btnRefreshMapdisk
             // 
+            this.btnRefreshMapdisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnRefreshMapdisk.Location = new System.Drawing.Point(277, 601);
             this.btnRefreshMapdisk.Name = "btnRefreshMapdisk";
             this.btnRefreshMapdisk.Size = new System.Drawing.Size(170, 23);
