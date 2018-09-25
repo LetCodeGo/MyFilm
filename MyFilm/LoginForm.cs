@@ -42,6 +42,9 @@ namespace MyFilm
 
             [XmlArrayItem("DataBaseName")]
             public List<String> DataBaseNames;
+
+            [XmlElement("WebDataCaptureTime")]
+            public String WebDataCaptureTime;
         }
 
         private DBStruct dbStruct = null;
@@ -59,6 +62,7 @@ namespace MyFilm
             dbStruct.DataBaseUserNames = new List<String>();
             dbStruct.DataBasePassWords = new List<String>();
             dbStruct.DataBaseNames = new List<String>();
+            dbStruct.WebDataCaptureTime = DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss");
 
             if (!Directory.Exists(CommonString.AppDataFolder))
                 Directory.CreateDirectory(CommonString.AppDataFolder);
@@ -148,9 +152,26 @@ namespace MyFilm
 
             try
             {
-                SqlData sqlData = new SqlData();
+                SqlData sqlData = SqlData.GetInstance();
                 sqlData.OpenMySql();
-                sqlData.CloseMySql();
+                sqlData.CreateTables();
+
+                DateTime dateTime = DateTime.MinValue;
+                if (this.dbStruct.WebDataCaptureTime != null)
+                    dateTime = DateTime.Parse(this.dbStruct.WebDataCaptureTime);
+                DateTime dateTimeNow = DateTime.Now;
+                TimeSpan ts = dateTimeNow.Subtract(dateTime);
+                if (ts.Days > 1)
+                {
+                    string errMsg = "";
+                    List<string> infoList = RealOrFake4KWebDataCapture.CrawlData(ref errMsg);
+                    if (infoList == null)
+                    {
+                        MessageBox.Show(string.Format("从网址\n{0}\n抓取数据失败\n{1}",
+                            RealOrFake4KWebDataCapture.webPageAddress, errMsg));
+                    }
+                    else if (infoList.Count > 0) sqlData.Update4KInfo(infoList);
+                }
 
                 this.dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
                 this.dbStruct.DefaultDataBasePassWord = CommonString.DbPassword;
@@ -165,6 +186,8 @@ namespace MyFilm
                     dbStruct.DataBasePassWords.Add(CommonString.DbPassword);
                 if (!dbStruct.DataBaseNames.Contains(CommonString.DbName))
                     dbStruct.DataBaseNames.Add(CommonString.DbName);
+
+                dbStruct.WebDataCaptureTime = dateTimeNow.ToString("yyyy-MM-dd HHH:mm:ss");
 
                 SaveXml();
 

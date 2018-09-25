@@ -8,18 +8,14 @@ namespace MyFilm
 {
     public partial class ManagerForm : Form
     {
-        // 数据库查询
-        private SqlData sqlData = null;
-
         /// <summary>
         /// 表格关联的数据
         /// </summary>
         private DataTable gridViewData = null;
 
-        public ManagerForm(SqlData sqlData)
+        public ManagerForm()
         {
             InitializeComponent();
-            this.sqlData = sqlData;
         }
 
         private void InitGrid()
@@ -38,7 +34,7 @@ namespace MyFilm
             foreach (DataGridViewColumn col in this.dataGridView.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
 
-            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
         }
 
@@ -122,11 +118,11 @@ namespace MyFilm
 
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
-                bool bCompleteScan = sqlData.ScanDisk(
+                bool bCompleteScan = SqlData.GetInstance().ScanDisk(
                     dlg.SelectedPath, diskDescribe,
                     bBriefScan ? setLayer : Int32.MaxValue);
 
-                gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
+                gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
                 string extraMsg = string.Empty;
@@ -156,16 +152,16 @@ namespace MyFilm
                     return;
                 }
 
-                int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
-                int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
+                int deleteFilmNumber = SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
+                int deleteDiskNumber = SqlData.GetInstance().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
-                bool bCompleteScan = sqlData.ScanDisk(
+                bool bCompleteScan = SqlData.GetInstance().ScanDisk(
                     dlg.SelectedPath, diskDescribe,
                     bBriefScan ? setLayer : Int32.MaxValue);
 
-                gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
+                gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
                 string extraMsg = string.Empty;
@@ -185,10 +181,10 @@ namespace MyFilm
             }
 
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
-            int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
-            int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
+            int deleteFilmNumber = SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
+            int deleteDiskNumber = SqlData.GetInstance().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
-            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
             MessageBox.Show(String.Format("删除磁盘 \'{0}\' 完成！", diskDescribe),
@@ -211,11 +207,11 @@ namespace MyFilm
 
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
 
-            //int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
-            //DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
+            //int deleteNumber = SqlData.GetInstance().CountDeleteDataFromFilmInfo(diskDescribe);
+            //DataTable dt = SqlData.GetInstance().GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
 
-            int[] idList = sqlData.GetDeleteDataFromFilmInfo(diskDescribe);
-            DataTable dt = sqlData.SelectDataByIDList(idList);
+            int[] idList = SqlData.GetInstance().GetDeleteDataFromFilmInfo(diskDescribe);
+            DataTable dt = SqlData.GetInstance().SelectDataByIDList(idList);
             Debug.Assert(idList.Length == dt.Rows.Count);
 
             String localDisk = this.comboBoxLocalDisk.SelectedItem.ToString();
@@ -310,10 +306,10 @@ namespace MyFilm
                 return;
             }
 
-            int changeInFilmInfo = sqlData.UpdateDiskDescribeFromFilmInfo(diskDescribe, diskNewDescribe);
-            int changeInDiskInfo = sqlData.UpdateDiskDescribeFromDiskInfo(diskDescribe, diskNewDescribe);
+            int changeInFilmInfo = SqlData.GetInstance().UpdateDiskDescribeFromFilmInfo(diskDescribe, diskNewDescribe);
+            int changeInDiskInfo = SqlData.GetInstance().UpdateDiskDescribeFromDiskInfo(diskDescribe, diskNewDescribe);
 
-            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
             MessageBox.Show(String.Format("更改磁盘描述 \'{0}\' 为 \'{1}\' 完成！", diskDescribe, diskNewDescribe),

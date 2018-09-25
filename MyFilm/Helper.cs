@@ -51,7 +51,12 @@ namespace MyFilm
             // "C:\\" 的父文件夹为 "\\"
             if (path.TrimEnd(new char[] { '\\' }).EndsWith(":")) return "\\";
 
-            String upFolder = path.Substring(0, path.LastIndexOf('\\'));
+            if (path.IndexOf(':') == -1) return path;
+
+            int index = path.LastIndexOf('\\');
+            if (index == -1) return path;
+
+            String upFolder = path.Substring(0, index);
             if (upFolder.EndsWith(":")) upFolder += "\\";
             return upFolder;
         }

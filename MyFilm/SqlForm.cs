@@ -7,8 +7,6 @@ namespace MyFilm
 {
     public partial class SqlForm : Form
     {
-        private SqlData sqlData = null;
-
         /// <summary>
         /// 输出设置
         /// </summary>
@@ -20,11 +18,9 @@ namespace MyFilm
 
         private CheckBox[] cbs = null;
 
-        public SqlForm(SqlData sqlData)
+        public SqlForm()
         {
             InitializeComponent();
-
-            this.sqlData = sqlData;
 
             this.textBoxSql.Init("SELECT * FROM film_info WHERE ");
         }
@@ -41,7 +37,7 @@ namespace MyFilm
                 String errMsg = String.Empty;
                 String outputText = String.Empty;
 
-                DataTable dt = sqlData.SelectAllDataBySqlText(cmdText, ref errMsg);
+                DataTable dt = SqlData.GetInstance().SelectAllDataBySqlText(cmdText, ref errMsg);
 
                 if (dt == null)
                 {
@@ -142,7 +138,7 @@ namespace MyFilm
             this.richTextBoxInfo.Text = "mysql> desc film_info" + Environment.NewLine;
 
             String descFilmInfo = CommonDataTable.DataTableFormatToString(
-                sqlData.GetDescriptionOfFilmInfo(), null);
+                SqlData.GetInstance().GetDescriptionOfFilmInfo(), null);
             UpdateRichTextBox(descFilmInfo);
         }
 

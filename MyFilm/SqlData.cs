@@ -42,6 +42,27 @@ namespace MyFilm
         private static readonly char[] searchKeyWordSplitter =
             " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·".ToCharArray();
 
+        private static SqlData sqlData = null;
+        private static readonly object locker = new object();
+
+        private SqlData() { }
+
+        public static SqlData GetInstance()
+        {
+            if (sqlData == null)
+            {
+                lock (locker)
+                {
+                    // 如果类的实例不存在则创建，否则直接返回
+                    if (sqlData == null)
+                    {
+                        sqlData = new SqlData();
+                    }
+                }
+            }
+            return sqlData;
+        }
+
         /// <summary>
         /// 打开数据库
         /// </summary>
@@ -180,6 +201,76 @@ namespace MyFilm
             slqCom.ExecuteNonQuery();
         }
 
+        public void Update4KInfo(List<string> infoList)
+        {
+            String cmdText1 = String.Format(
+                "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
+            MySqlCommand sqlCmd1 = new MySqlCommand(cmdText1, sqlConnection);
+            sqlCmd1.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
+            object diskCountObj = sqlCmd1.ExecuteScalar();
+            int diskCount = 0;
+            if (diskCountObj != DBNull.Value) diskCount = Convert.ToInt32(diskCountObj);
+            if ((diskCount - 1) >= infoList.Count) return;
+
+            DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
+
+            String cmdText = String.Format("select max(id) from {0};", "film_info");
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+            object maxIdObj = sqlCmd.ExecuteScalar();
+            int maxId = 0;
+            if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(maxIdObj);
+            int startId = maxId + 1;
+            int diskId = startId;
+            DateTime dateTime = DateTime.Now;
+
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
+
+            DataRow drDisk = dt.NewRow();
+            drDisk["id"] = startId++;
+            drDisk["name"] = CommonString.RealOrFake4KDiskName;
+            drDisk["path"] = "------";
+            drDisk["size"] = -1;
+            drDisk["create_t"] = dateTime;
+            drDisk["modify_t"] = dateTime;
+            drDisk["is_folder"] = true;
+            drDisk["to_watch"] = false;
+            drDisk["to_watch_ex"] = false;
+            drDisk["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+            drDisk["to_delete"] = false;
+            drDisk["to_delete_ex"] = false;
+            drDisk["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+            drDisk["content"] = String.Empty;
+            drDisk["pid"] = -1;
+            drDisk["max_cid"] = startId - 1 + infoList.Count;
+            drDisk["disk_desc"] = CommonString.RealOrFake4KDiskName;
+            dt.Rows.Add(drDisk);
+
+            foreach (string strInfo in infoList)
+            {
+                DataRow dr = dt.NewRow();
+                dr["id"] = startId++;
+                dr["name"] = strInfo;
+                dr["path"] = "------";
+                dr["size"] = -1;
+                dr["create_t"] = dateTime;
+                dr["modify_t"] = dateTime;
+                dr["is_folder"] = false;
+                dr["to_watch"] = false;
+                dr["to_watch_ex"] = false;
+                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                dr["to_delete"] = false;
+                dr["to_delete_ex"] = false;
+                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                dr["content"] = String.Empty;
+                dr["pid"] = diskId;
+                dr["max_cid"] = startId - 1;
+                dr["disk_desc"] = CommonString.RealOrFake4KDiskName;
+                dt.Rows.Add(dr);
+            }
+
+            InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
+        }
+
         /// <summary>
         /// 扫描磁盘，更新磁盘信息和影片信息
         /// </summary>
@@ -198,7 +289,7 @@ namespace MyFilm
             MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
             object maxIdObj = sqlCmd.ExecuteScalar();
             int maxId = 0;
-            if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(sqlCmd.ExecuteScalar());
+            if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(maxIdObj);
             int startId = maxId + 1;
             this.startIdGlobal = startId;
 
