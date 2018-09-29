@@ -48,8 +48,9 @@
             this.comboBoxLocalDisk = new System.Windows.Forms.ComboBox();
             this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
-            this.tbeLayer = new MyFilm.TextBoxEx();
             this.labelScanDepth = new System.Windows.Forms.Label();
+            this.tbeLayer = new MyFilm.TextBoxEx();
+            this.btnUpdateROF4K = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -259,6 +260,17 @@
             this.checkBoxBriefScan.UseVisualStyleBackColor = true;
             this.checkBoxBriefScan.CheckedChanged += new System.EventHandler(this.checkBoxBriefScan_CheckedChanged);
             // 
+            // labelScanDepth
+            // 
+            this.labelScanDepth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelScanDepth.AutoSize = true;
+            this.labelScanDepth.Enabled = false;
+            this.labelScanDepth.Location = new System.Drawing.Point(865, 41);
+            this.labelScanDepth.Name = "labelScanDepth";
+            this.labelScanDepth.Size = new System.Drawing.Size(29, 12);
+            this.labelScanDepth.TabIndex = 28;
+            this.labelScanDepth.Text = "深度";
+            // 
             // tbeLayer
             // 
             this.tbeLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -271,22 +283,23 @@
             this.tbeLayer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.tbeLayer.MouseLeave += new System.EventHandler(this.tbeLayer_MouseLeave);
             // 
-            // labelScanDepth
+            // btnUpdateROF4K
             // 
-            this.labelScanDepth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelScanDepth.AutoSize = true;
-            this.labelScanDepth.Enabled = false;
-            this.labelScanDepth.Location = new System.Drawing.Point(865, 41);
-            this.labelScanDepth.Name = "labelScanDepth";
-            this.labelScanDepth.Size = new System.Drawing.Size(29, 12);
-            this.labelScanDepth.TabIndex = 28;
-            this.labelScanDepth.Text = "深度";
+            this.btnUpdateROF4K.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnUpdateROF4K.Location = new System.Drawing.Point(768, 171);
+            this.btnUpdateROF4K.Name = "btnUpdateROF4K";
+            this.btnUpdateROF4K.Size = new System.Drawing.Size(204, 25);
+            this.btnUpdateROF4K.TabIndex = 29;
+            this.btnUpdateROF4K.Text = "更新 REAL_OR_FAKE_4K";
+            this.btnUpdateROF4K.UseVisualStyleBackColor = true;
+            this.btnUpdateROF4K.Click += new System.EventHandler(this.btnUpdateROF4K_Click);
             // 
             // ManagerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(984, 580);
+            this.Controls.Add(this.btnUpdateROF4K);
             this.Controls.Add(this.labelScanDepth);
             this.Controls.Add(this.tbeLayer);
             this.Controls.Add(this.checkBoxBriefScan);
@@ -332,5 +345,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnTotalSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCompleteScan;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnScanLayer;
+        private System.Windows.Forms.Button btnUpdateROF4K;
     }
 }

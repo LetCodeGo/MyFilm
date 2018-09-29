@@ -1164,7 +1164,17 @@ namespace MyFilm
                 }
                 if (!heartBeatFlag) break;
 
-                SqlData.GetInstance().CountRowsFormSearchLog();
+                // 电脑睡眠时，网卡睡眠
+                try
+                {
+                    SqlData.GetInstance().CountRowsFormSearchLog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("{0}\n{1}",
+                        DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
+                    Application.Exit();
+                }
             }
         }
 

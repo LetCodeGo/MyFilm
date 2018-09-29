@@ -156,21 +156,31 @@ namespace MyFilm
                 sqlData.OpenMySql();
                 sqlData.CreateTables();
 
-                DateTime dateTime = DateTime.MinValue;
+                DateTime dateTimeRead = DateTime.MinValue;
                 if (this.dbStruct.WebDataCaptureTime != null)
-                    dateTime = DateTime.Parse(this.dbStruct.WebDataCaptureTime);
+                    dateTimeRead = DateTime.Parse(this.dbStruct.WebDataCaptureTime);
                 DateTime dateTimeNow = DateTime.Now;
-                TimeSpan ts = dateTimeNow.Subtract(dateTime);
+                TimeSpan ts = dateTimeNow.Subtract(dateTimeRead);
                 if (ts.Days > 1)
                 {
                     string errMsg = "";
                     List<string> infoList = RealOrFake4KWebDataCapture.CrawlData(ref errMsg);
-                    if (infoList == null)
+                    if (infoList == null || infoList.Count == 0)
                     {
-                        MessageBox.Show(string.Format("从网址\n{0}\n抓取数据失败\n{1}",
+                        MessageBox.Show(string.Format("从网页\n{0}\n抓取数据失败\n{1}",
                             RealOrFake4KWebDataCapture.webPageAddress, errMsg));
                     }
-                    else if (infoList.Count > 0) sqlData.Update4KInfo(infoList);
+                    else if (infoList.Count > 0)
+                    {
+                        int updateCount = sqlData.Update4KInfo(infoList, ref errMsg);
+                        if (updateCount == -1) MessageBox.Show(errMsg);
+                        else
+                        {
+                            MessageBox.Show(string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
+                                RealOrFake4KWebDataCapture.webPageAddress, updateCount));
+                            dateTimeRead = dateTimeNow;
+                        }
+                    }
                 }
 
                 this.dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
@@ -187,7 +197,7 @@ namespace MyFilm
                 if (!dbStruct.DataBaseNames.Contains(CommonString.DbName))
                     dbStruct.DataBaseNames.Add(CommonString.DbName);
 
-                dbStruct.WebDataCaptureTime = dateTimeNow.ToString("yyyy-MM-dd HHH:mm:ss");
+                dbStruct.WebDataCaptureTime = dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss");
 
                 SaveXml();
 

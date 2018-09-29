@@ -201,7 +201,13 @@ namespace MyFilm
             slqCom.ExecuteNonQuery();
         }
 
-        public void Update4KInfo(List<string> infoList)
+        /// <summary>
+        /// 用从网页抓取的数据更新数据库
+        /// </summary>
+        /// <param name="infoList"></param>
+        /// <param name="errMsg"></param>
+        /// <returns>更新的数据条数，-1 表示从网页抓取的条数小于或等于数据库条数（不更新数据库）</returns>
+        public int Update4KInfo(List<string> infoList, ref string errMsg)
         {
             String cmdText1 = String.Format(
                 "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
@@ -210,7 +216,13 @@ namespace MyFilm
             object diskCountObj = sqlCmd1.ExecuteScalar();
             int diskCount = 0;
             if (diskCountObj != DBNull.Value) diskCount = Convert.ToInt32(diskCountObj);
-            if ((diskCount - 1) >= infoList.Count) return;
+            if ((diskCount - 1) >= infoList.Count)
+            {
+                errMsg = string.Format(
+                    "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
+                    RealOrFake4KWebDataCapture.webPageAddress, infoList.Count, diskCount - 1);
+                return -1;
+            }
 
             DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
 
@@ -269,6 +281,7 @@ namespace MyFilm
             }
 
             InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
+            return infoList.Count;
         }
 
         /// <summary>

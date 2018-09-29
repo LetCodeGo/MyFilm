@@ -54,7 +54,7 @@ namespace MyFilm
                     string tempText = liNode.InnerText.Trim().Replace("&rsquo;", "'");
 
                     if (!(string.IsNullOrWhiteSpace(tempText) ||
-                        tempText.Contains("none just yet!")))
+                        tempText.Contains("none just yet")))
                     {
                         resultStringList.Add(tempText);
                     }

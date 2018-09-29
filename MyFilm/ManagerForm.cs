@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -360,6 +361,27 @@ namespace MyFilm
                 {
                     this.dataGridView.Rows[i].Cells["ColumnCompleteScan"].Style.ForeColor =
                         System.Drawing.Color.Empty;
+                }
+            }
+        }
+
+        private void btnUpdateROF4K_Click(object sender, EventArgs e)
+        {
+            string errMsg = "";
+            List<string> infoList = RealOrFake4KWebDataCapture.CrawlData(ref errMsg);
+            if (infoList == null || infoList.Count == 0)
+            {
+                MessageBox.Show(string.Format("从网页\n{0}\n抓取数据失败\n{1}",
+                    RealOrFake4KWebDataCapture.webPageAddress, errMsg));
+            }
+            else if (infoList.Count > 0)
+            {
+                int updateCount = SqlData.GetInstance().Update4KInfo(infoList, ref errMsg);
+                if (updateCount == -1) MessageBox.Show(errMsg);
+                else
+                {
+                    MessageBox.Show(string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
+                        RealOrFake4KWebDataCapture.webPageAddress, updateCount));
                 }
             }
         }

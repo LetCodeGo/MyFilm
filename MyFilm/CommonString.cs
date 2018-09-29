@@ -15,7 +15,7 @@ namespace MyFilm
         public static String DbName = "myfilm";
 
         public static String WebSearchKeyWord = String.Empty;
-        public static string RealOrFake4KDiskName = "REAL_OR_FAKE_4K";
+        public static String RealOrFake4KDiskName = "REAL_OR_FAKE_4K";
 
         public readonly static String PipeName =
             "myfilm_pipe_{8AC5703C-D6F4-43F0-B625-11D27D2ADCF8}";
