@@ -376,7 +376,11 @@ namespace MyFilm
             }
             else if (infoList.Count > 0)
             {
-                int updateCount = SqlData.GetInstance().Update4KInfo(infoList, ref errMsg);
+                DateTime dateTime = DateTime.Now;
+                LoginForm.UpdateWebDataCaptureTimeAndSaveXml(dateTime);
+
+                int updateCount = SqlData.GetInstance().Update4KInfo(
+                    infoList, dateTime, ref errMsg);
                 if (updateCount == -1) MessageBox.Show(errMsg);
                 else
                 {

@@ -205,9 +205,10 @@ namespace MyFilm
         /// 用从网页抓取的数据更新数据库
         /// </summary>
         /// <param name="infoList"></param>
+        /// <param name="crawlTime"></param>
         /// <param name="errMsg"></param>
         /// <returns>更新的数据条数，-1 表示从网页抓取的条数小于或等于数据库条数（不更新数据库）</returns>
-        public int Update4KInfo(List<string> infoList, ref string errMsg)
+        public int Update4KInfo(List<string> infoList, DateTime crawlTime, ref string errMsg)
         {
             String cmdText1 = String.Format(
                 "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
@@ -218,6 +219,10 @@ namespace MyFilm
             if (diskCountObj != DBNull.Value) diskCount = Convert.ToInt32(diskCountObj);
             if ((diskCount - 1) >= infoList.Count)
             {
+                // 更新时间
+                int affectedCount = UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(crawlTime);
+                Debug.Assert(diskCount == affectedCount);
+
                 errMsg = string.Format(
                     "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
                     RealOrFake4KWebDataCapture.webPageAddress, infoList.Count, diskCount - 1);
@@ -233,7 +238,6 @@ namespace MyFilm
             if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(maxIdObj);
             int startId = maxId + 1;
             int diskId = startId;
-            DateTime dateTime = DateTime.Now;
 
             DataTable dt = CommonDataTable.GetFilmInfoDataTable();
 
@@ -242,8 +246,8 @@ namespace MyFilm
             drDisk["name"] = CommonString.RealOrFake4KDiskName;
             drDisk["path"] = "------";
             drDisk["size"] = -1;
-            drDisk["create_t"] = dateTime;
-            drDisk["modify_t"] = dateTime;
+            drDisk["create_t"] = crawlTime;
+            drDisk["modify_t"] = crawlTime;
             drDisk["is_folder"] = true;
             drDisk["to_watch"] = false;
             drDisk["to_watch_ex"] = false;
@@ -264,8 +268,8 @@ namespace MyFilm
                 dr["name"] = strInfo;
                 dr["path"] = "------";
                 dr["size"] = -1;
-                dr["create_t"] = dateTime;
-                dr["modify_t"] = dateTime;
+                dr["create_t"] = crawlTime;
+                dr["modify_t"] = crawlTime;
                 dr["is_folder"] = false;
                 dr["to_watch"] = false;
                 dr["to_watch_ex"] = false;
@@ -282,6 +286,20 @@ namespace MyFilm
 
             InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
             return infoList.Count;
+        }
+
+        private int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
+            DateTime dateTime)
+        {
+            String cmdText = "set sql_safe_updates = 0;";
+            cmdText += String.Format(
+                "update {0} set modify_t = @modify_t where disk_desc = @disk_desc;",
+                "film_info");
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+            sqlCmd.Parameters.AddWithValue("@modify_t", dateTime);
+            sqlCmd.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
+
+            return sqlCmd.ExecuteNonQuery();
         }
 
         /// <summary>

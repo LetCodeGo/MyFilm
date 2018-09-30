@@ -47,13 +47,12 @@ namespace MyFilm
             public String WebDataCaptureTime;
         }
 
-        private DBStruct dbStruct = null;
+        private static DBStruct dbStruct = new DBStruct();
 
         public LoginForm()
         {
             InitializeComponent();
 
-            dbStruct = new DBStruct();
             dbStruct.DefaultDataBaseIP = String.Empty;
             dbStruct.DefaultDataBaseUserName = String.Empty;
             dbStruct.DefaultDataBasePassWord = String.Empty;
@@ -68,7 +67,7 @@ namespace MyFilm
                 Directory.CreateDirectory(CommonString.AppDataFolder);
         }
 
-        private void LoadXml()
+        private static void LoadXml()
         {
             XmlSerializer ser = new XmlSerializer(typeof(DBStruct));
             if (File.Exists(configPath))
@@ -87,13 +86,19 @@ namespace MyFilm
                 dbStruct.DefaultDataBaseIP = "127.0.0.1";
         }
 
-        private void SaveXml()
+        private static void SaveXml()
         {
             XmlSerializer ser = new XmlSerializer(typeof(DBStruct));
             using (FileStream fs = File.Create(configPath))
             {
                 ser.Serialize(fs, dbStruct);
             }
+        }
+
+        public static void UpdateWebDataCaptureTimeAndSaveXml(DateTime dateTime)
+        {
+            dbStruct.WebDataCaptureTime = dateTime.ToString("yyyy-MM-dd HHH:mm:ss");
+            SaveXml();
         }
 
         private void InitComboxIP()
@@ -157,8 +162,8 @@ namespace MyFilm
                 sqlData.CreateTables();
 
                 DateTime dateTimeRead = DateTime.MinValue;
-                if (this.dbStruct.WebDataCaptureTime != null)
-                    dateTimeRead = DateTime.Parse(this.dbStruct.WebDataCaptureTime);
+                if (dbStruct.WebDataCaptureTime != null)
+                    dateTimeRead = DateTime.Parse(dbStruct.WebDataCaptureTime);
                 DateTime dateTimeNow = DateTime.Now;
                 TimeSpan ts = dateTimeNow.Subtract(dateTimeRead);
                 if (ts.Days > 1)
@@ -172,21 +177,22 @@ namespace MyFilm
                     }
                     else if (infoList.Count > 0)
                     {
-                        int updateCount = sqlData.Update4KInfo(infoList, ref errMsg);
+                        dateTimeRead = dateTimeNow;
+
+                        int updateCount = sqlData.Update4KInfo(infoList, dateTimeRead, ref errMsg);
                         if (updateCount == -1) MessageBox.Show(errMsg);
                         else
                         {
                             MessageBox.Show(string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
                                 RealOrFake4KWebDataCapture.webPageAddress, updateCount));
-                            dateTimeRead = dateTimeNow;
                         }
                     }
                 }
 
-                this.dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
-                this.dbStruct.DefaultDataBasePassWord = CommonString.DbPassword;
-                this.dbStruct.DefaultDataBaseIP = CommonString.DbIP;
-                this.dbStruct.DefaultDataBaseName = CommonString.DbName;
+                dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
+                dbStruct.DefaultDataBasePassWord = CommonString.DbPassword;
+                dbStruct.DefaultDataBaseIP = CommonString.DbIP;
+                dbStruct.DefaultDataBaseName = CommonString.DbName;
 
                 if (!dbStruct.DataBaseIPs.Contains(CommonString.DbIP))
                     dbStruct.DataBaseIPs.Add(CommonString.DbIP);
