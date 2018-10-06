@@ -1154,6 +1154,8 @@ namespace MyFilm
 
         private void MySqlHeartBeat()
         {
+            bool exceptionFlag = false;
+
             while (heartBeatFlag)
             {
                 int msTime = 0;
@@ -1173,9 +1175,12 @@ namespace MyFilm
                 {
                     MessageBox.Show(string.Format("{0}\n{1}",
                         DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
-                    Application.Exit();
+                    heartBeatFlag = false;
+                    exceptionFlag = true;
                 }
             }
+
+            if (exceptionFlag) this.Close();
         }
 
         private void btnRefreshMapdisk_Click(object sender, EventArgs e)
