@@ -29,58 +29,66 @@
         private void InitializeComponent()
         {
             this.progressBar = new System.Windows.Forms.ProgressBar();
-            this.labelFile = new System.Windows.Forms.Label();
-            this.labelProgress = new System.Windows.Forms.Label();
+            this.richTextBox = new System.Windows.Forms.RichTextBox();
+            this.btnFinish = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(12, 78);
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.Location = new System.Drawing.Point(12, 265);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(673, 23);
+            this.progressBar.Size = new System.Drawing.Size(695, 23);
             this.progressBar.TabIndex = 0;
             // 
-            // labelFile
+            // richTextBox
             // 
-            this.labelFile.AutoSize = true;
-            this.labelFile.Location = new System.Drawing.Point(12, 114);
-            this.labelFile.Name = "labelFile";
-            this.labelFile.Size = new System.Drawing.Size(59, 12);
-            this.labelFile.TabIndex = 1;
-            this.labelFile.Text = "labelFile";
+            this.richTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBox.Location = new System.Drawing.Point(12, 12);
+            this.richTextBox.Name = "richTextBox";
+            this.richTextBox.ReadOnly = true;
+            this.richTextBox.Size = new System.Drawing.Size(776, 247);
+            this.richTextBox.TabIndex = 3;
+            this.richTextBox.Text = "";
+            this.richTextBox.WordWrap = false;
+            this.richTextBox.TextChanged += new System.EventHandler(this.richTextBox_TextChanged);
             // 
-            // labelProgress
+            // btnFinish
             // 
-            this.labelProgress.AutoSize = true;
-            this.labelProgress.Location = new System.Drawing.Point(12, 53);
-            this.labelProgress.Name = "labelProgress";
-            this.labelProgress.Size = new System.Drawing.Size(83, 12);
-            this.labelProgress.TabIndex = 2;
-            this.labelProgress.Text = "labelProgress";
+            this.btnFinish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnFinish.Location = new System.Drawing.Point(713, 265);
+            this.btnFinish.Name = "btnFinish";
+            this.btnFinish.Size = new System.Drawing.Size(75, 23);
+            this.btnFinish.TabIndex = 4;
+            this.btnFinish.Text = "完成";
+            this.btnFinish.UseVisualStyleBackColor = true;
+            this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
             // 
             // ProgressForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.ClientSize = new System.Drawing.Size(697, 181);
-            this.Controls.Add(this.labelProgress);
-            this.Controls.Add(this.labelFile);
+            this.ClientSize = new System.Drawing.Size(800, 300);
+            this.Controls.Add(this.btnFinish);
+            this.Controls.Add(this.richTextBox);
             this.Controls.Add(this.progressBar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "ProgressForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "ProgressForm";
             this.Load += new System.EventHandler(this.ProgressForm_Load);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.ProgressBar progressBar;
-        private System.Windows.Forms.Label labelFile;
-        private System.Windows.Forms.Label labelProgress;
+        private System.Windows.Forms.RichTextBox richTextBox;
+        private System.Windows.Forms.Button btnFinish;
     }
 }

@@ -12,7 +12,7 @@ namespace MyFilm
     {
         public delegate void ThreadSacnDiskCallback(bool rst);
         public delegate void ThreadSacnDiskProgressSetView(double pos, string msg);
-        public delegate void ThreadSacnDiskProgressClose();
+        public delegate void ThreadSacnDiskProgressFinish();
 
         /// <summary>
         /// 磁盘路径
@@ -27,9 +27,9 @@ namespace MyFilm
         /// </summary>
         private int setMaxScanLayer = int.MaxValue;
 
-        private ThreadSacnDiskCallback callback = null;
-        private ThreadSacnDiskProgressSetView setView = null;
-        private ThreadSacnDiskProgressClose close = null;
+        private ThreadSacnDiskCallback threadCallback = null;
+        private ThreadSacnDiskProgressSetView progressSetView = null;
+        private ThreadSacnDiskProgressFinish progressFinish = null;
 
         /// <summary>
         /// film_info id
@@ -57,15 +57,15 @@ namespace MyFilm
         private static string mediaInfoInitErrMsg = "";
 
         public ThreadScanDisk(string diskPath, string diskDescribe, int setScanLayer,
-            ThreadSacnDiskCallback callback, ThreadSacnDiskProgressSetView setView,
-            ThreadSacnDiskProgressClose close)
+            ThreadSacnDiskCallback threadCallback, ThreadSacnDiskProgressSetView progressSetView,
+            ThreadSacnDiskProgressFinish progressFinish)
         {
             this.diskPath = diskPath;
             this.diskDescribe = diskDescribe;
             this.setMaxScanLayer = setScanLayer;
-            this.callback = callback;
-            this.setView = setView;
-            this.close = close;
+            this.threadCallback = threadCallback;
+            this.progressSetView = progressSetView;
+            this.progressFinish = progressFinish;
 
             if (mediaInfo == null)
             {
@@ -88,7 +88,7 @@ namespace MyFilm
 
         public void ScanDisk()
         {
-            setView?.Invoke(0, diskPath);
+            progressSetView?.Invoke(0, diskPath);
 
             diskScanNum = CountDisk();
 
@@ -127,7 +127,7 @@ namespace MyFilm
             ScanAllInFolder(driveInfo.RootDirectory,
                 startIdGlobal - 1, setMaxScanLayer, ref dt, ref maxCidDic);
 
-            setView?.Invoke(96, "写入数据库");
+            progressSetView?.Invoke(96, "写入数据库");
 
             Dictionary<int, long> sizeDic = new Dictionary<int, long>();
 
@@ -172,9 +172,9 @@ namespace MyFilm
                 diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize,
                 bCompleteScan, bCompleteScan ? actualMaxScanLayer : setMaxScanLayer);
 
-            setView?.Invoke(100, "完成");
-            callback?.Invoke(bCompleteScan);
-            close?.Invoke();
+            progressSetView?.Invoke(100, "完成");
+            threadCallback?.Invoke(bCompleteScan);
+            progressFinish?.Invoke();
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace MyFilm
                 if ((childDirectoryInfo.Attributes & FileAttributes.System) == FileAttributes.System) continue;
 
                 diskScanIndex++;
-                setView?.Invoke(diskScanIndex * 96.0 / diskScanNum, childDirectoryInfo.FullName);
+                progressSetView?.Invoke(diskScanIndex * 96.0 / diskScanNum, childDirectoryInfo.FullName);
 
                 DataRow dr = dt.NewRow();
                 dr["id"] = startIdGlobal++;
@@ -254,7 +254,7 @@ namespace MyFilm
             {
                 j++;
                 diskScanIndex++;
-                setView?.Invoke(diskScanIndex * 96.0 / diskScanNum, fileInfo.FullName);
+                progressSetView?.Invoke(diskScanIndex * 96.0 / diskScanNum, fileInfo.FullName);
 
                 DataRow dr = dt.NewRow();
                 dr["id"] = startIdGlobal++;

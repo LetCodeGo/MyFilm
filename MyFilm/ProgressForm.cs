@@ -15,27 +15,41 @@ namespace MyFilm
         public ProgressForm()
         {
             InitializeComponent();
+            this.ControlBox = false;
         }
 
         private void ProgressForm_Load(object sender, EventArgs e)
         {
-            this.labelFile.Text = string.Empty;
-            this.labelProgress.Text = "0.00%";
+            this.btnFinish.Enabled = false;
+            this.richTextBox.Text = string.Empty;
+            this.Text = "Progress [0.00%]";
         }
 
-        public void SetView(double pos, string msgStr)
+        public void SetPosAndMsg(double pos, string msgStr)
         {
             this.Invoke(new Action(() =>
             {
                 this.progressBar.Value = Convert.ToInt32(pos);
-                this.labelFile.Text = msgStr;
-                this.labelProgress.Text = pos.ToString("F2") + "%";
+                this.richTextBox.Text += string.Format("[{0}]  {1}\r\n",
+                    DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), msgStr);
+                this.Text = string.Format("Progress [{0}%]", pos.ToString("F2"));
             }));
         }
 
-        public void CloseForm()
+        public void SetFinish()
         {
-            this.Invoke(new Action(() => this.Close()));
+            this.Invoke(new Action(() => { this.btnFinish.Enabled = true; }));
+        }
+
+        private void richTextBox_TextChanged(object sender, EventArgs e)
+        {
+            this.richTextBox.SelectionStart = this.richTextBox.Text.Length;
+            this.richTextBox.ScrollToCaret();
+        }
+
+        private void btnFinish_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

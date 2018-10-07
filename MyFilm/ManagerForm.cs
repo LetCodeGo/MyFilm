@@ -125,8 +125,8 @@ namespace MyFilm
                 ThreadScanDisk threadScanDisk = new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
                     new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
-                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetView),
-                    new ThreadScanDisk.ThreadSacnDiskProgressClose(progressForm.CloseForm));
+                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
+                    new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
 
                 Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
                 threadScan.Start();
@@ -172,8 +172,8 @@ namespace MyFilm
                 ThreadScanDisk threadScanDisk = new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
                     new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
-                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetView),
-                    new ThreadScanDisk.ThreadSacnDiskProgressClose(progressForm.CloseForm));
+                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
+                    new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
 
                 Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
                 threadScan.Start();
