@@ -28,5 +28,8 @@ namespace MyFilm
             "myfilm_SM_SW_{C039F665-E406-44D1-998D-73C9DA19CECE}";
         public readonly static String AppMutexName =
             "myfilm_app_mutex_{2D9D20B5-555B-49BA-A0C2-1CDCB2A255F7}";
+
+        public readonly static string[] MediaExts = 
+            new string[] { ".mkv", ".mp4", ".flv", ".ts", ".m2ts" };
     }
 }

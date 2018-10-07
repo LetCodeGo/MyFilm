@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace MyFilm
@@ -14,9 +15,16 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = null;
 
+        private bool bCompleteScan = true;
+
         public ManagerForm()
         {
             InitializeComponent();
+        }
+
+        public void ThreaScanDiskResult(bool rst)
+        {
+            bCompleteScan = rst;
         }
 
         private void InitGrid()
@@ -56,13 +64,6 @@ namespace MyFilm
             if (eDrive) this.comboBoxLocalDisk.SelectedItem = @"E:\";
             else this.comboBoxLocalDisk.SelectedIndex = drives.Length - 1;
             this.comboBoxLocalDisk.ResumeLayout();
-        }
-
-        private void Setting_Load(object sender, EventArgs e)
-        {
-            this.Icon = Properties.Resources.ico;
-            InitComboxLocalDisk();
-            InitGrid();
         }
 
         private DataTable ConvertDiskInfoToGrid(DataTable diDt)
@@ -119,9 +120,17 @@ namespace MyFilm
 
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
-                bool bCompleteScan = SqlData.GetInstance().ScanDisk(
-                    dlg.SelectedPath, diskDescribe,
-                    bBriefScan ? setLayer : Int32.MaxValue);
+
+                ProgressForm progressForm = new ProgressForm();
+                ThreadScanDisk threadScanDisk = new ThreadScanDisk(
+                    dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
+                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetView),
+                    new ThreadScanDisk.ThreadSacnDiskProgressClose(progressForm.CloseForm));
+
+                Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
+                threadScan.Start();
+                progressForm.ShowDialog();
 
                 gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -158,9 +167,17 @@ namespace MyFilm
 
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
-                bool bCompleteScan = SqlData.GetInstance().ScanDisk(
-                    dlg.SelectedPath, diskDescribe,
-                    bBriefScan ? setLayer : Int32.MaxValue);
+
+                ProgressForm progressForm = new ProgressForm();
+                ThreadScanDisk threadScanDisk = new ThreadScanDisk(
+                    dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
+                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetView),
+                    new ThreadScanDisk.ThreadSacnDiskProgressClose(progressForm.CloseForm));
+
+                Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
+                threadScan.Start();
+                progressForm.ShowDialog();
 
                 gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
@@ -367,26 +384,30 @@ namespace MyFilm
 
         private void btnUpdateROF4K_Click(object sender, EventArgs e)
         {
-            string errMsg = "";
-            List<string> infoList = RealOrFake4KWebDataCapture.CrawlData(ref errMsg);
-            if (infoList == null || infoList.Count == 0)
-            {
-                MessageBox.Show(string.Format("从网页\n{0}\n抓取数据失败\n{1}",
-                    RealOrFake4KWebDataCapture.webPageAddress, errMsg));
-            }
-            else if (infoList.Count > 0)
-            {
-                DateTime dateTime = DateTime.Now;
-                LoginForm.UpdateWebDataCaptureTimeAndSaveXml(dateTime);
+            string strMsg = "";
+            DateTime crawlTime = DateTime.Now;
+            int flag = RealOrFake4KWebDataCapture.Update4KInfo(ref strMsg, ref crawlTime);
 
-                int updateCount = SqlData.GetInstance().Update4KInfo(
-                    infoList, dateTime, ref errMsg);
-                if (updateCount == -1) MessageBox.Show(errMsg);
-                else
-                {
-                    MessageBox.Show(string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
-                        RealOrFake4KWebDataCapture.webPageAddress, updateCount));
-                }
+            if (flag >= 0) LoginForm.UpdateWebDataCaptureTimeAndSaveXml(crawlTime);
+            MessageBox.Show(strMsg);
+        }
+
+        private void ManagerForm_Load(object sender, EventArgs e)
+        {
+            this.Icon = Properties.Resources.ico;
+            InitComboxLocalDisk();
+            InitGrid();
+
+            bool mediaInfoFlag = true;
+            string errMsg = "";
+            mediaInfoFlag = ThreadScanDisk.MediaInfoState(ref errMsg);
+
+            if (!mediaInfoFlag)
+            {
+                MessageBox.Show(string.Format("{0}\n添加和更新磁盘功能不可用", errMsg));
+
+                this.btnAddDisk.Enabled = false;
+                this.btnUpdateDisk.Enabled = false;
             }
         }
     }

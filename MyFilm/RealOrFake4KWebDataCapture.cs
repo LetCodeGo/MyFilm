@@ -9,10 +9,10 @@ namespace MyFilm
 {
     public class RealOrFake4KWebDataCapture
     {
-        public readonly static string webPageAddress =
+        private readonly static string webPageAddress =
             "https://digiraw.com/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
 
-        public static List<string> CrawlData(ref string errMsg)
+        private static List<string> CrawlData(ref string errMsg)
         {
             HtmlWeb htmlWeb = new HtmlWeb();
             HtmlDocument document = null;
@@ -62,6 +62,97 @@ namespace MyFilm
             }
 
             return resultStringList;
+        }
+
+        /// <summary>
+        /// -1 从网页抓取数据失败，0 从网页抓取数据条数和数据库相同只更新时间
+        /// 返回抓取数据条数
+        /// </summary>
+        /// <param name="strMsg">输出信息，用于显示</param>
+        /// <param name="crawlTime">抓取时间</param>
+        /// <returns></returns>
+        public static int Update4KInfo(ref string strMsg, ref DateTime crawlTime)
+        {
+            crawlTime = DateTime.Now;
+            string errMsg = "";
+            List<string> infoList = CrawlData(ref errMsg);
+            if (infoList == null || infoList.Count == 0)
+            {
+                strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
+                    webPageAddress, errMsg);
+                return -1;
+            }
+
+            int diskCount = SqlData.GetInstance().CountRowsOfDiskFromFilmInfo(
+                CommonString.RealOrFake4KDiskName);
+            if ((diskCount - 1) >= infoList.Count)
+            {
+                // 更新时间
+                int affectedCount = SqlData.GetInstance().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(crawlTime);
+                Debug.Assert(diskCount == affectedCount);
+
+                strMsg = string.Format(
+                    "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
+                    webPageAddress, infoList.Count, diskCount - 1);
+                return 0;
+            }
+
+            SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
+
+            int maxId = SqlData.GetInstance().GetMaxIdOfFilmInfo();
+            int startId = maxId + 1;
+            int diskId = startId;
+
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
+
+            DataRow drDisk = dt.NewRow();
+            drDisk["id"] = startId++;
+            drDisk["name"] = CommonString.RealOrFake4KDiskName;
+            drDisk["path"] = "------";
+            drDisk["size"] = -1;
+            drDisk["create_t"] = crawlTime;
+            drDisk["modify_t"] = crawlTime;
+            drDisk["is_folder"] = true;
+            drDisk["to_watch"] = false;
+            drDisk["to_watch_ex"] = false;
+            drDisk["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+            drDisk["to_delete"] = false;
+            drDisk["to_delete_ex"] = false;
+            drDisk["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+            drDisk["content"] = String.Empty;
+            drDisk["pid"] = -1;
+            drDisk["max_cid"] = startId - 1 + infoList.Count;
+            drDisk["disk_desc"] = CommonString.RealOrFake4KDiskName;
+            dt.Rows.Add(drDisk);
+
+            foreach (string strInfo in infoList)
+            {
+                DataRow dr = dt.NewRow();
+                dr["id"] = startId++;
+                dr["name"] = strInfo;
+                dr["path"] = "------";
+                dr["size"] = -1;
+                dr["create_t"] = crawlTime;
+                dr["modify_t"] = crawlTime;
+                dr["is_folder"] = false;
+                dr["to_watch"] = false;
+                dr["to_watch_ex"] = false;
+                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                dr["to_delete"] = false;
+                dr["to_delete_ex"] = false;
+                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                dr["content"] = String.Empty;
+                dr["pid"] = diskId;
+                dr["max_cid"] = startId - 1;
+                dr["disk_desc"] = CommonString.RealOrFake4KDiskName;
+                dt.Rows.Add(dr);
+            }
+
+            SqlData.GetInstance().InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
+
+            strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
+                webPageAddress, infoList.Count);
+            return infoList.Count;
         }
     }
 }

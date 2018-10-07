@@ -102,9 +102,11 @@ namespace MyFilm
             System.Diagnostics.Process ProcNotePad = null;
 
             List<String> programFolderList = new List<String>();
-            programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
-            if (Environment.Is64BitOperatingSystem)
-                programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+            //programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+            //if (Environment.Is64BitOperatingSystem)
+            //    programFolderList.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+            programFolderList.Add("C:\\Program Files");
+            programFolderList.Add("C:\\Program Files (x86)");
 
             foreach (String programFolder in programFolderList)
             {

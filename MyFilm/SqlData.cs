@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using static MyFilm.CommonDataTable;
 
@@ -15,26 +14,6 @@ namespace MyFilm
         /// 连接MySql
         /// </summary>
         private MySqlConnection sqlConnection = null;
-
-        /// <summary>
-        /// film_info id
-        /// </summary>
-        private int startIdGlobal = 0;
-
-        /// <summary>
-        /// 实际扫描的磁盘最大深度
-        /// </summary>
-        private int actualMaxScanLayer = 0;
-
-        /// <summary>
-        /// 是否为完全扫描
-        /// </summary>
-        private bool bCompleteScan = true;
-
-        /// <summary>
-        /// 设定的最大扫描深度
-        /// </summary>
-        private int setMaxScanLayer = int.MaxValue;
 
         /// <summary>
         /// 搜索关键字分隔符
@@ -201,94 +180,7 @@ namespace MyFilm
             slqCom.ExecuteNonQuery();
         }
 
-        /// <summary>
-        /// 用从网页抓取的数据更新数据库
-        /// </summary>
-        /// <param name="infoList"></param>
-        /// <param name="crawlTime"></param>
-        /// <param name="errMsg"></param>
-        /// <returns>更新的数据条数，-1 表示从网页抓取的条数小于或等于数据库条数（不更新数据库）</returns>
-        public int Update4KInfo(List<string> infoList, DateTime crawlTime, ref string errMsg)
-        {
-            String cmdText1 = String.Format(
-                "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
-            MySqlCommand sqlCmd1 = new MySqlCommand(cmdText1, sqlConnection);
-            sqlCmd1.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
-            object diskCountObj = sqlCmd1.ExecuteScalar();
-            int diskCount = 0;
-            if (diskCountObj != DBNull.Value) diskCount = Convert.ToInt32(diskCountObj);
-            if ((diskCount - 1) >= infoList.Count)
-            {
-                // 更新时间
-                int affectedCount = UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(crawlTime);
-                Debug.Assert(diskCount == affectedCount);
-
-                errMsg = string.Format(
-                    "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
-                    RealOrFake4KWebDataCapture.webPageAddress, infoList.Count, diskCount - 1);
-                return -1;
-            }
-
-            DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
-
-            String cmdText = String.Format("select max(id) from {0};", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            object maxIdObj = sqlCmd.ExecuteScalar();
-            int maxId = 0;
-            if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(maxIdObj);
-            int startId = maxId + 1;
-            int diskId = startId;
-
-            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
-
-            DataRow drDisk = dt.NewRow();
-            drDisk["id"] = startId++;
-            drDisk["name"] = CommonString.RealOrFake4KDiskName;
-            drDisk["path"] = "------";
-            drDisk["size"] = -1;
-            drDisk["create_t"] = crawlTime;
-            drDisk["modify_t"] = crawlTime;
-            drDisk["is_folder"] = true;
-            drDisk["to_watch"] = false;
-            drDisk["to_watch_ex"] = false;
-            drDisk["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-            drDisk["to_delete"] = false;
-            drDisk["to_delete_ex"] = false;
-            drDisk["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-            drDisk["content"] = String.Empty;
-            drDisk["pid"] = -1;
-            drDisk["max_cid"] = startId - 1 + infoList.Count;
-            drDisk["disk_desc"] = CommonString.RealOrFake4KDiskName;
-            dt.Rows.Add(drDisk);
-
-            foreach (string strInfo in infoList)
-            {
-                DataRow dr = dt.NewRow();
-                dr["id"] = startId++;
-                dr["name"] = strInfo;
-                dr["path"] = "------";
-                dr["size"] = -1;
-                dr["create_t"] = crawlTime;
-                dr["modify_t"] = crawlTime;
-                dr["is_folder"] = false;
-                dr["to_watch"] = false;
-                dr["to_watch_ex"] = false;
-                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                dr["to_delete"] = false;
-                dr["to_delete_ex"] = false;
-                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                dr["content"] = String.Empty;
-                dr["pid"] = diskId;
-                dr["max_cid"] = startId - 1;
-                dr["disk_desc"] = CommonString.RealOrFake4KDiskName;
-                dt.Rows.Add(dr);
-            }
-
-            InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
-            return infoList.Count;
-        }
-
-        private int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
+        public int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
             DateTime dateTime)
         {
             String cmdText = "set sql_safe_updates = 0;";
@@ -303,214 +195,12 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// 扫描磁盘，更新磁盘信息和影片信息
-        /// </summary>
-        /// <param name="diskPath">磁盘路径</param>
-        /// <param name="diskDescribe">磁盘描述</param>
-        /// <param name="setScanLayer">设定的最多扫描层数</param>
-        /// <returns>是否为完全扫描</returns>
-        public Boolean ScanDisk(
-            String diskPath, String diskDescribe, int setScanLayer = int.MaxValue)
-        {
-            this.actualMaxScanLayer = 0;
-            this.bCompleteScan = true;
-            this.setMaxScanLayer = setScanLayer;
-
-            String cmdText = String.Format("select max(id) from {0};", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            object maxIdObj = sqlCmd.ExecuteScalar();
-            int maxId = 0;
-            if (maxIdObj != DBNull.Value) maxId = Convert.ToInt32(maxIdObj);
-            int startId = maxId + 1;
-            this.startIdGlobal = startId;
-
-            DriveInfo driveInfo = new DriveInfo(diskPath);
-            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
-            DataRow dr = dt.NewRow();
-            dr["id"] = this.startIdGlobal++;
-            dr["name"] = driveInfo.RootDirectory.Name;
-            dr["path"] = driveInfo.RootDirectory.FullName;
-            dr["size"] = -1;
-            dr["create_t"] = driveInfo.RootDirectory.CreationTime;
-            dr["modify_t"] = driveInfo.RootDirectory.LastWriteTime;
-            dr["is_folder"] = true;
-            dr["to_watch"] = false;
-            dr["to_watch_ex"] = false;
-            dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-            dr["to_delete"] = false;
-            dr["to_delete_ex"] = false;
-            dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-            dr["content"] = String.Empty;
-            dr["pid"] = -1;
-            dr["disk_desc"] = diskDescribe;
-            dt.Rows.Add(dr);
-
-            Dictionary<String, int> maxCidDic = new Dictionary<String, int>();
-            maxCidDic.Add(driveInfo.RootDirectory.FullName, this.startIdGlobal - 1);
-
-            ScanAllInFolder(driveInfo.RootDirectory, diskDescribe,
-                this.startIdGlobal - 1, setScanLayer, ref dt, ref maxCidDic);
-
-            Dictionary<int, long> sizeDic = new Dictionary<int, long>();
-
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                if (Convert.ToBoolean(dt.Rows[i]["is_folder"]))
-                {
-                    int maxCid = maxCidDic[dt.Rows[i]["path"].ToString()];
-                    dt.Rows[i]["max_cid"] = maxCid;
-
-                    if (bCompleteScan)
-                    {
-                        sizeDic.Add(i, 0);
-                        for (int j = i + 1; j + startId <= maxCid; j++)
-                        {
-                            if (!Convert.ToBoolean(dt.Rows[j]["is_folder"]))
-                                sizeDic[i] += Helper.CalcSpace(Convert.ToInt64(dt.Rows[j]["size"]));
-                        }
-                    }
-                }
-                else dt.Rows[i]["max_cid"] = dt.Rows[i]["id"];
-            }
-
-            // 简略扫描不计算文件夹大小
-            if (bCompleteScan)
-            {
-                foreach (KeyValuePair<int, long> kv in sizeDic)
-                    dt.Rows[kv.Key]["size"] = kv.Value;
-            }
-
-            //InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
-            int maxInsertRows = 1000;
-            int insertTimes = dt.Rows.Count / maxInsertRows;
-            if (dt.Rows.Count % maxInsertRows != 0) insertTimes += 1;
-            for (int i = 0; i < insertTimes; i++)
-            {
-                InsertDataToFilmInfo(dt, i * maxInsertRows, maxInsertRows);
-            }
-
-            // 更新磁盘信息
-            InsertOrUpdateDataToDiskInfo(
-                diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize,
-                bCompleteScan, bCompleteScan ? actualMaxScanLayer : setScanLayer);
-
-            return bCompleteScan;
-        }
-
-        /// <summary>
-        /// 扫描文件夹内容（不包含此文件夹）
-        /// </summary>
-        /// <param name="directoryInfo">此文件夹信息</param>
-        /// <param name="diskDescribe">磁盘描述</param>
-        /// <param name="pid">此文件夹数据库id</param>
-        /// <param name="setScanLayer">设定的最多扫描层数</param>
-        /// <param name="dt">记录要向film_info表中插入的数据</param>
-        /// <param name="maxCidDic">记录文件夹下递归的子文件夹或文件的最大id号</param>
-        private void ScanAllInFolder(
-            DirectoryInfo directoryInfo, String diskDescribe,
-            int pid, int setScanLayer, ref DataTable dt,
-            ref Dictionary<String, int> maxCidDic)
-        {
-            DirectoryInfo[] directoryInfoArray = directoryInfo.GetDirectories();
-            FileInfo[] fileInfoArray = directoryInfo.GetFiles();
-
-            Array.Sort<DirectoryInfo>(directoryInfoArray, (d1, d2) => d1.Name.CompareTo(d2.Name));
-            Array.Sort<FileInfo>(fileInfoArray, (f1, f2) => f1.Name.CompareTo(f2.Name));
-
-            if (setScanLayer <= 0)
-            {
-                if (directoryInfoArray.Length > 0 || fileInfoArray.Length > 0) bCompleteScan = false;
-                return;
-            }
-
-            if (directoryInfoArray.Length > 0 || fileInfoArray.Length > 0)
-                actualMaxScanLayer = Math.Max(actualMaxScanLayer, this.setMaxScanLayer - setScanLayer + 1);
-
-            int i = 0;
-            foreach (DirectoryInfo childDirectoryInfo in directoryInfoArray)
-            {
-                i++;
-                if ((childDirectoryInfo.Attributes & FileAttributes.System) == FileAttributes.System) continue;
-
-                DataRow dr = dt.NewRow();
-                dr["id"] = this.startIdGlobal++;
-                dr["name"] = childDirectoryInfo.Name;
-                dr["path"] = childDirectoryInfo.FullName;
-                dr["size"] = -1;
-                dr["create_t"] = childDirectoryInfo.CreationTime;
-                dr["modify_t"] = childDirectoryInfo.LastWriteTime;
-                dr["is_folder"] = true;
-                dr["to_watch"] = false;
-                dr["to_watch_ex"] = false;
-                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                dr["to_delete"] = false;
-                dr["to_delete_ex"] = false;
-                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                dr["content"] = String.Empty;
-                dr["pid"] = pid;
-                dr["disk_desc"] = diskDescribe;
-                dt.Rows.Add(dr);
-
-                maxCidDic.Add(childDirectoryInfo.FullName, this.startIdGlobal - 1);
-                if (i == directoryInfoArray.Length)
-                {
-                    List<String> keyPathArray = new List<String>(maxCidDic.Keys);
-                    foreach (String keyPath in keyPathArray)
-                    {
-                        if (childDirectoryInfo.FullName.Contains(keyPath.TrimEnd('\\') + "\\"))
-                            maxCidDic[keyPath] = this.startIdGlobal - 1;
-                    }
-                }
-
-                ScanAllInFolder(childDirectoryInfo, diskDescribe,
-                    this.startIdGlobal - 1, setScanLayer - 1, ref dt, ref maxCidDic);
-            }
-
-            int j = 0;
-            foreach (FileInfo fileInfo in fileInfoArray)
-            {
-                j++;
-                DataRow dr = dt.NewRow();
-                dr["id"] = this.startIdGlobal++;
-                dr["name"] = fileInfo.Name;
-                dr["path"] = fileInfo.FullName;
-                dr["size"] = fileInfo.Length;
-                dr["create_t"] = fileInfo.CreationTime;
-                dr["modify_t"] = fileInfo.LastWriteTime;
-                dr["is_folder"] = false;
-                dr["to_watch"] = false;
-                dr["to_watch_ex"] = false;
-                dr["s_w_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                dr["to_delete"] = false;
-                dr["to_delete_ex"] = false;
-                dr["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                // 只读取 10KB 以下 __game_version_info__.gvi 文件内容
-                if (fileInfo.Name.ToLower() == "__game_version_info__.gvi" && fileInfo.Length <= 10240)
-                    dr["content"] = File.ReadAllText(fileInfo.FullName);
-                else dr["content"] = String.Empty;
-                dr["pid"] = pid;
-                dr["disk_desc"] = diskDescribe;
-                dt.Rows.Add(dr);
-
-                if (j == fileInfoArray.Length)
-                {
-                    List<String> keyPathArray = new List<String>(maxCidDic.Keys);
-                    foreach (String keyPath in keyPathArray)
-                    {
-                        if (fileInfo.FullName.Contains(keyPath.TrimEnd('\\') + "\\"))
-                            maxCidDic[keyPath] = this.startIdGlobal - 1;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// 向film_info数据库插入数据，注意dt的列为FillFilmInfoColumn生成
         /// </summary>
         /// <param name="dt">插入的数据</param>
         /// <param name="start">起始，从0开始</param>
         /// <param name="count">个数</param>
-        private void InsertDataToFilmInfo(DataTable dt, int start, int count)
+        public void InsertDataToFilmInfo(DataTable dt, int start, int count)
         {
             MySqlCommand sqlCmd = new MySqlCommand();
             sqlCmd.Connection = sqlConnection;
@@ -560,7 +250,7 @@ namespace MyFilm
         /// <param name="totalSize">总大小</param>
         /// <param name="completeScan">完全扫描</param>
         /// <param name="scanLayer">扫描的层数</param>
-        private void InsertOrUpdateDataToDiskInfo(
+        public void InsertOrUpdateDataToDiskInfo(
             String diskDescribe, Int64 freeSpace, Int64 totalSize,
             Boolean completeScan, int scanLayer)
         {
@@ -1305,16 +995,30 @@ namespace MyFilm
             return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
         }
 
+        public int GetMaxIdOfFilmInfo()
+        {
+            String cmdText = String.Format("select max(id) from {0};", "film_info");
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+            return Convert.ToInt32(sqlCmd.ExecuteScalar());
+        }
+
+        public int CountRowsOfDiskFromFilmInfo(string diskDescribe)
+        {
+            String cmdText = String.Format(
+                "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+            sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+            return Convert.ToInt32(sqlCmd.ExecuteScalar());
+        }
+
         /// <summary>
         /// 查询 search_log 表行数
         /// </summary>
         /// <returns></returns>
-        public int CountRowsFormSearchLog()
+        public int CountRowsFromSearchLog()
         {
             String cmdText = String.Format("select count(*) from {0};", "search_log");
-
             MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-
             return Convert.ToInt32(sqlCmd.ExecuteScalar());
         }
     }

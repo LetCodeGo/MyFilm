@@ -164,29 +164,16 @@ namespace MyFilm
                 DateTime dateTimeRead = DateTime.MinValue;
                 if (dbStruct.WebDataCaptureTime != null)
                     dateTimeRead = DateTime.Parse(dbStruct.WebDataCaptureTime);
-                DateTime dateTimeNow = DateTime.Now;
-                TimeSpan ts = dateTimeNow.Subtract(dateTimeRead);
+
+                TimeSpan ts = DateTime.Now.Subtract(dateTimeRead);
                 if (ts.Days > 1)
                 {
-                    string errMsg = "";
-                    List<string> infoList = RealOrFake4KWebDataCapture.CrawlData(ref errMsg);
-                    if (infoList == null || infoList.Count == 0)
-                    {
-                        MessageBox.Show(string.Format("从网页\n{0}\n抓取数据失败\n{1}",
-                            RealOrFake4KWebDataCapture.webPageAddress, errMsg));
-                    }
-                    else if (infoList.Count > 0)
-                    {
-                        dateTimeRead = dateTimeNow;
+                    string strMsg = "";
+                    DateTime crawlTime = DateTime.Now;
+                    int flag = RealOrFake4KWebDataCapture.Update4KInfo(ref strMsg, ref crawlTime);
 
-                        int updateCount = sqlData.Update4KInfo(infoList, dateTimeRead, ref errMsg);
-                        if (updateCount == -1) MessageBox.Show(errMsg);
-                        else
-                        {
-                            MessageBox.Show(string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
-                                RealOrFake4KWebDataCapture.webPageAddress, updateCount));
-                        }
-                    }
+                    if (flag >= 0) dateTimeRead = crawlTime;
+                    MessageBox.Show(strMsg);
                 }
 
                 dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;

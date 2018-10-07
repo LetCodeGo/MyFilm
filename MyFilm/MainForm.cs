@@ -702,7 +702,9 @@ namespace MyFilm
                 bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_watch_ex"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
                 String fileName = gridViewData.Rows[index]["name"].ToString();
-                bool isShowContent = (fileName.ToLower() == "__game_version_info__.gvi");
+                bool isShowContent = ((fileName.ToLower() == "__game_version_info__.gvi") ||
+                    CommonString.MediaExts.Contains(
+                        fileName.Substring(fileName.LastIndexOf('.')).ToLower()));
                 bool isOpenFolder =
                     this.dataGridView.Rows[index].Cells["disk_desc"].Value.ToString() !=
                     CommonString.RealOrFake4KDiskName;
@@ -1144,9 +1146,13 @@ namespace MyFilm
             }
 
             String content = gridViewData.Rows[dataGridView.SelectedRows[0].Index]["content"].ToString();
+            String fileName = gridViewData.Rows[dataGridView.SelectedRows[0].Index]["name"].ToString();
+            String strExt = ".content";
+            if (CommonString.MediaExts.Contains(
+                fileName.Substring(fileName.LastIndexOf('.')).ToLower()))
+                strExt = ".mediainfo";
 
-            String filePath = Path.Combine(nfoFolder,
-                gridViewData.Rows[dataGridView.SelectedRows[0].Index]["name"].ToString());
+            String filePath = Path.Combine(nfoFolder, fileName + strExt);
             File.WriteAllText(filePath, content, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, content);
@@ -1169,7 +1175,7 @@ namespace MyFilm
                 // 电脑睡眠时，网卡睡眠
                 try
                 {
-                    SqlData.GetInstance().CountRowsFormSearchLog();
+                    SqlData.GetInstance().CountRowsFromSearchLog();
                 }
                 catch (Exception ex)
                 {
