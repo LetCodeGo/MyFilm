@@ -9,8 +9,28 @@ namespace MyFilm
 {
     public class RealOrFake4KWebDataCapture
     {
+        public class RealOrFake4KWebDataCaptureResult
+        {
+            public int code;
+            public string strMsg;
+            public DateTime crawlTime;
+        }
+
         private readonly static string webPageAddress =
             "https://digiraw.com/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
+
+        public delegate void ThreadWebDataCaptureCallback(RealOrFake4KWebDataCaptureResult rst);
+        public delegate void ThreadWebDataCaptureFinish();
+
+        private ThreadWebDataCaptureCallback threadWebDataCaptureCallback = null;
+        private ThreadWebDataCaptureFinish threadWebDataCaptureFinish = null;
+
+        public RealOrFake4KWebDataCapture(ThreadWebDataCaptureCallback threadCallback,
+            ThreadWebDataCaptureFinish threadFinish)
+        {
+            this.threadWebDataCaptureCallback = threadCallback;
+            this.threadWebDataCaptureFinish = threadFinish;
+        }
 
         private static List<string> CrawlData(ref string errMsg)
         {
@@ -71,16 +91,21 @@ namespace MyFilm
         /// <param name="strMsg">输出信息，用于显示</param>
         /// <param name="crawlTime">抓取时间</param>
         /// <returns></returns>
-        public static int Update4KInfo(ref string strMsg, ref DateTime crawlTime)
+        public void Update4KInfo()
         {
-            crawlTime = DateTime.Now;
+            RealOrFake4KWebDataCaptureResult rst = new RealOrFake4KWebDataCaptureResult();
+            rst.crawlTime = DateTime.Now;
+
             string errMsg = "";
             List<string> infoList = CrawlData(ref errMsg);
             if (infoList == null || infoList.Count == 0)
             {
-                strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
+                rst.strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
                     webPageAddress, errMsg);
-                return -1;
+                rst.code = -1;
+                this.threadWebDataCaptureCallback?.Invoke(rst);
+                this.threadWebDataCaptureFinish?.Invoke();
+                return;
             }
 
             int diskCount = SqlData.GetInstance().CountRowsOfDiskFromFilmInfo(
@@ -88,13 +113,18 @@ namespace MyFilm
             if ((diskCount - 1) >= infoList.Count)
             {
                 // 更新时间
-                int affectedCount = SqlData.GetInstance().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(crawlTime);
+                int affectedCount =
+                    SqlData.GetInstance().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
+                        rst.crawlTime);
                 Debug.Assert(diskCount == affectedCount);
 
-                strMsg = string.Format(
+                rst.strMsg = string.Format(
                     "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
                     webPageAddress, infoList.Count, diskCount - 1);
-                return 0;
+                rst.code = 0;
+                this.threadWebDataCaptureCallback?.Invoke(rst);
+                this.threadWebDataCaptureFinish?.Invoke();
+                return;
             }
 
             SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
@@ -110,8 +140,8 @@ namespace MyFilm
             drDisk["name"] = CommonString.RealOrFake4KDiskName;
             drDisk["path"] = "------";
             drDisk["size"] = -1;
-            drDisk["create_t"] = crawlTime;
-            drDisk["modify_t"] = crawlTime;
+            drDisk["create_t"] = rst.crawlTime;
+            drDisk["modify_t"] = rst.crawlTime;
             drDisk["is_folder"] = true;
             drDisk["to_watch"] = false;
             drDisk["to_watch_ex"] = false;
@@ -132,8 +162,8 @@ namespace MyFilm
                 dr["name"] = strInfo;
                 dr["path"] = "------";
                 dr["size"] = -1;
-                dr["create_t"] = crawlTime;
-                dr["modify_t"] = crawlTime;
+                dr["create_t"] = rst.crawlTime;
+                dr["modify_t"] = rst.crawlTime;
                 dr["is_folder"] = false;
                 dr["to_watch"] = false;
                 dr["to_watch_ex"] = false;
@@ -150,9 +180,11 @@ namespace MyFilm
 
             SqlData.GetInstance().InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
 
-            strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
+            rst.strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
                 webPageAddress, infoList.Count);
-            return infoList.Count;
+            rst.code = infoList.Count;
+            this.threadWebDataCaptureCallback?.Invoke(rst);
+            this.threadWebDataCaptureFinish?.Invoke();
         }
     }
 }

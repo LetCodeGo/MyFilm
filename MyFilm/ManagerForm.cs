@@ -15,6 +15,9 @@ namespace MyFilm
         /// </summary>
         private DataTable gridViewData = null;
 
+        private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
+            webDataCaptureResult = null;
+
         private bool bCompleteScan = true;
 
         public ManagerForm()
@@ -123,7 +126,8 @@ namespace MyFilm
 
                 ProgressForm progressForm = new ProgressForm();
                 ThreadScanDisk threadScanDisk = new ThreadScanDisk(
-                    dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
+                    dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
+                    bBriefScan ? setLayer : Int32.MaxValue,
                     new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
                     new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
                     new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
@@ -170,7 +174,8 @@ namespace MyFilm
 
                 ProgressForm progressForm = new ProgressForm();
                 ThreadScanDisk threadScanDisk = new ThreadScanDisk(
-                    dlg.SelectedPath, diskDescribe, bBriefScan ? setLayer : Int32.MaxValue,
+                    dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
+                    bBriefScan ? setLayer : Int32.MaxValue,
                     new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
                     new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
                     new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
@@ -384,12 +389,22 @@ namespace MyFilm
 
         private void btnUpdateROF4K_Click(object sender, EventArgs e)
         {
-            string strMsg = "";
-            DateTime crawlTime = DateTime.Now;
-            int flag = RealOrFake4KWebDataCapture.Update4KInfo(ref strMsg, ref crawlTime);
+            WaitingForm waitingForm = new WaitingForm();
+            RealOrFake4KWebDataCapture webDataCapture = new RealOrFake4KWebDataCapture(
+                SetWebCaptureDataResult, waitingForm.SetFinish);
+            Thread threadWebDataCapture = new Thread(new ThreadStart(webDataCapture.Update4KInfo));
+            threadWebDataCapture.Start();
+            waitingForm.ShowDialog();
 
-            if (flag >= 0) LoginForm.UpdateWebDataCaptureTimeAndSaveXml(crawlTime);
-            MessageBox.Show(strMsg);
+            if (this.webDataCaptureResult.code >= 0)
+                LoginForm.UpdateWebDataCaptureTimeAndSaveXml(this.webDataCaptureResult.crawlTime);
+            MessageBox.Show(this.webDataCaptureResult.strMsg);
+        }
+
+        public void SetWebCaptureDataResult(
+            RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult rst)
+        {
+            this.webDataCaptureResult = rst;
         }
 
         private void ManagerForm_Load(object sender, EventArgs e)
@@ -398,6 +413,9 @@ namespace MyFilm
             InitComboxLocalDisk();
             InitGrid();
 
+            this.cbScanMedia.Checked = true;
+
+            bool enabledFlag = true;
             bool mediaInfoFlag = true;
             string errMsg = "";
             mediaInfoFlag = ThreadScanDisk.MediaInfoState(ref errMsg);
@@ -406,9 +424,34 @@ namespace MyFilm
             {
                 MessageBox.Show(string.Format("{0}\n添加和更新磁盘功能不可用", errMsg));
 
-                this.btnAddDisk.Enabled = false;
-                this.btnUpdateDisk.Enabled = false;
+                enabledFlag = false;
             }
+
+            this.btnAddDisk.Enabled = enabledFlag;
+            this.btnUpdateDisk.Enabled = enabledFlag;
+        }
+
+        private void cbScanMedia_CheckedChanged(object sender, EventArgs e)
+        {
+            bool enabledFlag = true;
+
+            CheckBox cb = sender as CheckBox;
+            if (cb.Checked)
+            {
+                bool mediaInfoFlag = true;
+                string errMsg = "";
+                mediaInfoFlag = ThreadScanDisk.MediaInfoState(ref errMsg);
+
+                if (!mediaInfoFlag)
+                {
+                    MessageBox.Show(string.Format("{0}\n添加和更新磁盘功能不可用", errMsg));
+
+                    enabledFlag = false;
+                }
+            }
+
+            this.btnAddDisk.Enabled = enabledFlag;
+            this.btnUpdateDisk.Enabled = enabledFlag;
         }
     }
 }

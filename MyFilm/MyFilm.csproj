@@ -48,7 +48,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>ico.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\ico.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MyFilm.Program</StartupObject>
@@ -129,6 +129,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ThreadScanDisk.cs" />
+    <Compile Include="WaitingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WaitingForm.Designer.cs">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Win32API.cs" />
     <EmbeddedResource Include="LogForm.resx">
       <DependentUpon>LogForm.cs</DependentUpon>
@@ -158,6 +164,9 @@
     <EmbeddedResource Include="SqlForm.resx">
       <DependentUpon>SqlForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="WaitingForm.resx">
+      <DependentUpon>WaitingForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -173,7 +182,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ico.ico" />
+    <None Include="Resources\waiting.gif" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -186,6 +195,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ico.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

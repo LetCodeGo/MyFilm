@@ -23,6 +23,10 @@ namespace MyFilm
         /// </summary>
         private string diskDescribe = "";
         /// <summary>
+        /// 对mkv等媒体文件是否用mediainfo查看信息
+        /// </summary>
+        private bool scanMediaInfo = true;
+        /// <summary>
         /// 设定的最大扫描深度
         /// </summary>
         private int setMaxScanLayer = int.MaxValue;
@@ -53,21 +57,23 @@ namespace MyFilm
         /// 查看媒体文件信息
         /// </summary>
         private static MediaInfoLib.MediaInfo mediaInfo = null;
-        private static bool mediaInfoInitFlag = true;
+        private static bool mediaInfoInitFlag = false;
         private static string mediaInfoInitErrMsg = "";
 
-        public ThreadScanDisk(string diskPath, string diskDescribe, int setScanLayer,
+        public ThreadScanDisk(string diskPath, string diskDescribe,
+            bool scanMediaInfo, int setScanLayer,
             ThreadSacnDiskCallback threadCallback, ThreadSacnDiskProgressSetView progressSetView,
             ThreadSacnDiskProgressFinish progressFinish)
         {
             this.diskPath = diskPath;
             this.diskDescribe = diskDescribe;
+            this.scanMediaInfo = scanMediaInfo;
             this.setMaxScanLayer = setScanLayer;
             this.threadCallback = threadCallback;
             this.progressSetView = progressSetView;
             this.progressFinish = progressFinish;
 
-            if (mediaInfo == null)
+            if (!mediaInfoInitFlag)
             {
                 mediaInfo = new MediaInfoLib.MediaInfo(
                 ref mediaInfoInitFlag, ref mediaInfoInitErrMsg);
@@ -76,7 +82,7 @@ namespace MyFilm
 
         public static bool MediaInfoState(ref string errMsg)
         {
-            if (mediaInfo == null)
+            if (!mediaInfoInitFlag)
             {
                 mediaInfo = new MediaInfoLib.MediaInfo(
                 ref mediaInfoInitFlag, ref mediaInfoInitErrMsg);
@@ -293,7 +299,8 @@ namespace MyFilm
             // 只读取 10KB 以下 __game_version_info__.gvi 文件内容
             if (fi.Name.ToLower() == "__game_version_info__.gvi" && fi.Length <= 10240)
                 return File.ReadAllText(fi.FullName);
-            else if ((!mediaFlag) && CommonString.MediaExts.Contains(fi.Extension.ToLower()) &&
+            else if (this.scanMediaInfo && (!mediaFlag) &&
+                CommonString.MediaExts.Contains(fi.Extension.ToLower()) &&
                 (!fi.Name.ToLower().Contains(".sample.")))
             {
                 if (mediaInfoInitFlag)

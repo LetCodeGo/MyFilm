@@ -51,6 +51,7 @@
             this.labelScanDepth = new System.Windows.Forms.Label();
             this.tbeLayer = new MyFilm.TextBoxEx();
             this.btnUpdateROF4K = new System.Windows.Forms.Button();
+            this.cbScanMedia = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -159,7 +160,7 @@
             // btnAddDisk
             // 
             this.btnAddDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddDisk.Location = new System.Drawing.Point(768, 61);
+            this.btnAddDisk.Location = new System.Drawing.Point(768, 97);
             this.btnAddDisk.Name = "btnAddDisk";
             this.btnAddDisk.Size = new System.Drawing.Size(204, 25);
             this.btnAddDisk.TabIndex = 1;
@@ -170,7 +171,7 @@
             // btnUpdateDisk
             // 
             this.btnUpdateDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateDisk.Location = new System.Drawing.Point(768, 92);
+            this.btnUpdateDisk.Location = new System.Drawing.Point(768, 128);
             this.btnUpdateDisk.Name = "btnUpdateDisk";
             this.btnUpdateDisk.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateDisk.TabIndex = 2;
@@ -181,7 +182,7 @@
             // btnDeleteDisk
             // 
             this.btnDeleteDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteDisk.Location = new System.Drawing.Point(768, 123);
+            this.btnDeleteDisk.Location = new System.Drawing.Point(768, 159);
             this.btnDeleteDisk.Name = "btnDeleteDisk";
             this.btnDeleteDisk.Size = new System.Drawing.Size(204, 25);
             this.btnDeleteDisk.TabIndex = 3;
@@ -286,7 +287,7 @@
             // btnUpdateROF4K
             // 
             this.btnUpdateROF4K.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateROF4K.Location = new System.Drawing.Point(768, 171);
+            this.btnUpdateROF4K.Location = new System.Drawing.Point(768, 207);
             this.btnUpdateROF4K.Name = "btnUpdateROF4K";
             this.btnUpdateROF4K.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateROF4K.TabIndex = 29;
@@ -294,11 +295,24 @@
             this.btnUpdateROF4K.UseVisualStyleBackColor = true;
             this.btnUpdateROF4K.Click += new System.EventHandler(this.btnUpdateROF4K_Click);
             // 
+            // cbScanMedia
+            // 
+            this.cbScanMedia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbScanMedia.AutoSize = true;
+            this.cbScanMedia.Location = new System.Drawing.Point(768, 64);
+            this.cbScanMedia.Name = "cbScanMedia";
+            this.cbScanMedia.Size = new System.Drawing.Size(192, 16);
+            this.cbScanMedia.TabIndex = 30;
+            this.cbScanMedia.Text = "对mkv、mp4等文件扫描媒体信息";
+            this.cbScanMedia.UseVisualStyleBackColor = true;
+            this.cbScanMedia.CheckedChanged += new System.EventHandler(this.cbScanMedia_CheckedChanged);
+            // 
             // ManagerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(984, 580);
+            this.Controls.Add(this.cbScanMedia);
             this.Controls.Add(this.btnUpdateROF4K);
             this.Controls.Add(this.labelScanDepth);
             this.Controls.Add(this.tbeLayer);
@@ -346,5 +360,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnCompleteScan;
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnScanLayer;
         private System.Windows.Forms.Button btnUpdateROF4K;
+        private System.Windows.Forms.CheckBox cbScanMedia;
     }
 }

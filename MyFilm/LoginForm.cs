@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
@@ -14,6 +15,9 @@ namespace MyFilm
         /// </summary>
         private static String configPath = Path.Combine(
             CommonString.AppDataFolder, "myfilm.xml");
+
+        private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
+            webDataCaptureResult = null;
 
         [Serializable]
         [XmlRoot("DBCONFIG")]
@@ -148,6 +152,12 @@ namespace MyFilm
             InitComboxDataBase();
         }
 
+        public void SetWebCaptureDataResult(
+            RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult rst)
+        {
+            this.webDataCaptureResult = rst;
+        }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
             CommonString.DbIP = this.comboBoxIP.Text;
@@ -168,12 +178,17 @@ namespace MyFilm
                 TimeSpan ts = DateTime.Now.Subtract(dateTimeRead);
                 if (ts.Days > 1)
                 {
-                    string strMsg = "";
-                    DateTime crawlTime = DateTime.Now;
-                    int flag = RealOrFake4KWebDataCapture.Update4KInfo(ref strMsg, ref crawlTime);
+                    WaitingForm waitingForm = new WaitingForm();
+                    RealOrFake4KWebDataCapture webDataCapture = new RealOrFake4KWebDataCapture(
+                        SetWebCaptureDataResult, waitingForm.SetFinish);
+                    Thread threadWebDataCapture = new Thread(
+                        new ThreadStart(webDataCapture.Update4KInfo));
+                    threadWebDataCapture.Start();
+                    waitingForm.ShowDialog();
 
-                    if (flag >= 0) dateTimeRead = crawlTime;
-                    MessageBox.Show(strMsg);
+                    if (this.webDataCaptureResult.code >= 0)
+                        dateTimeRead = this.webDataCaptureResult.crawlTime;
+                    MessageBox.Show(this.webDataCaptureResult.strMsg);
                 }
 
                 dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
