@@ -30,6 +30,8 @@ namespace MyFilm
         private int currentPageIndex = 0;
 
         private string comboxDiskDefaultString = "全部";
+        private bool connectState = true;
+        private bool[] controlEnableArray = null;
 
         private enum ActionType
         {
@@ -85,6 +87,8 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            this.controlEnableArray = new bool[this.Controls.Count];
+
             this.Icon = Properties.Resources.ico;
             this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
                 CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
@@ -1160,33 +1164,82 @@ namespace MyFilm
 
         private void MySqlHeartBeat()
         {
-            bool exceptionFlag = false;
+            bool exitFlag = false;
+            bool connectStatePrevious = connectState;
+            // 30分钟查询一次，10分钟检测一次网卡
+            int timeInterval = 1800000;
+            int flags = 0;
 
             while (heartBeatFlag)
             {
                 int msTime = 0;
-                while (heartBeatFlag && msTime < 1800000)
+                while (heartBeatFlag && msTime < timeInterval)
                 {
                     Thread.Sleep(500);
                     msTime += 500;
                 }
                 if (!heartBeatFlag) break;
 
-                // 电脑睡眠时，网卡睡眠
-                try
+                connectStatePrevious = connectState;
+                if (connectState)
                 {
-                    SqlData.GetInstance().CountRowsFromSearchLog();
+                    try
+                    {
+                        SqlData.GetInstance().CountRowsFromSearchLog();
+                    }
+                    // 电脑睡眠时，网卡睡眠
+                    catch
+                    {
+                        connectState = false;
+                        timeInterval = 600000;
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show(string.Format("{0}\n{1}",
-                        DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
-                    heartBeatFlag = false;
-                    exceptionFlag = true;
+                    if (connectState = Win32API.InternetGetConnectedState(ref flags, 0))
+                    {
+                        try
+                        {
+                            SqlData.GetInstance().OpenMySql();
+                            timeInterval = 1800000;
+                        }
+                        catch (Exception ex)
+                        {
+                            // 依然打开失败，退出
+                            MessageBox.Show(string.Format("{0}\n{1}",
+                                DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
+                            heartBeatFlag = false;
+                            exitFlag = true;
+                        }
+                    }
+                }
+
+                if (heartBeatFlag && (connectStatePrevious != connectState))
+                {
+                    MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
+                    this.BeginInvoke(mi);
                 }
             }
 
-            if (exceptionFlag) this.Close();
+            if (exitFlag) this.Close();
+        }
+
+        private void ChangeControlEnable()
+        {
+            if (connectState)
+            {
+                int i = 0;
+                foreach (Control cl in this.Controls) cl.Enabled = controlEnableArray[i++];
+            }
+            else
+            {
+                int i = 0;
+                foreach (Control cl in this.Controls)
+                {
+                    controlEnableArray[i++] = cl.Enabled;
+                    cl.Enabled = false;
+                }
+            }
         }
 
         private void btnRefreshMapdisk_Click(object sender, EventArgs e)

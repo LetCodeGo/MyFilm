@@ -152,5 +152,15 @@ namespace MyFilm
         public const int SW_RESTORE = 9;
 
         #endregion
+
+        #region 网卡状态检测
+
+        [DllImport("wininet.dll", EntryPoint = "InternetGetConnectedState")] 
+        public extern static bool InternetGetConnectedState(ref int flags, int reserve = 0);
+
+        [DllImport("wininet.dll", EntryPoint = "InternetCheckConnection")]
+        public extern static bool InternetCheckConnection(string url, int flags = 1, int reserve = 0);
+
+        #endregion
     }
 }
