@@ -32,6 +32,7 @@ namespace MyFilm
         private string comboxDiskDefaultString = "全部";
         private bool connectState = true;
         private bool[] controlEnableArray = null;
+        private Action<bool> managerFormSetEnableAction = null;
 
         private enum ActionType
         {
@@ -502,10 +503,9 @@ namespace MyFilm
         private void btnManager_Click(object sender, EventArgs e)
         {
             ManagerForm form = new ManagerForm();
+            this.managerFormSetEnableAction = form.SetControlEnable;
+            form.closeAction = this.ManagerFormClosed;
             form.ShowDialog();
-
-            // 设置返回后显示根目录
-            ReLoadDiskRootDataAndShow();
         }
 
         private void btnUpFolder_Click(object sender, EventArgs e)
@@ -1239,6 +1239,19 @@ namespace MyFilm
                     controlEnableArray[i++] = cl.Enabled;
                     cl.Enabled = false;
                 }
+            }
+
+            this.managerFormSetEnableAction?.Invoke(connectState);
+        }
+
+        private void ManagerFormClosed()
+        {
+            this.managerFormSetEnableAction = null;
+
+            if (connectState)
+            {
+                // 设置返回后显示根目录
+                ReLoadDiskRootDataAndShow();
             }
         }
 

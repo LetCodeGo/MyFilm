@@ -20,6 +20,9 @@ namespace MyFilm
 
         private bool bCompleteScan = true;
 
+        private bool[] controlEnableArray = null;
+        public Action closeAction = null;
+
         public ManagerForm()
         {
             InitializeComponent();
@@ -409,6 +412,8 @@ namespace MyFilm
 
         private void ManagerForm_Load(object sender, EventArgs e)
         {
+            this.controlEnableArray = new bool[this.Controls.Count];
+
             this.Icon = Properties.Resources.ico;
             InitComboxLocalDisk();
             InitGrid();
@@ -452,6 +457,29 @@ namespace MyFilm
 
             this.btnAddDisk.Enabled = enabledFlag;
             this.btnUpdateDisk.Enabled = enabledFlag;
+        }
+
+        public void SetControlEnable(bool connectState)
+        {
+            if (connectState)
+            {
+                int i = 0;
+                foreach (Control cl in this.Controls) cl.Enabled = controlEnableArray[i++];
+            }
+            else
+            {
+                int i = 0;
+                foreach (Control cl in this.Controls)
+                {
+                    controlEnableArray[i++] = cl.Enabled;
+                    cl.Enabled = false;
+                }
+            }
+        }
+
+        private void ManagerForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.closeAction?.Invoke();
         }
     }
 }
