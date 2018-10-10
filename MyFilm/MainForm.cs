@@ -30,6 +30,9 @@ namespace MyFilm
         private int currentPageIndex = 0;
 
         private string comboxDiskDefaultString = "全部";
+        private string mainFormTitleString = "";
+
+        private Mutex connectStateMutex = null;
         private bool connectState = true;
         private bool[] controlEnableArray = null;
         private Action<bool> managerFormSetEnableAction = null;
@@ -88,11 +91,13 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            this.connectStateMutex = new Mutex();
             this.controlEnableArray = new bool[this.Controls.Count];
 
             this.Icon = Properties.Resources.ico;
-            this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
+            mainFormTitleString = String.Format("{0}@{1} [MyFilm v{2}]",
                 CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            this.Text = mainFormTitleString;
             this.tbePageRowCount.Text = this.pageRowCount.ToString();
 
             this.notifyIcon.Icon = Properties.Resources.ico;
@@ -110,6 +115,7 @@ namespace MyFilm
 
             // 开启线程，接收从另一进程发送的数据
             ProcessReceiveData.ShowSearchResultAction = this.ShowSearchResult;
+            ProcessReceiveData.GetSearchEnableAction = this.GetSearchEnableState;
             Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
 
@@ -146,7 +152,7 @@ namespace MyFilm
         {
             heartBeatFlag = false;
 
-            ProcessReceiveData.receiveExit = true;
+            ProcessSendData.exitCall = true;
             ProcessSendData.SendData("quit");
 
             SqlData.GetInstance().CloseMySql();
@@ -693,8 +699,6 @@ namespace MyFilm
             return dt;
         }
 
-
-
         private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
             // 只有选中了行才弹出菜单
@@ -705,10 +709,22 @@ namespace MyFilm
                 bool isDelete = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_delete_ex"].Value);
                 bool isWatch = Convert.ToBoolean(this.dataGridView.Rows[index].Cells["to_watch_ex"].Value);
                 bool isFolder = Convert.ToBoolean(gridViewData.Rows[index]["is_folder"]);
-                String fileName = gridViewData.Rows[index]["name"].ToString();
-                bool isShowContent = ((fileName.ToLower() == "__game_version_info__.gvi") ||
-                    CommonString.MediaExts.Contains(
-                        fileName.Substring(fileName.LastIndexOf('.')).ToLower()));
+
+                bool isShowContent = false;
+                if (!isFolder)
+                {
+                    String fileNameLowerStr = gridViewData.Rows[index]["name"].ToString().ToLower();
+                    isShowContent = (fileNameLowerStr == "__game_version_info__.gvi");
+                    if (!isShowContent)
+                    {
+                        int dotLastIndex = fileNameLowerStr.LastIndexOf('.');
+                        if (dotLastIndex != -1)
+                        {
+                            isShowContent = CommonString.MediaExts.Contains(fileNameLowerStr.Substring(dotLastIndex));
+                        }
+                    }
+                }
+
                 bool isOpenFolder =
                     this.dataGridView.Rows[index].Cells["disk_desc"].Value.ToString() !=
                     CommonString.RealOrFake4KDiskName;
@@ -1167,7 +1183,9 @@ namespace MyFilm
             bool exitFlag = false;
             bool connectStatePrevious = connectState;
             // 30分钟查询一次，10分钟检测一次网卡
-            int timeInterval = 1800000;
+            int[] timeIntervals = new int[] { 1800000, 600000 };
+            int[] timeIntervalsTest = new int[] { 60000, 30000 };
+            int timeInterval = timeIntervals[0];
             int flags = 0;
 
             while (heartBeatFlag)
@@ -1180,44 +1198,56 @@ namespace MyFilm
                 }
                 if (!heartBeatFlag) break;
 
-                connectStatePrevious = connectState;
-                if (connectState)
+                try
                 {
-                    try
-                    {
-                        SqlData.GetInstance().CountRowsFromSearchLog();
-                    }
-                    // 电脑睡眠时，网卡睡眠
-                    catch
-                    {
-                        connectState = false;
-                        timeInterval = 600000;
-                    }
-                }
-                else
-                {
-                    if (connectState = Win32API.InternetGetConnectedState(ref flags, 0))
+                    this.connectStateMutex.WaitOne();
+
+                    connectStatePrevious = connectState;
+                    if (connectState)
                     {
                         try
                         {
-                            SqlData.GetInstance().OpenMySql();
-                            timeInterval = 1800000;
+                            SqlData.GetInstance().CountRowsFromSearchLog();
                         }
-                        catch (Exception ex)
+                        // 电脑睡眠时，网卡睡眠
+                        catch
                         {
-                            // 依然打开失败，退出
-                            MessageBox.Show(string.Format("{0}\n{1}",
-                                DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
-                            heartBeatFlag = false;
-                            exitFlag = true;
+                            connectState = false;
                         }
                     }
-                }
+                    else
+                    {
+                        if (connectState = Win32API.InternetGetConnectedState(ref flags, 0))
+                        {
+                            try
+                            {
+                                SqlData.GetInstance().OpenMySql();
+                            }
+                            catch (Exception ex)
+                            {
+                                heartBeatFlag = false;
+                                exitFlag = true;
 
-                if (heartBeatFlag && (connectStatePrevious != connectState))
+                                // 依然打开失败，退出
+                                MessageBox.Show(string.Format("{0}\n{1}",
+                                    DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
+                                break;
+                            }
+                        }
+                    }
+
+                    if (connectState) timeInterval = timeIntervals[0];
+                    else timeInterval = timeIntervals[1];
+
+                    if (heartBeatFlag && (connectStatePrevious != connectState))
+                    {
+                        MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
+                        this.BeginInvoke(mi);
+                    }
+                }
+                finally
                 {
-                    MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
-                    this.BeginInvoke(mi);
+                    this.connectStateMutex.ReleaseMutex();
                 }
             }
 
@@ -1253,6 +1283,48 @@ namespace MyFilm
                 // 设置返回后显示根目录
                 ReLoadDiskRootDataAndShow();
             }
+        }
+
+        private bool GetSearchEnableState(out string title)
+        {
+            title = mainFormTitleString;
+            if (!heartBeatFlag) return false;
+
+            try
+            {
+                this.connectStateMutex.WaitOne();
+
+                int flags = 0;
+                bool connectStateBefore = connectState;
+                connectState = Win32API.InternetGetConnectedState(ref flags, 0);
+
+                if (connectStateBefore != connectState)
+                {
+                    if (connectState)
+                    {
+                        try
+                        {
+                            SqlData.GetInstance().OpenMySql();
+                        }
+                        catch
+                        {
+                            connectState = false;
+                        }
+                    }
+                }
+
+                if (connectStateBefore != connectState)
+                {
+                    MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
+                    this.BeginInvoke(mi);
+                }
+            }
+            finally
+            {
+                this.connectStateMutex.ReleaseMutex();
+            }
+
+            return connectState;
         }
 
         private void btnRefreshMapdisk_Click(object sender, EventArgs e)

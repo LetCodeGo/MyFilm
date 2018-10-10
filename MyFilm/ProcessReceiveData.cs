@@ -12,14 +12,16 @@ namespace MyFilm
     public class ProcessReceiveData : ProcessCommunication
     {
         /// <summary>
-        /// 接收数据结束标志，在程序要退出时设置
-        /// </summary>
-        public static bool receiveExit = false;
-
-        /// <summary>
         /// 窗体隐藏在通知栏时不能收到消息，需要先使窗口正常显示
         /// </summary>
         public static Action ShowSearchResultAction = null;
+
+        public delegate bool GetSearchEnableAndTitleFunc(out string title);
+
+        /// <summary>
+        /// 搜索是否可用
+        /// </summary>
+        public static GetSearchEnableAndTitleFunc GetSearchEnableAction = null;
 
         public static void ReceiveData(object hWnd)
         {
@@ -44,22 +46,34 @@ namespace MyFilm
                 new NamedPipeServerStream(
                     CommonString.PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte))
             {
-                while (!receiveExit)
+                while (true)
                 {
                     pipeServer.WaitForConnection();
 
+                    bool searchEnable = true;
+                    string title = "";
+
+                    if (GetSearchEnableAction != null)
+                        searchEnable = GetSearchEnableAction.Invoke(out title);
+
+                    byte[] bytesWrite = Encoding.Default.GetBytes(
+                        string.Format("{0}{1}", searchEnable ? "1" : "0", title));
+                    pipeServer.Write(bytesWrite, 0, bytesWrite.Length);
+                    pipeServer.Flush();
+
                     byte[] bytes = new byte[1024];
                     int length = pipeServer.Read(bytes, 0, 1024);
-                    CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, length);
+                    string strTemp = Encoding.Default.GetString(bytes, 0, length);
 
-                    if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
+                    if (strTemp[0] == '0' && strTemp[1] == '1')
                     {
-                        // 不关心调用结果
+                        CommonString.WebSearchKeyWord = strTemp.Substring(2);
                         ShowSearchResultAction?.BeginInvoke(null, null);
-                        //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                     }
 
                     pipeServer.Disconnect();
+
+                    if (strTemp[0] == '1') break;
                 }
             }
         }
@@ -69,33 +83,51 @@ namespace MyFilm
             using (var mmf = MemoryMappedFile.CreateOrOpen(
                 CommonString.MemoryMappedName, 1024, MemoryMappedFileAccess.ReadWrite))
             {
-                using (var mmViewStream = mmf.CreateViewStream(0, 1024))
+                using (var viewAccessor = mmf.CreateViewAccessor(0, 1024))
                 {
-                    Semaphore mmfWrite = new Semaphore(1, 1, CommonString.SharedMemorySemaphoreWriteName);
-                    Semaphore mmfRead = new Semaphore(0, 1, CommonString.SharedMemorySemaphoreReadName);
+                    Semaphore mmfReceiveWrite = new Semaphore(0, 1,
+                        CommonString.SharedMemorySemaphoreReceiveWriteName);
+                    Semaphore mmfReceiveRead = new Semaphore(0, 1,
+                        CommonString.SharedMemorySemaphoreReceiveReadName);
+                    Semaphore mmfSendWrite = new Semaphore(0, 1,
+                        CommonString.SharedMemorySemaphoreSendWriteName);
+                    Semaphore mmfSendRead = new Semaphore(0, 1,
+                        CommonString.SharedMemorySemaphoreSendReadName);
 
-                    while (!receiveExit)
+                    while (true)
                     {
-                        mmfRead.WaitOne();
+                        mmfReceiveWrite.WaitOne();
 
-                        mmViewStream.Seek(0, SeekOrigin.Begin);
+                        bool searchEnable = true;
+                        string title = "";
 
-                        byte[] bytesInt = new byte[4];
-                        mmViewStream.Read(bytesInt, 0, 4);
-                        int byteLen = BitConverter.ToInt32(bytesInt, 0);
+                        if (GetSearchEnableAction != null)
+                            searchEnable = GetSearchEnableAction.Invoke(out title);
 
-                        byte[] bytes = new byte[byteLen];
-                        mmViewStream.Read(bytes, 0, byteLen);
-                        CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, byteLen);
+                        byte[] bytesWrite = Encoding.Default.GetBytes(
+                            string.Format("{0}{1}", searchEnable ? "1" : "0", title));
 
-                        if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
+                        viewAccessor.Write(0, bytesWrite.Length);
+                        viewAccessor.WriteArray<byte>(4, bytesWrite, 0, bytesWrite.Length);
+                        viewAccessor.Flush();
+
+                        mmfSendRead.Release();
+                        mmfReceiveRead.WaitOne();
+
+                        byte[] bytes = new byte[1024];
+                        int length = viewAccessor.ReadInt32(0);
+                        viewAccessor.ReadArray<byte>(4, bytes, 0, length);
+                        string strTemp = Encoding.Default.GetString(bytes, 0, length);
+
+                        mmfSendWrite.Release();
+
+                        if (strTemp[0] == '0' && strTemp[1] == '1')
                         {
-                            // 不关心调用结果
+                            CommonString.WebSearchKeyWord = strTemp.Substring(2);
                             ShowSearchResultAction?.BeginInvoke(null, null);
-                            //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                         }
 
-                        mmfWrite.Release();
+                        if (strTemp[0] == '1') break;
                     }
                 }
             }
@@ -108,22 +140,33 @@ namespace MyFilm
             serverSocket.Bind(new IPEndPoint(ip, 9321));
             serverSocket.Listen(1);
 
-            while (!receiveExit)
+            while (true)
             {
                 Socket acceptSocket = serverSocket.Accept();
 
+                bool searchEnable = true;
+                string title = "";
+
+                if (GetSearchEnableAction != null)
+                    searchEnable = GetSearchEnableAction.Invoke(out title);
+
+                byte[] bytesWrite = Encoding.Default.GetBytes(
+                    string.Format("{0}{1}", searchEnable ? "1" : "0", title));
+                acceptSocket.Send(bytesWrite);
+
                 byte[] bytes = new byte[1024];
                 int length = acceptSocket.Receive(bytes);
-                CommonString.WebSearchKeyWord = Encoding.Default.GetString(bytes, 0, length);
+                string strTemp = Encoding.Default.GetString(bytes, 0, length);
 
-                if (!(receiveExit || String.IsNullOrWhiteSpace(CommonString.WebSearchKeyWord)))
+                if (strTemp[0] == '0' && strTemp[1] == '1')
                 {
-                    // 不关心调用结果
+                    CommonString.WebSearchKeyWord = strTemp.Substring(2);
                     ShowSearchResultAction?.BeginInvoke(null, null);
-                    //Win32API.PostMessage((IntPtr)hWnd, Win32API.WM_SEARCH, 0, 0);
                 }
 
                 acceptSocket.Close();
+
+                if (strTemp[0] == '1') break;
             }
         }
     }

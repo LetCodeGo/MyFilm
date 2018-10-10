@@ -6,15 +6,17 @@ using System.Net.Sockets;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace MyFilm
 {
     public class ProcessSendData : ProcessCommunication
     {
+        public static bool exitCall = false;
+        private readonly static int sendDataMaxLength = 50;
+
         public static void SendData(String data)
         {
-            if (data.Length > 100) return;
-
             switch (processCommunicateType)
             {
                 case ProcessCommunicationType.PIPE:
@@ -32,50 +34,156 @@ namespace MyFilm
 
         private static void SendDataByPipe(String data)
         {
+            bool searchEnable = false;
+            bool connectFlag = true;
+            string connectErrMsg = "";
+            string title = "";
+
             using (NamedPipeClientStream pipeSend =
                 new NamedPipeClientStream(
                     "localhost", CommonString.PipeName, PipeDirection.InOut,
                     PipeOptions.None, TokenImpersonationLevel.None))
             {
-                pipeSend.Connect(300);
+                try
+                {
+                    pipeSend.Connect(300);
 
-                byte[] bytes = Encoding.Default.GetBytes(data);
-                pipeSend.Write(bytes, 0, bytes.Length);
-                pipeSend.Flush();
+                    byte[] bytesRead = new byte[1024];
+                    int length = pipeSend.Read(bytesRead, 0, 1024);
+                    string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
+
+                    if (strTemp[0] == '1') searchEnable = true;
+                    title = strTemp.Substring(1);
+
+                    bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+                    string strSend = string.Format("{0}{1}{2}",
+                        exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
+
+                    byte[] bytes = Encoding.Default.GetBytes(strSend);
+                    pipeSend.Write(bytes, 0, bytes.Length);
+                    pipeSend.Flush();
+                }
+                catch (Exception ex)
+                {
+                    connectFlag = false;
+                    connectErrMsg = ex.Message;
+                }
+            }
+
+            if (!exitCall)
+            {
+                if (!connectFlag)
+                    MessageBox.Show(string.Format(
+                        "搜索 {0} 失败\n{1}！", data, connectErrMsg));
+                else if (!searchEnable)
+                    MessageBox.Show(string.Format(
+                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
+                else if (data.Length > sendDataMaxLength)
+                    MessageBox.Show(string.Format(
+                        "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
             }
         }
 
         private static void SendDataBySharedMemory(String data)
         {
+            bool searchEnable = false;
+            bool connectFlag = true;
+            string connectErrMsg = "";
+            string title = "";
+
             using (var mmf = MemoryMappedFile.CreateOrOpen(
                 CommonString.MemoryMappedName, 1024, MemoryMappedFileAccess.ReadWrite))
             {
                 using (var viewAccessor = mmf.CreateViewAccessor(0, 1024))
                 {
-                    Semaphore mmfWrite = Semaphore.OpenExisting(CommonString.SharedMemorySemaphoreWriteName);
-                    Semaphore mmfRead = Semaphore.OpenExisting(CommonString.SharedMemorySemaphoreReadName);
+                    try
+                    {
+                        Semaphore mmfReceiveWrite = Semaphore.OpenExisting(
+                            CommonString.SharedMemorySemaphoreReceiveWriteName);
+                        Semaphore mmfReceiveRead = Semaphore.OpenExisting(
+                            CommonString.SharedMemorySemaphoreReceiveReadName);
+                        Semaphore mmfSendWrite = Semaphore.OpenExisting(
+                            CommonString.SharedMemorySemaphoreSendWriteName);
+                        Semaphore mmfSendRead = Semaphore.OpenExisting(
+                            CommonString.SharedMemorySemaphoreSendReadName);
 
-                    mmfWrite.WaitOne();
+                        mmfReceiveWrite.Release();
+                        mmfSendRead.WaitOne();
 
-                    byte[] bytes = Encoding.Default.GetBytes(data);
-                    // 在起始点写入字符长度，占4字节
-                    viewAccessor.Write(0, bytes.Length);
-                    viewAccessor.WriteArray<byte>(4, bytes, 0, bytes.Length);
-                    viewAccessor.Flush();
+                        byte[] bytesRead = new byte[1024];
+                        int length = viewAccessor.ReadInt32(0);
+                        viewAccessor.ReadArray<byte>(4, bytesRead, 0, length);
+                        string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
 
-                    mmfRead.Release();
+                        if (strTemp[0] == '1') searchEnable = true;
+                        title = strTemp.Substring(1);
+
+                        bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+                        string strSend = string.Format("{0}{1}{2}",
+                            exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
+
+                        byte[] bytes = Encoding.Default.GetBytes(strSend);
+                        viewAccessor.Write(0, bytes.Length);
+                        viewAccessor.WriteArray<byte>(4, bytes, 0, bytes.Length);
+
+                        mmfReceiveRead.Release();
+                        mmfSendWrite.WaitOne();
+                    }
+                    catch (Exception ex)
+                    {
+                        connectFlag = false;
+                        connectErrMsg = ex.Message;
+                    }
                 }
+            }
+
+            if (!exitCall)
+            {
+                if (!connectFlag)
+                    MessageBox.Show(string.Format(
+                        "搜索 {0} 失败\n{1}！", data, connectErrMsg));
+                else if (!searchEnable)
+                    MessageBox.Show(string.Format(
+                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
+                else if (data.Length > sendDataMaxLength)
+                    MessageBox.Show(string.Format(
+                        "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
             }
         }
 
         private static void SendDataByTcp(String data)
         {
+            bool searchEnable = false;
+            string title = "";
+
             IPAddress ip = IPAddress.Parse("127.0.0.1");
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             clientSocket.Connect(new IPEndPoint(ip, 9321));
 
-            clientSocket.Send(Encoding.Default.GetBytes(data));
+            byte[] bytesRead = new byte[1024];
+            int length = clientSocket.Receive(bytesRead);
+            string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
+
+            if (strTemp[0] == '1') searchEnable = true;
+            title = strTemp.Substring(1);
+
+            bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+            string strSend = string.Format("{0}{1}{2}",
+                exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
+
+            byte[] bytes = Encoding.Default.GetBytes(strSend);
+            clientSocket.Send(bytes);
             clientSocket.Close();
+
+            if (!exitCall)
+            {
+                if (!searchEnable)
+                    MessageBox.Show(string.Format(
+                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
+                else if (data.Length > sendDataMaxLength)
+                    MessageBox.Show(string.Format(
+                        "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
+            }
         }
     }
 }
