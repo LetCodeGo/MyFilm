@@ -23,6 +23,8 @@ namespace MyFilm
         private bool[] controlEnableArray = null;
         public Action closeAction = null;
 
+        private bool needReFillRamData = false;
+
         public ManagerForm()
         {
             InitializeComponent();
@@ -139,6 +141,8 @@ namespace MyFilm
                 threadScan.Start();
                 progressForm.ShowDialog();
 
+                this.needReFillRamData = true;
+
                 gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
@@ -187,6 +191,8 @@ namespace MyFilm
                 threadScan.Start();
                 progressForm.ShowDialog();
 
+                this.needReFillRamData = true;
+
                 gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
@@ -209,6 +215,8 @@ namespace MyFilm
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
             int deleteFilmNumber = SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
             int deleteDiskNumber = SqlData.GetInstance().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
+
+            this.needReFillRamData = true;
 
             gridViewData = ConvertDiskInfoToGrid(SqlData.GetInstance().GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
@@ -401,6 +409,8 @@ namespace MyFilm
 
             if (this.webDataCaptureResult.code >= 0)
                 LoginForm.UpdateWebDataCaptureTimeAndSaveXml(this.webDataCaptureResult.crawlTime);
+            if (this.webDataCaptureResult.code > 0) this.needReFillRamData = true;
+
             MessageBox.Show(this.webDataCaptureResult.strMsg);
         }
 
@@ -479,6 +489,7 @@ namespace MyFilm
 
         private void ManagerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            if (needReFillRamData) SqlData.GetInstance().FillRamData();
             this.closeAction?.Invoke();
         }
     }

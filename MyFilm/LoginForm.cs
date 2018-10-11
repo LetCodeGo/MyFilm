@@ -208,6 +208,7 @@ namespace MyFilm
                 dbStruct.WebDataCaptureTime = dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss");
 
                 SaveXml();
+                sqlData.FillRamData();
 
                 this.DialogResult = DialogResult.OK;
             }

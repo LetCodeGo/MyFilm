@@ -21,6 +21,34 @@ namespace MyFilm
         private static readonly char[] searchKeyWordSplitter =
             " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·".ToCharArray();
 
+        private class FileNamePathID
+        {
+            public string FileName;
+            public string FilePath;
+            public int FileDataBaseID;
+
+            public FileNamePathID(string fileName, string filePath, int fileDataBaseID)
+            {
+                this.FileName = fileName;
+                this.FilePath = filePath;
+                this.FileDataBaseID = fileDataBaseID;
+            }
+
+            public bool IsFileNameContainStrings(string[] strs)
+            {
+                bool isContain = true;
+
+                foreach (string str in strs)
+                {
+                    if (!this.FileName.Contains(str)) { isContain = false; break; }
+                }
+
+                return isContain;
+            }
+        }
+        private Dictionary<string, List<FileNamePathID>> ramData = null;
+        private bool ramDataCompleted = false;
+
         private static SqlData sqlData = null;
         private static readonly object locker = new object();
 
@@ -178,6 +206,40 @@ namespace MyFilm
 
             MySqlCommand slqCom = new MySqlCommand(cmdText, sqlConnection);
             slqCom.ExecuteNonQuery();
+        }
+
+        public void FillRamData()
+        {
+            String cmdText = String.Format(
+                "select id, name, path, disk_desc from {0};", "film_info");
+
+            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+
+            using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+            {
+                ramData = new Dictionary<string, List<FileNamePathID>>();
+
+                while (sqlDataReader.Read())
+                {
+                    string strDiskDesc = sqlDataReader[3].ToString();
+                    if (ramData.ContainsKey(strDiskDesc))
+                        ramData[strDiskDesc].Add(new FileNamePathID(
+                            sqlDataReader[1].ToString().ToLower(),
+                            sqlDataReader[2].ToString().ToLower(),
+                            Convert.ToInt32(sqlDataReader[0])));
+                    else
+                    {
+                        List<FileNamePathID> fnpiList = new List<FileNamePathID>();
+                        fnpiList.Add(new FileNamePathID(
+                            sqlDataReader[1].ToString().ToLower(),
+                            sqlDataReader[2].ToString().ToLower(),
+                            Convert.ToInt32(sqlDataReader[0])));
+                        ramData.Add(strDiskDesc, fnpiList);
+                    }
+                }
+
+                ramDataCompleted = true;
+            }
         }
 
         public int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
@@ -380,29 +442,55 @@ namespace MyFilm
         /// <returns></returns>
         public int[] SearchKeyWordFromFilmInfo(String keyWord, String diskDescribe = null)
         {
-            String[] keyWords = keyWord.Split(searchKeyWordSplitter,
+            String[] keyWords = keyWord.ToLower().Split(searchKeyWordSplitter,
                 StringSplitOptions.RemoveEmptyEntries);
             if (keyWords.Length == 0) return null;
 
-            String strTemp = String.Empty;
-            for (int i = 0; i < keyWords.Length; i++)
+            if (ramDataCompleted)
             {
-                strTemp += String.Format(" locate(@{0}, name)>0 {1}",
-                    i, i == keyWords.Length - 1 ? "" : "and");
+                List<int> rstList = new List<int>();
+
+                if (diskDescribe == null)
+                {
+                    foreach (List<FileNamePathID> fnpiList in ramData.Values)
+                        foreach (FileNamePathID fnpi in fnpiList)
+                            if (fnpi.IsFileNameContainStrings(keyWords))
+                                rstList.Add(fnpi.FileDataBaseID);
+                }
+                else
+                {
+                    if (!ramData.ContainsKey(diskDescribe)) return null;
+
+                    List<FileNamePathID> fnpiList = ramData[diskDescribe];
+                    foreach (FileNamePathID fnpi in fnpiList)
+                        if (fnpi.IsFileNameContainStrings(keyWords))
+                            rstList.Add(fnpi.FileDataBaseID);
+                }
+
+                return rstList.ToArray();
             }
-            String cmdText = String.Format(
-                "select id from {0} where {1} {2} order by id;", "film_info",
-                strTemp, diskDescribe == null ? "" : "and disk_desc = @disk_desc");
+            else
+            {
+                String strTemp = String.Empty;
+                for (int i = 0; i < keyWords.Length; i++)
+                {
+                    strTemp += String.Format(" locate(@{0}, name)>0 {1}",
+                        i, i == keyWords.Length - 1 ? "" : "and");
+                }
+                String cmdText = String.Format(
+                    "select id from {0} where {1} {2} order by id;", "film_info",
+                    strTemp, diskDescribe == null ? "" : "and disk_desc = @disk_desc");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
+                MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
 
-            for (int i = 0; i < keyWords.Length; i++)
-                sqlCmd.Parameters.AddWithValue(String.Format("@{0}", i), keyWords[i]);
-            if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+                for (int i = 0; i < keyWords.Length; i++)
+                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", i), keyWords[i]);
+                if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            String errMsg = String.Empty;
+                String errMsg = String.Empty;
 
-            return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+                return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            }
         }
 
         /// <summary>
