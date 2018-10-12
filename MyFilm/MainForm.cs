@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -74,7 +75,7 @@ namespace MyFilm
         /// <summary>
         /// 打开的 nfo 文件所在文件夹
         /// </summary>
-        private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "NFO");
+        private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "nfos");
 
         /// <summary>
         /// 定时发送心跳包
@@ -91,15 +92,16 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            mainFormTitleString = String.Format("{0}@{1} [MyFilm v{2}]",
+                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            Log.Information("----------    {A} LOAD    ----------", mainFormTitleString);
+
             this.connectStateMutex = new Mutex();
             this.controlEnableArray = new bool[this.Controls.Count];
 
-            this.Icon = Properties.Resources.ico;
-            mainFormTitleString = String.Format("{0}@{1} [MyFilm v{2}]",
-                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
             this.Text = mainFormTitleString;
             this.tbePageRowCount.Text = this.pageRowCount.ToString();
-
+            this.Icon = Properties.Resources.ico;
             this.notifyIcon.Icon = Properties.Resources.ico;
             this.notifyIcon.Visible = false;
             this.notifyIcon.Text = String.Format("{0}@{1}", CommonString.DbName, CommonString.DbIP);
@@ -156,6 +158,9 @@ namespace MyFilm
             ProcessSendData.SendData("quit");
 
             SqlData.GetInstance().CloseMySql();
+
+            Log.Information("----------    {A} EXIT    ----------\r\n\r\n", mainFormTitleString);
+            Log.CloseAndFlush();
         }
 
         private void InitComboxMapDisk()
@@ -446,6 +451,8 @@ namespace MyFilm
                 keyWord, diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = (idList == null ? 0 : idList.Length);
 
+            Log.Information("Search key word [{A}], result [{B}] rows", keyWord, totalRowCount);
+
             if (totalRowCount == 0) this.textBoxSearch.ForeColor = Color.Red;
             else this.textBoxSearch.ForeColor = Color.Black;
 
@@ -468,6 +475,8 @@ namespace MyFilm
                 diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
 
+            Log.Information("待删（结果以设置时间倒序）, result [{A}] rows", totalRowCount);
+
             InitPageCombox();
 
             ShowDataGridViewPage(0);
@@ -483,6 +492,8 @@ namespace MyFilm
             idList = SqlData.GetInstance().GetDeleteDataFromFilmInfoGroupByDisk(
                 diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
+
+            Log.Information("待删（结果以磁盘分组）, result [{A}] rows", totalRowCount);
 
             InitPageCombox();
 
@@ -500,6 +511,8 @@ namespace MyFilm
             idList = SqlData.GetInstance().GetWatchDataFromFilmInfo(
                 diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
             totalRowCount = idList.Length;
+
+            Log.Information("待看, result [{A}] rows", totalRowCount);
 
             InitPageCombox();
 
@@ -1207,26 +1220,35 @@ namespace MyFilm
                     {
                         try
                         {
+                            Log.Information("MainForm heartbeat CountRowsFromSearchLog");
                             SqlData.GetInstance().CountRowsFromSearchLog();
                         }
                         // 电脑睡眠时，网卡睡眠
-                        catch
+                        catch (Exception ex)
                         {
+                            Log.Error(ex, "MainForm heartbeat CountRowsFromSearchLog fail");
+
                             connectState = false;
                         }
                     }
                     else
                     {
-                        if (connectState = Win32API.InternetGetConnectedState(ref flags, 0))
+                        connectState = Win32API.InternetGetConnectedState(ref flags, 0);
+                        Log.Information("MainForm heartbeat Win32API.InternetGetConnectedState[{A}]",
+                            connectState);
+                        if (connectState)
                         {
                             try
                             {
+                                Log.Information("MainForm heartbeat OpenMySql");
                                 SqlData.GetInstance().OpenMySql();
                             }
                             catch (Exception ex)
                             {
                                 heartBeatFlag = false;
                                 exitFlag = true;
+
+                                Log.Error(ex, "MainForm heartbeat OpenMySql fail");
 
                                 // 依然打开失败，退出
                                 MessageBox.Show(string.Format("{0}\n{1}",
@@ -1235,6 +1257,9 @@ namespace MyFilm
                             }
                         }
                     }
+
+                    Log.Information("MainForm heartbeat ConnectState[B:{A}][A:{B}]",
+                        connectStatePrevious, connectState);
 
                     if (connectState) timeInterval = timeIntervals[0];
                     else timeInterval = timeIntervals[1];
@@ -1256,6 +1281,8 @@ namespace MyFilm
 
         private void ChangeControlEnable()
         {
+            Log.Information("MainForm ChangeControlEnable[{A}]", connectState);
+
             if (connectState)
             {
                 int i = 0;
@@ -1294,9 +1321,12 @@ namespace MyFilm
             {
                 this.connectStateMutex.WaitOne();
 
-                int flags = 0;
                 bool connectStateBefore = connectState;
+                int flags = 0;
                 connectState = Win32API.InternetGetConnectedState(ref flags, 0);
+
+                Log.Information("MainForm GetSearchEnableState Win32API.InternetGetConnectedState[B:{A}][A:{B}]",
+                    connectStateBefore, connectState);
 
                 if (connectStateBefore != connectState)
                 {
@@ -1304,14 +1334,18 @@ namespace MyFilm
                     {
                         try
                         {
+                            Log.Information("MainForm GetSearchEnableState OpenMySql");
                             SqlData.GetInstance().OpenMySql();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Log.Error(ex, "MainForm GetSearchEnableState OpenMySql fail");
                             connectState = false;
                         }
                     }
                 }
+
+                Log.Information("MainForm GetSearchEnableState ConnectState[B:{A}][A:{B}]", connectStateBefore, connectState);
 
                 if (connectStateBefore != connectState)
                 {

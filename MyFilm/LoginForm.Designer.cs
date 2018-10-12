@@ -90,14 +90,14 @@
             // 
             this.comboBoxPwd.Location = new System.Drawing.Point(222, 120);
             this.comboBoxPwd.Name = "comboBoxPwd";
-            this.comboBoxPwd.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxPwd.Size = new System.Drawing.Size(121, 20);
             this.comboBoxPwd.TabIndex = 6;
             // 
             // comboBoxUser
             // 
             this.comboBoxUser.Location = new System.Drawing.Point(222, 86);
             this.comboBoxUser.Name = "comboBoxUser";
-            this.comboBoxUser.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxUser.Size = new System.Drawing.Size(121, 20);
             this.comboBoxUser.TabIndex = 8;
             // 
             // labelUser
@@ -145,6 +145,7 @@
             this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "登录";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.LoginForm_FormClosed);
             this.Load += new System.EventHandler(this.LoginForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

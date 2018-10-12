@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -218,10 +219,13 @@ namespace MyFilm
             using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
             {
                 ramData = new Dictionary<string, List<FileNamePathID>>();
+                int rowCount = 0;
 
                 while (sqlDataReader.Read())
                 {
+                    rowCount++;
                     string strDiskDesc = sqlDataReader[3].ToString();
+
                     if (ramData.ContainsKey(strDiskDesc))
                         ramData[strDiskDesc].Add(new FileNamePathID(
                             sqlDataReader[1].ToString().ToLower(),
@@ -238,6 +242,7 @@ namespace MyFilm
                     }
                 }
 
+                Log.Information("Load all mysql data to ram, [{A}] rows", rowCount);
                 ramDataCompleted = true;
             }
         }
@@ -445,6 +450,9 @@ namespace MyFilm
             String[] keyWords = keyWord.ToLower().Split(searchKeyWordSplitter,
                 StringSplitOptions.RemoveEmptyEntries);
             if (keyWords.Length == 0) return null;
+
+            Log.Information("Search key word [{KeyWord}] split to {@KeyWords}, search in [{Where}]",
+                keyWord, keyWords, ramDataCompleted ? "Ram" : "DataBase");
 
             if (ramDataCompleted)
             {

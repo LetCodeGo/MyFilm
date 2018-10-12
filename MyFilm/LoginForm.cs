@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -145,6 +146,13 @@ namespace MyFilm
         {
             this.Icon = Properties.Resources.ico;
 
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File(Path.Combine(CommonString.AppDataFolder, "logs", "myfilm.log"),
+                rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+            Log.Information("LoginForm load");
+
             LoadXml();
             InitComboxIP();
             InitComboxUser();
@@ -214,8 +222,15 @@ namespace MyFilm
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "LoginForm login fail");
                 MessageBox.Show(ex.Message, "提示", MessageBoxButtons.OK);
             }
+        }
+
+        private void LoginForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Log.Information("LoginForm exit with login {LoginState}",
+                this.DialogResult == DialogResult.OK ? "success\r\n" : "fail\r\n\r\n");
         }
     }
 }

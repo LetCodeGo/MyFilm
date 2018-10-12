@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.IO.Pipes;
@@ -25,6 +26,8 @@ namespace MyFilm
 
         public static void ReceiveData(object hWnd)
         {
+            Log.Information("ReceiveData by [{Type}]", processCommunicateType.ToString());
+
             switch (processCommunicateType)
             {
                 case ProcessCommunicationType.PIPE:
@@ -61,6 +64,8 @@ namespace MyFilm
                     pipeServer.Write(bytesWrite, 0, bytesWrite.Length);
                     pipeServer.Flush();
 
+                    Log.Information("ReceiveData searchEnable[{A}]", searchEnable);
+
                     byte[] bytes = new byte[1024];
                     int length = pipeServer.Read(bytes, 0, 1024);
                     string strTemp = Encoding.Default.GetString(bytes, 0, length);
@@ -70,6 +75,12 @@ namespace MyFilm
                         CommonString.WebSearchKeyWord = strTemp.Substring(2);
                         ShowSearchResultAction?.BeginInvoke(null, null);
                     }
+
+                    Log.Information("ReceiveData exit[{A}], search{B}",
+                        strTemp[0] == '1',
+                        (strTemp[0] == '0' && strTemp[1] == '1') ?
+                        string.Format("[true], data[{0}]", CommonString.WebSearchKeyWord) :
+                        "[false]");
 
                     pipeServer.Disconnect();
 
