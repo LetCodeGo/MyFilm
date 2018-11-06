@@ -62,22 +62,26 @@ namespace MyFilm
 
         public ThreadScanDisk(string diskPath, string diskDescribe,
             bool scanMediaInfo, int setScanLayer,
-            ThreadSacnDiskCallback threadCallback, ThreadSacnDiskProgressSetView progressSetView,
-            ThreadSacnDiskProgressFinish progressFinish)
+            ThreadSacnDiskCallback threadCallback)
         {
             this.diskPath = diskPath;
             this.diskDescribe = diskDescribe;
             this.scanMediaInfo = scanMediaInfo;
             this.setMaxScanLayer = setScanLayer;
             this.threadCallback = threadCallback;
-            this.progressSetView = progressSetView;
-            this.progressFinish = progressFinish;
 
             if (!mediaInfoInitFlag)
             {
                 mediaInfo = new MediaInfoLib.MediaInfo(
                 ref mediaInfoInitFlag, ref mediaInfoInitErrMsg);
             }
+        }
+
+        public void SetProgressMsg(ThreadSacnDiskProgressSetView progressSetView,
+            ThreadSacnDiskProgressFinish progressFinish)
+        {
+            this.progressSetView = progressSetView;
+            this.progressFinish = progressFinish;
         }
 
         public static bool MediaInfoState(ref string errMsg)

@@ -101,10 +101,10 @@ namespace MyFilm
 
             this.Text = mainFormTitleString;
             this.tbePageRowCount.Text = this.pageRowCount.ToString();
-            this.Icon = Properties.Resources.ico;
-            this.notifyIcon.Icon = Properties.Resources.ico;
+            this.Icon = Properties.Resources.Film;
+            this.notifyIcon.Icon = Properties.Resources.Film;
             this.notifyIcon.Visible = false;
-            this.notifyIcon.Text = String.Format("{0}@{1}", CommonString.DbName, CommonString.DbIP);
+            this.notifyIcon.Text = mainFormTitleString;
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
             // 删除NFO文件夹中所有的nfo文件

@@ -144,7 +144,7 @@ namespace MyFilm
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            this.Icon = Properties.Resources.ico;
+            this.Icon = Properties.Resources.Film;
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()

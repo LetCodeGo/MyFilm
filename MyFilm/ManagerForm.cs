@@ -129,16 +129,10 @@ namespace MyFilm
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
 
-                ProgressForm progressForm = new ProgressForm();
-                ThreadScanDisk threadScanDisk = new ThreadScanDisk(
+                ProgressForm progressForm = new ProgressForm(new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
                     bBriefScan ? setLayer : Int32.MaxValue,
-                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
-                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
-                    new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
-
-                Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
-                threadScan.Start();
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult)));
                 progressForm.ShowDialog();
 
                 this.needReFillRamData = true;
@@ -179,16 +173,10 @@ namespace MyFilm
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
 
-                ProgressForm progressForm = new ProgressForm();
-                ThreadScanDisk threadScanDisk = new ThreadScanDisk(
+                ProgressForm progressForm = new ProgressForm(new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
                     bBriefScan ? setLayer : Int32.MaxValue,
-                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
-                    new ThreadScanDisk.ThreadSacnDiskProgressSetView(progressForm.SetPosAndMsg),
-                    new ThreadScanDisk.ThreadSacnDiskProgressFinish(progressForm.SetFinish));
-
-                Thread threadScan = new Thread(new ThreadStart(threadScanDisk.ScanDisk));
-                threadScan.Start();
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult)));
                 progressForm.ShowDialog();
 
                 this.needReFillRamData = true;
@@ -424,7 +412,7 @@ namespace MyFilm
         {
             this.controlEnableArray = new bool[this.Controls.Count];
 
-            this.Icon = Properties.Resources.ico;
+            this.Icon = Properties.Resources.Film;
             InitComboxLocalDisk();
             InitGrid();
 
