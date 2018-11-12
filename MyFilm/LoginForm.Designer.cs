@@ -33,24 +33,24 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.labelDataBase = new System.Windows.Forms.Label();
             this.labelPwd = new System.Windows.Forms.Label();
-            this.comboBoxPwd = new System.Windows.Forms.ComboBox();
             this.comboBoxUser = new System.Windows.Forms.ComboBox();
             this.labelUser = new System.Windows.Forms.Label();
             this.comboBoxIP = new System.Windows.Forms.ComboBox();
             this.labelIP = new System.Windows.Forms.Label();
+            this.textBoxPwd = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // comboBoxDataBase
             // 
             this.comboBoxDataBase.FormattingEnabled = true;
-            this.comboBoxDataBase.Location = new System.Drawing.Point(222, 154);
+            this.comboBoxDataBase.Location = new System.Drawing.Point(202, 154);
             this.comboBoxDataBase.Name = "comboBoxDataBase";
-            this.comboBoxDataBase.Size = new System.Drawing.Size(121, 20);
+            this.comboBoxDataBase.Size = new System.Drawing.Size(158, 20);
             this.comboBoxDataBase.TabIndex = 0;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(142, 206);
+            this.btnOK.Location = new System.Drawing.Point(122, 206);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 1;
@@ -61,7 +61,7 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(268, 206);
+            this.btnCancel.Location = new System.Drawing.Point(285, 206);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -71,7 +71,7 @@
             // labelDataBase
             // 
             this.labelDataBase.AutoSize = true;
-            this.labelDataBase.Location = new System.Drawing.Point(140, 158);
+            this.labelDataBase.Location = new System.Drawing.Point(120, 158);
             this.labelDataBase.Name = "labelDataBase";
             this.labelDataBase.Size = new System.Drawing.Size(41, 12);
             this.labelDataBase.TabIndex = 3;
@@ -80,30 +80,24 @@
             // labelPwd
             // 
             this.labelPwd.AutoSize = true;
-            this.labelPwd.Location = new System.Drawing.Point(140, 125);
+            this.labelPwd.Location = new System.Drawing.Point(120, 125);
             this.labelPwd.Name = "labelPwd";
             this.labelPwd.Size = new System.Drawing.Size(41, 12);
             this.labelPwd.TabIndex = 5;
             this.labelPwd.Text = "密  码";
             // 
-            // comboBoxPwd
-            // 
-            this.comboBoxPwd.Location = new System.Drawing.Point(222, 120);
-            this.comboBoxPwd.Name = "comboBoxPwd";
-            this.comboBoxPwd.Size = new System.Drawing.Size(121, 20);
-            this.comboBoxPwd.TabIndex = 6;
-            // 
             // comboBoxUser
             // 
-            this.comboBoxUser.Location = new System.Drawing.Point(222, 86);
+            this.comboBoxUser.Location = new System.Drawing.Point(202, 86);
             this.comboBoxUser.Name = "comboBoxUser";
-            this.comboBoxUser.Size = new System.Drawing.Size(121, 20);
+            this.comboBoxUser.Size = new System.Drawing.Size(158, 20);
             this.comboBoxUser.TabIndex = 8;
+            this.comboBoxUser.SelectedIndexChanged += new System.EventHandler(this.comboBoxUser_SelectedIndexChanged);
             // 
             // labelUser
             // 
             this.labelUser.AutoSize = true;
-            this.labelUser.Location = new System.Drawing.Point(140, 91);
+            this.labelUser.Location = new System.Drawing.Point(120, 91);
             this.labelUser.Name = "labelUser";
             this.labelUser.Size = new System.Drawing.Size(41, 12);
             this.labelUser.TabIndex = 7;
@@ -111,19 +105,27 @@
             // 
             // comboBoxIP
             // 
-            this.comboBoxIP.Location = new System.Drawing.Point(222, 52);
+            this.comboBoxIP.Location = new System.Drawing.Point(202, 52);
             this.comboBoxIP.Name = "comboBoxIP";
-            this.comboBoxIP.Size = new System.Drawing.Size(121, 20);
+            this.comboBoxIP.Size = new System.Drawing.Size(158, 20);
             this.comboBoxIP.TabIndex = 10;
             // 
             // labelIP
             // 
             this.labelIP.AutoSize = true;
-            this.labelIP.Location = new System.Drawing.Point(140, 57);
+            this.labelIP.Location = new System.Drawing.Point(120, 57);
             this.labelIP.Name = "labelIP";
             this.labelIP.Size = new System.Drawing.Size(41, 12);
             this.labelIP.TabIndex = 9;
             this.labelIP.Text = "IP地址";
+            // 
+            // textBoxPwd
+            // 
+            this.textBoxPwd.Location = new System.Drawing.Point(202, 120);
+            this.textBoxPwd.Name = "textBoxPwd";
+            this.textBoxPwd.PasswordChar = '*';
+            this.textBoxPwd.Size = new System.Drawing.Size(158, 21);
+            this.textBoxPwd.TabIndex = 11;
             // 
             // LoginForm
             // 
@@ -131,11 +133,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 281);
+            this.Controls.Add(this.textBoxPwd);
             this.Controls.Add(this.comboBoxIP);
             this.Controls.Add(this.labelIP);
             this.Controls.Add(this.comboBoxUser);
             this.Controls.Add(this.labelUser);
-            this.Controls.Add(this.comboBoxPwd);
             this.Controls.Add(this.labelPwd);
             this.Controls.Add(this.labelDataBase);
             this.Controls.Add(this.btnCancel);
@@ -159,10 +161,10 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Label labelDataBase;
         private System.Windows.Forms.Label labelPwd;
-        private System.Windows.Forms.ComboBox comboBoxPwd;
         private System.Windows.Forms.ComboBox comboBoxUser;
         private System.Windows.Forms.Label labelUser;
         private System.Windows.Forms.ComboBox comboBoxIP;
         private System.Windows.Forms.Label labelIP;
+        private System.Windows.Forms.TextBox textBoxPwd;
     }
 }

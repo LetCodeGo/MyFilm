@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -20,66 +22,123 @@ namespace MyFilm
         private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
             webDataCaptureResult = null;
 
-        [Serializable]
-        [XmlRoot("DBCONFIG")]
-        public class DBStruct
+        [XmlRoot("DataBaseConfig")]
+        public class DataBaseConfig
         {
-            [XmlElement("DefaultDataBaseIP")]
-            public String DefaultDataBaseIP;
+            [XmlAttribute("Name")]
+            public String Name;
 
-            [XmlElement("DefaultDataBaseUserName")]
-            public String DefaultDataBaseUserName;
-
-            [XmlElement("DefaultDataBasePassWord")]
-            public String DefaultDataBasePassWord;
-
-            [XmlElement("DefaultDataBaseName")]
-            public String DefaultDataBaseName;
-
-            [XmlArrayItem("DataBaseIP")]
-            public List<String> DataBaseIPs;
-
-            [XmlArrayItem("DataBaseUserName")]
-            public List<String> DataBaseUserNames;
-
-            [XmlArrayItem("DataBasePassWord")]
-            public List<String> DataBasePassWords;
-
-            [XmlArrayItem("DataBaseName")]
-            public List<String> DataBaseNames;
-
-            [XmlElement("WebDataCaptureTime")]
+            [XmlAttribute("WebDataCaptureTime")]
             public String WebDataCaptureTime;
         }
 
-        private static DBStruct dbStruct = new DBStruct();
+        [XmlRoot("UserNameAndPassWord")]
+        public class UserNameAndPassWord
+        {
+            [XmlAttribute("UserName")]
+            public String UserName;
+
+            [XmlAttribute("PassWord")]
+            public String PassWord;
+        }
+
+        [Serializable]
+        [XmlRoot("LoginConfig")]
+        public class LoginConfig
+        {
+            [XmlAttribute("SelectedIP")]
+            public String selectedIP;
+
+            [XmlAttribute("SelectedUserName")]
+            public String selectedUserName;
+
+            [XmlAttribute("SelectedDataBaseName")]
+            public String selectedDataBaseName;
+
+            [XmlArrayItem("HostIPs")]
+            public List<String> hostIPs;
+
+            [XmlArrayItem("UserNameAndPassWords")]
+            public List<UserNameAndPassWord> userNameAndPassWords;
+
+            [XmlArrayItem("DataBaseConfigs")]
+            public List<DataBaseConfig> dataBaseConfigs;
+
+            [XmlIgnore]
+            public int UserNameMaxLength
+            {
+                get
+                {
+                    int maxLength = 0;
+                    userNameAndPassWords.ForEach(x =>
+                    {
+                        if (maxLength < x.UserName.Length)
+                            maxLength = x.UserName.Length;
+                    });
+                    return maxLength;
+                }
+            }
+
+            [XmlIgnore]
+            public String SelectedPassWord
+            {
+                get
+                {
+                    UserNameAndPassWord temp = userNameAndPassWords.Find(
+                        x => x.UserName == selectedUserName);
+                    if (temp == null) return null;
+                    else return temp.PassWord;
+                }
+            }
+
+            [XmlIgnore]
+            public String SelectedDataBaseWebDataCaptureTime
+            {
+                get
+                {
+                    DataBaseConfig temp = dataBaseConfigs.Find(
+                        x => x.Name == selectedDataBaseName);
+                    if (temp == null) return null;
+                    else return temp.WebDataCaptureTime;
+                }
+            }
+        }
+
+        private static LoginConfig loginConfig = null;
 
         public LoginForm()
         {
             InitializeComponent();
 
-            dbStruct.DefaultDataBaseIP = String.Empty;
-            dbStruct.DefaultDataBaseUserName = String.Empty;
-            dbStruct.DefaultDataBasePassWord = String.Empty;
-            dbStruct.DefaultDataBaseName = String.Empty;
-            dbStruct.DataBaseIPs = new List<String>();
-            dbStruct.DataBaseUserNames = new List<String>();
-            dbStruct.DataBasePassWords = new List<String>();
-            dbStruct.DataBaseNames = new List<String>();
-            dbStruct.WebDataCaptureTime = DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss");
+            this.ControlBox = false;
 
             if (!Directory.Exists(CommonString.AppDataFolder))
                 Directory.CreateDirectory(CommonString.AppDataFolder);
         }
 
+        private static LoginConfig GetInitLoginConfig()
+        {
+            LoginConfig initDBStruct = new LoginConfig()
+            {
+                selectedIP = "127.0.0.1",
+                selectedUserName = "",
+                selectedDataBaseName = "",
+                hostIPs = new List<string>() { "127.0.0.1" },
+                userNameAndPassWords = new List<UserNameAndPassWord>(),
+                dataBaseConfigs = new List<DataBaseConfig>()
+            };
+
+            return initDBStruct;
+        }
+
         private static void LoadXml()
         {
-            XmlSerializer ser = new XmlSerializer(typeof(DBStruct));
+            XmlSerializer ser = new XmlSerializer(typeof(LoginConfig));
             if (File.Exists(configPath))
             {
                 using (FileStream fs = File.OpenRead(configPath))
                 {
-                    try { dbStruct = ser.Deserialize(fs) as DBStruct; }
+                    try { loginConfig = ser.Deserialize(fs) as LoginConfig; }
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message, "提示", MessageBoxButtons.OK);
@@ -87,22 +146,77 @@ namespace MyFilm
                 }
             }
 
-            if (String.IsNullOrWhiteSpace(dbStruct.DefaultDataBaseIP))
-                dbStruct.DefaultDataBaseIP = "127.0.0.1";
+            if (loginConfig == null) loginConfig = GetInitLoginConfig();
+            else
+            {
+                if (loginConfig.hostIPs == null)
+                    loginConfig.hostIPs = new List<string>();
+
+                if (loginConfig.userNameAndPassWords == null)
+                    loginConfig.userNameAndPassWords =
+                        new List<UserNameAndPassWord>();
+                else
+                {
+                    // 解密
+                    loginConfig.userNameAndPassWords.ForEach(
+                        x => x.PassWord = Decrypt(x.PassWord));
+                }
+
+                if (loginConfig.dataBaseConfigs == null)
+                    loginConfig.dataBaseConfigs = new List<DataBaseConfig>();
+            }
+
+            if (String.IsNullOrWhiteSpace(loginConfig.selectedIP))
+                loginConfig.selectedIP = "127.0.0.1";
+
+            if (!loginConfig.hostIPs.Contains(loginConfig.selectedIP))
+                loginConfig.hostIPs.Add(loginConfig.selectedIP);
         }
 
         private static void SaveXml()
         {
-            XmlSerializer ser = new XmlSerializer(typeof(DBStruct));
+            LoginConfig saveLoginConfig = new LoginConfig()
+            {
+                selectedIP = loginConfig.selectedIP,
+                selectedUserName = loginConfig.selectedUserName,
+                selectedDataBaseName = loginConfig.selectedDataBaseName,
+                hostIPs = loginConfig.hostIPs
+                .ConvertAll<string>(
+                    x => { return x; }),
+                userNameAndPassWords = loginConfig.userNameAndPassWords
+                .ConvertAll<UserNameAndPassWord>(
+                    x =>
+                    {
+                        return new UserNameAndPassWord()
+                        {
+                            UserName = x.UserName,
+                            PassWord = Encryption(x.PassWord)
+                        };
+                    }),
+                dataBaseConfigs = loginConfig.dataBaseConfigs
+                .ConvertAll<DataBaseConfig>(
+                    x =>
+                    {
+                        return new DataBaseConfig()
+                        {
+                            Name = x.Name,
+                            WebDataCaptureTime = x.WebDataCaptureTime
+                        };
+                    })
+            };
+
+            XmlSerializer ser = new XmlSerializer(typeof(LoginConfig));
             using (FileStream fs = File.Create(configPath))
             {
-                ser.Serialize(fs, dbStruct);
+                ser.Serialize(fs, saveLoginConfig);
             }
         }
 
         public static void UpdateWebDataCaptureTimeAndSaveXml(DateTime dateTime)
         {
-            dbStruct.WebDataCaptureTime = dateTime.ToString("yyyy-MM-dd HHH:mm:ss");
+            DataBaseConfig temp = loginConfig.dataBaseConfigs.Find(
+                x => x.Name == loginConfig.selectedDataBaseName);
+            temp.WebDataCaptureTime = dateTime.ToString("yyyy-MM-dd HHH:mm:ss");
             SaveXml();
         }
 
@@ -110,8 +224,8 @@ namespace MyFilm
         {
             this.comboBoxIP.SuspendLayout();
             this.comboBoxIP.Items.Clear();
-            this.comboBoxIP.Items.AddRange(dbStruct.DataBaseIPs.ToArray());
-            this.comboBoxIP.Text = dbStruct.DefaultDataBaseIP;
+            this.comboBoxIP.Items.AddRange(loginConfig.hostIPs.ToArray());
+            this.comboBoxIP.Text = loginConfig.selectedIP;
             this.comboBoxIP.ResumeLayout();
         }
 
@@ -119,26 +233,31 @@ namespace MyFilm
         {
             this.comboBoxUser.SuspendLayout();
             this.comboBoxUser.Items.Clear();
-            this.comboBoxUser.Items.AddRange(dbStruct.DataBaseUserNames.ToArray());
-            this.comboBoxUser.Text = dbStruct.DefaultDataBaseUserName;
-            this.comboBoxUser.ResumeLayout();
-        }
 
-        private void InitComboxPwd()
-        {
-            this.comboBoxPwd.SuspendLayout();
-            this.comboBoxPwd.Items.Clear();
-            this.comboBoxPwd.Items.AddRange(dbStruct.DataBasePassWords.ToArray());
-            this.comboBoxPwd.Text = dbStruct.DefaultDataBasePassWord;
-            this.comboBoxPwd.ResumeLayout();
+            int len = loginConfig.UserNameMaxLength + 2;
+            if (len < 20) len = 20;
+
+            this.comboBoxUser.Items.AddRange(
+                loginConfig.userNameAndPassWords.ConvertAll<string>(
+                    x =>
+                    {
+                        //return string.Format("{0}*****",
+                        //    x.UserName.PadRight(len, ' '));
+                        return x.UserName;
+                    }).ToArray());
+            this.comboBoxUser.Text = loginConfig.selectedUserName;
+
+            this.comboBoxUser.ResumeLayout();
         }
 
         private void InitComboxDataBase()
         {
             this.comboBoxDataBase.SuspendLayout();
             this.comboBoxDataBase.Items.Clear();
-            this.comboBoxDataBase.Items.AddRange(dbStruct.DataBaseNames.ToArray());
-            this.comboBoxDataBase.Text = dbStruct.DefaultDataBaseName;
+            this.comboBoxDataBase.Items.AddRange(
+                loginConfig.dataBaseConfigs.ConvertAll<string>(
+                    x => x.Name).ToArray());
+            this.comboBoxDataBase.Text = loginConfig.selectedDataBaseName;
             this.comboBoxDataBase.ResumeLayout();
         }
 
@@ -156,7 +275,6 @@ namespace MyFilm
             LoadXml();
             InitComboxIP();
             InitComboxUser();
-            InitComboxPwd();
             InitComboxDataBase();
         }
 
@@ -170,8 +288,38 @@ namespace MyFilm
         {
             CommonString.DbIP = this.comboBoxIP.Text;
             CommonString.DbUserName = this.comboBoxUser.Text;
-            CommonString.DbPassword = this.comboBoxPwd.Text;
+            CommonString.DbPassword = this.textBoxPwd.Text;
             CommonString.DbName = this.comboBoxDataBase.Text;
+
+            List<String> databaseNameList = null;
+            try
+            {
+                databaseNameList = SqlData.QueryAllDataBaseNames();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            if (!databaseNameList.Contains(CommonString.DbName))
+            {
+                if (MessageBox.Show(String.Format("数据库 \"{0}\" 不存在，要创建吗？",
+                    CommonString.DbName), "提示",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    try
+                    {
+                        SqlData.CreateDataBase(CommonString.DbName);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "提示", MessageBoxButtons.OK);
+                        return;
+                    }
+                }
+                else return;
+            }
 
             try
             {
@@ -179,15 +327,21 @@ namespace MyFilm
                 sqlData.OpenMySql();
                 sqlData.CreateTables();
 
+                loginConfig.selectedUserName = CommonString.DbUserName;
+                loginConfig.selectedIP = CommonString.DbIP;
+                loginConfig.selectedDataBaseName = CommonString.DbName;
+
                 DateTime dateTimeRead = DateTime.MinValue;
-                if (dbStruct.WebDataCaptureTime != null)
-                    dateTimeRead = DateTime.Parse(dbStruct.WebDataCaptureTime);
+                if (loginConfig.SelectedDataBaseWebDataCaptureTime != null)
+                    dateTimeRead = DateTime.Parse(
+                        loginConfig.SelectedDataBaseWebDataCaptureTime);
 
                 TimeSpan ts = DateTime.Now.Subtract(dateTimeRead);
                 if (ts.Days > 1)
                 {
                     WaitingForm waitingForm = new WaitingForm();
-                    RealOrFake4KWebDataCapture webDataCapture = new RealOrFake4KWebDataCapture(
+                    RealOrFake4KWebDataCapture webDataCapture =
+                        new RealOrFake4KWebDataCapture(
                         SetWebCaptureDataResult, waitingForm.SetFinish);
                     Thread threadWebDataCapture = new Thread(
                         new ThreadStart(webDataCapture.Update4KInfo));
@@ -199,21 +353,27 @@ namespace MyFilm
                     MessageBox.Show(this.webDataCaptureResult.strMsg);
                 }
 
-                dbStruct.DefaultDataBaseUserName = CommonString.DbUserName;
-                dbStruct.DefaultDataBasePassWord = CommonString.DbPassword;
-                dbStruct.DefaultDataBaseIP = CommonString.DbIP;
-                dbStruct.DefaultDataBaseName = CommonString.DbName;
+                if (!loginConfig.hostIPs.Contains(CommonString.DbIP))
+                    loginConfig.hostIPs.Add(CommonString.DbIP);
 
-                if (!dbStruct.DataBaseIPs.Contains(CommonString.DbIP))
-                    dbStruct.DataBaseIPs.Add(CommonString.DbIP);
-                if (!dbStruct.DataBaseUserNames.Contains(CommonString.DbUserName))
-                    dbStruct.DataBaseUserNames.Add(CommonString.DbUserName);
-                if (!dbStruct.DataBasePassWords.Contains(CommonString.DbPassword))
-                    dbStruct.DataBasePassWords.Add(CommonString.DbPassword);
-                if (!dbStruct.DataBaseNames.Contains(CommonString.DbName))
-                    dbStruct.DataBaseNames.Add(CommonString.DbName);
+                if (loginConfig.userNameAndPassWords.FindIndex(
+                    x => x.UserName == CommonString.DbUserName) == -1)
+                    loginConfig.userNameAndPassWords.Add(
+                        new UserNameAndPassWord()
+                        {
+                            UserName = CommonString.DbUserName,
+                            PassWord = CommonString.DbPassword
+                        });
 
-                dbStruct.WebDataCaptureTime = dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss");
+                if (loginConfig.dataBaseConfigs.FindIndex(
+                    x => x.Name == CommonString.DbName) == -1)
+                    loginConfig.dataBaseConfigs.Add(
+                        new DataBaseConfig()
+                        {
+                            Name = CommonString.DbName,
+                            WebDataCaptureTime =
+                            dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss")
+                        });
 
                 SaveXml();
                 sqlData.FillRamData();
@@ -231,6 +391,56 @@ namespace MyFilm
         {
             Log.Information("LoginForm exit with login {LoginState}",
                 this.DialogResult == DialogResult.OK ? "success\r\n" : "fail\r\n\r\n");
+        }
+
+        /// <summary>
+        /// 加密
+        /// </summary>
+        /// <param name="expressText"></param>
+        /// <returns></returns>
+        private static string Encryption(string expressText)
+        {
+            CspParameters param = new CspParameters();
+            // 密匙容器的名称，保持加密解密一致才能解密成功
+            param.KeyContainerName = CommonString.RSAKeyContainerName;
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(param))
+            {
+                // 将要加密的字符串转换为字节数组
+                byte[] plainData = Encoding.Default.GetBytes(expressText);
+                // 加密
+                byte[] encryptdata = rsa.Encrypt(plainData, false);
+                // 将加密后的字节数组转换为Base64字符串
+                return Convert.ToBase64String(encryptdata);
+            }
+        }
+
+        /// <summary>
+        /// 解密
+        /// </summary>
+        /// <param name="cipherText"></param>
+        /// <returns></returns>
+        private static string Decrypt(string cipherText)
+        {
+            CspParameters param = new CspParameters();
+            param.KeyContainerName = CommonString.RSAKeyContainerName;
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(param))
+            {
+                byte[] encryptData = Convert.FromBase64String(cipherText);
+                byte[] decryptData = rsa.Decrypt(encryptData, false);
+                return Encoding.Default.GetString(decryptData);
+            }
+        }
+
+        private void comboBoxUser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int selectedIndex = this.comboBoxUser.SelectedIndex;
+
+            if (selectedIndex >= 0 &&
+                selectedIndex < this.comboBoxUser.Items.Count)
+            {
+                this.textBoxPwd.Text =
+                    loginConfig.userNameAndPassWords[selectedIndex].PassWord;
+            }
         }
     }
 }

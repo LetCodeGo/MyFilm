@@ -61,8 +61,8 @@
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.comboBoxMapDisk = new System.Windows.Forms.ComboBox();
             this.btnRefreshMapdisk = new System.Windows.Forms.Button();
-            this.tbePageRowCount = new MyFilm.TextBoxEx();
             this.btnDeleteOrderByDisk = new System.Windows.Forms.Button();
+            this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
             this.contextMenuStripNotify.SuspendLayout();
@@ -140,6 +140,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
+            this.dataGridView.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.dataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
@@ -378,17 +379,6 @@
             this.btnRefreshMapdisk.UseVisualStyleBackColor = true;
             this.btnRefreshMapdisk.Click += new System.EventHandler(this.btnRefreshMapdisk_Click);
             // 
-            // tbePageRowCount
-            // 
-            this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbePageRowCount.Location = new System.Drawing.Point(1097, 51);
-            this.tbePageRowCount.Name = "tbePageRowCount";
-            this.tbePageRowCount.Size = new System.Drawing.Size(75, 21);
-            this.tbePageRowCount.TabIndex = 25;
-            this.tbePageRowCount.Text = "20";
-            this.tbePageRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.tbePageRowCount.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbePageRowCount_KeyDown);
-            // 
             // btnDeleteOrderByDisk
             // 
             this.btnDeleteOrderByDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -399,6 +389,17 @@
             this.btnDeleteOrderByDisk.Text = "待删(磁盘)";
             this.btnDeleteOrderByDisk.UseVisualStyleBackColor = true;
             this.btnDeleteOrderByDisk.Click += new System.EventHandler(this.btnDeleteOrderByDisk_Click);
+            // 
+            // tbePageRowCount
+            // 
+            this.tbePageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbePageRowCount.Location = new System.Drawing.Point(1097, 51);
+            this.tbePageRowCount.Name = "tbePageRowCount";
+            this.tbePageRowCount.Size = new System.Drawing.Size(75, 21);
+            this.tbePageRowCount.TabIndex = 25;
+            this.tbePageRowCount.Text = "20";
+            this.tbePageRowCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tbePageRowCount.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbePageRowCount_KeyDown);
             // 
             // MainForm
             // 

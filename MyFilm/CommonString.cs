@@ -5,7 +5,7 @@ namespace MyFilm
 {
     public class CommonString
     {
-        public static String AppDataFolder = Path.Combine(
+        public readonly static String AppDataFolder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
                 Environment.SpecialFolderOption.Create), "MyFilm");
 
@@ -17,6 +17,9 @@ namespace MyFilm
         public static String WebSearchKeyWord = String.Empty;
 
         public readonly static String RealOrFake4KDiskName = "REAL_OR_FAKE_4K";
+
+        public readonly static String RSAKeyContainerName =
+            "myfilm_RSA_KCN_{ADA91B04-A829-496A-BF8B-1A6478C833C4}";
 
         public readonly static String PipeName =
             "myfilm_pipe_{8AC5703C-D6F4-43F0-B625-11D27D2ADCF8}";

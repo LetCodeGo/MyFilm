@@ -41,7 +41,7 @@ namespace MyFilm
 
                 if (dt == null)
                 {
-                    outputText = errMsg;
+                    outputText = errMsg + Environment.NewLine;
                     UpdateRichTextBox(outputText);
                 }
                 else UpdateRichTextBox(CommonDataTable.ConvertFilmInfoToGrid(dt));

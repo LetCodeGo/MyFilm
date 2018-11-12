@@ -71,6 +71,38 @@ namespace MyFilm
             return sqlData;
         }
 
+        public static List<String> QueryAllDataBaseNames()
+        {
+            MySqlConnection conn = new MySqlConnection(
+                String.Format("Data Source={0};Persist Security Info=yes;SslMode = none;UserId={1}; PWD={2};",
+                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword));
+            MySqlCommand cmd = new MySqlCommand("show databases;", conn);
+
+            conn.Open();
+            List<String> rstList = new List<String>();
+
+            using (MySqlDataReader sqlDataReader = cmd.ExecuteReader())
+            {
+                while (sqlDataReader.Read()) rstList.Add(sqlDataReader[0].ToString());
+            }
+            conn.Close();
+
+            return rstList;
+        }
+
+        public static void CreateDataBase(String databaseName)
+        {
+            MySqlConnection conn = new MySqlConnection(
+                String.Format("Data Source={0};Persist Security Info=yes;SslMode = none;UserId={1}; PWD={2};",
+                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword));
+            MySqlCommand cmd = new MySqlCommand(
+                String.Format("create database {0};", databaseName), conn);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
         /// <summary>
         /// 打开数据库
         /// </summary>
