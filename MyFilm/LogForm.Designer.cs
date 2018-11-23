@@ -48,6 +48,7 @@
             this.ClientSize = new System.Drawing.Size(1184, 704);
             this.Controls.Add(this.richTextBox);
             this.Name = "LogForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "日志";
             this.ResumeLayout(false);

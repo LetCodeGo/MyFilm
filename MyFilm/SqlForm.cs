@@ -82,6 +82,10 @@ namespace MyFilm
 
         private void SqlForm_Load(object sender, EventArgs e)
         {
+            this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
+                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            this.Icon = Properties.Resources.Film;
+
             this.cbindex.Checked = true;
             this.cbid.Checked = false;
             this.cbname.Checked = true;

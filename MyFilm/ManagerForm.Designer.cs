@@ -330,6 +330,7 @@
             this.Controls.Add(this.dataGridView);
             this.MinimumSize = new System.Drawing.Size(1000, 618);
             this.Name = "ManagerForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "管理";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ManagerForm_FormClosed);

@@ -388,11 +388,7 @@ namespace MyFilm
 
         private void btnUpdateROF4K_Click(object sender, EventArgs e)
         {
-            WaitingForm waitingForm = new WaitingForm();
-            RealOrFake4KWebDataCapture webDataCapture = new RealOrFake4KWebDataCapture(
-                SetWebCaptureDataResult, waitingForm.SetFinish);
-            Thread threadWebDataCapture = new Thread(new ThreadStart(webDataCapture.Update4KInfo));
-            threadWebDataCapture.Start();
+            WaitingForm waitingForm = new WaitingForm(SetWebCaptureDataResult);
             waitingForm.ShowDialog();
 
             if (this.webDataCaptureResult.code >= 0)
@@ -416,7 +412,8 @@ namespace MyFilm
             InitComboxLocalDisk();
             InitGrid();
 
-            this.cbScanMedia.Checked = true;
+            // 默认不扫描媒体信息
+            //this.cbScanMedia.Checked = true;
 
             bool enabledFlag = true;
             bool mediaInfoFlag = true;

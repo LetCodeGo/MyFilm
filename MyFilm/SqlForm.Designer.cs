@@ -332,7 +332,7 @@
             this.Controls.Add(this.btnSearch);
             this.MinimumSize = new System.Drawing.Size(1216, 684);
             this.Name = "SqlForm";
-            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SqlForm_FormClosed);
             this.Load += new System.EventHandler(this.SqlForm_Load);
             this.groupBoxOutput.ResumeLayout(false);

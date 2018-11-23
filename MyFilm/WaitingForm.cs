@@ -5,16 +5,23 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static MyFilm.RealOrFake4KWebDataCapture;
 
 namespace MyFilm
 {
     public partial class WaitingForm : Form
     {
-        public WaitingForm()
+        private RealOrFake4KWebDataCapture webDataCapture = null;
+
+        public WaitingForm(ThreadWebDataCaptureCallback threadCallback)
         {
             InitializeComponent();
+
+            this.webDataCapture = new RealOrFake4KWebDataCapture(
+                threadCallback, SetFinish);
         }
 
         private Bitmap bitmap = null;
@@ -95,6 +102,10 @@ namespace MyFilm
 
             // 调用开始动画方法
             BeginAnimate();
+
+            Thread threadWebDataCapture = new Thread(
+                new ThreadStart(this.webDataCapture.Update4KInfo));
+            threadWebDataCapture.Start();
         }
     }
 }

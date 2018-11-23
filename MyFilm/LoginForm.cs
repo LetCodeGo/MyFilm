@@ -101,6 +101,12 @@ namespace MyFilm
                     if (temp == null) return null;
                     else return temp.WebDataCaptureTime;
                 }
+                set
+                {
+                    DataBaseConfig temp = dataBaseConfigs.Find(
+                        x => x.Name == selectedDataBaseName);
+                    if (temp != null) temp.WebDataCaptureTime = value;
+                }
             }
         }
 
@@ -114,6 +120,39 @@ namespace MyFilm
 
             if (!Directory.Exists(CommonString.AppDataFolder))
                 Directory.CreateDirectory(CommonString.AppDataFolder);
+        }
+
+        // 鼠标双击标题栏消息
+        private const int WM_NCLBUTTONDBLCLK = 0xA3;
+
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                // 屏蔽双击最大化
+                case WM_NCLBUTTONDBLCLK:
+                    break;
+                default:
+                    base.WndProc(ref m);
+                    break;
+            }
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            this.Icon = Properties.Resources.Film;
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File(Path.Combine(CommonString.AppDataFolder, "logs", "myfilm.log"),
+                rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+            Log.Information("LoginForm load");
+
+            LoadXml();
+            InitComboxIP();
+            InitComboxUser();
+            InitComboxDataBase();
         }
 
         private static LoginConfig GetInitLoginConfig()
@@ -261,23 +300,6 @@ namespace MyFilm
             this.comboBoxDataBase.ResumeLayout();
         }
 
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-            this.Icon = Properties.Resources.Film;
-
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.File(Path.Combine(CommonString.AppDataFolder, "logs", "myfilm.log"),
-                rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-            Log.Information("LoginForm load");
-
-            LoadXml();
-            InitComboxIP();
-            InitComboxUser();
-            InitComboxDataBase();
-        }
-
         public void SetWebCaptureDataResult(
             RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult rst)
         {
@@ -327,32 +349,6 @@ namespace MyFilm
                 sqlData.OpenMySql();
                 sqlData.CreateTables();
 
-                loginConfig.selectedUserName = CommonString.DbUserName;
-                loginConfig.selectedIP = CommonString.DbIP;
-                loginConfig.selectedDataBaseName = CommonString.DbName;
-
-                DateTime dateTimeRead = DateTime.MinValue;
-                if (loginConfig.SelectedDataBaseWebDataCaptureTime != null)
-                    dateTimeRead = DateTime.Parse(
-                        loginConfig.SelectedDataBaseWebDataCaptureTime);
-
-                TimeSpan ts = DateTime.Now.Subtract(dateTimeRead);
-                if (ts.Days > 1)
-                {
-                    WaitingForm waitingForm = new WaitingForm();
-                    RealOrFake4KWebDataCapture webDataCapture =
-                        new RealOrFake4KWebDataCapture(
-                        SetWebCaptureDataResult, waitingForm.SetFinish);
-                    Thread threadWebDataCapture = new Thread(
-                        new ThreadStart(webDataCapture.Update4KInfo));
-                    threadWebDataCapture.Start();
-                    waitingForm.ShowDialog();
-
-                    if (this.webDataCaptureResult.code >= 0)
-                        dateTimeRead = this.webDataCaptureResult.crawlTime;
-                    MessageBox.Show(this.webDataCaptureResult.strMsg);
-                }
-
                 if (!loginConfig.hostIPs.Contains(CommonString.DbIP))
                     loginConfig.hostIPs.Add(CommonString.DbIP);
 
@@ -372,8 +368,30 @@ namespace MyFilm
                         {
                             Name = CommonString.DbName,
                             WebDataCaptureTime =
-                            dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss")
+                            DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                         });
+
+                loginConfig.selectedUserName = CommonString.DbUserName;
+                loginConfig.selectedIP = CommonString.DbIP;
+                loginConfig.selectedDataBaseName = CommonString.DbName;
+
+                DateTime dateTimeRead = DateTime.MinValue;
+                DateTime.TryParse(loginConfig.SelectedDataBaseWebDataCaptureTime,
+                    out dateTimeRead);
+
+                TimeSpan ts = DateTime.Now.Subtract(dateTimeRead);
+                if (ts.Days > 3)
+                {
+                    WaitingForm waitingForm = new WaitingForm(SetWebCaptureDataResult);
+                    waitingForm.ShowDialog();
+
+                    if (this.webDataCaptureResult.code >= 0)
+                        dateTimeRead = this.webDataCaptureResult.crawlTime;
+                    MessageBox.Show(this.webDataCaptureResult.strMsg);
+                }
+
+                loginConfig.SelectedDataBaseWebDataCaptureTime
+                    = dateTimeRead.ToString("yyyy-MM-dd HHH:mm:ss");
 
                 SaveXml();
                 sqlData.FillRamData();
