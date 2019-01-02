@@ -126,6 +126,16 @@ namespace MyFilm
                     return;
                 }
 
+                if (MessageBox.Show(
+                    string.Format("确定要添加磁盘 \'{0}\' 通过实际磁盘 \'{1}\' ?",
+                    diskDescribe, dlg.SelectedPath), "提示",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question) ==
+                    DialogResult.Cancel)
+                {
+                    return;
+                }
+
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
 
@@ -167,6 +177,16 @@ namespace MyFilm
                     return;
                 }
 
+                if (MessageBox.Show(
+                    string.Format("确定要更新磁盘 \'{0}\' 通过实际磁盘 \'{1}\' ?",
+                    diskDescribe, dlg.SelectedPath), "提示",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question) ==
+                    DialogResult.Cancel)
+                {
+                    return;
+                }
+
                 int deleteFilmNumber = SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
                 int deleteDiskNumber = SqlData.GetInstance().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
@@ -201,6 +221,17 @@ namespace MyFilm
             }
 
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
+
+            if (MessageBox.Show(
+                string.Format("确定要删除磁盘 \'{0}\' ?",
+                diskDescribe), "提示",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Question) ==
+                DialogResult.Cancel)
+            {
+                return;
+            }
+
             int deleteFilmNumber = SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
             int deleteDiskNumber = SqlData.GetInstance().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
@@ -228,6 +259,18 @@ namespace MyFilm
             int moveFailed = 0;
 
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
+            String localDisk = this.comboBoxLocalDisk.SelectedItem.ToString();
+            String moveToFolder = Path.Combine(localDisk, "ToDelete");
+
+            if (MessageBox.Show(
+                string.Format("确定要将磁盘 \'{0}\'，实际磁盘 \'{1}\' 中的待删项移到 \'{2}\' ?",
+                diskDescribe, localDisk, moveToFolder), "提示",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Question) ==
+                DialogResult.Cancel)
+            {
+                return;
+            }
 
             //int deleteNumber = SqlData.GetInstance().CountDeleteDataFromFilmInfo(diskDescribe);
             //DataTable dt = SqlData.GetInstance().GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
@@ -236,8 +279,6 @@ namespace MyFilm
             DataTable dt = SqlData.GetInstance().SelectDataByIDList(idList);
             Debug.Assert(idList.Length == dt.Rows.Count);
 
-            String localDisk = this.comboBoxLocalDisk.SelectedItem.ToString();
-            String moveToFolder = Path.Combine(localDisk, "ToDelete");
             if (!Directory.Exists(moveToFolder)) Directory.CreateDirectory(moveToFolder);
 
             log += String.Format("查询到待删记录 {0} 条\r\n", dt.Rows.Count);
@@ -325,6 +366,16 @@ namespace MyFilm
             if (flag)
             {
                 MessageBox.Show("已存在相同的磁盘描述！", "提示", MessageBoxButtons.OK);
+                return;
+            }
+
+            if (MessageBox.Show(
+                string.Format("确定要将磁盘 \'{0}\' 更名为 \'{1}\' ?",
+                diskDescribe, diskNewDescribe), "提示",
+                MessageBoxButtons.OKCancel,
+                MessageBoxIcon.Question) ==
+                DialogResult.Cancel)
+            {
                 return;
             }
 

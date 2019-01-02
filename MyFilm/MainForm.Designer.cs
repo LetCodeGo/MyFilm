@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.comboBoxDisk = new System.Windows.Forms.ComboBox();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
             this.btnSearch = new System.Windows.Forms.Button();
@@ -42,10 +42,15 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemSetDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemCancelDelete = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemSetWatch = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemCancelWatch = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemOpenFolder = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemPrintFolderTree = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemShowContent = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRootDirectory = new System.Windows.Forms.Button();
             this.comboBoxPage = new System.Windows.Forms.ComboBox();
@@ -60,11 +65,6 @@
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.btnDeleteOrderByDisk = new System.Windows.Forms.Button();
-            this.toolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
@@ -145,23 +145,23 @@
             this.dataGridView.BackgroundColor = System.Drawing.Color.White;
             this.dataGridView.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.dataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridView.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView.Location = new System.Drawing.Point(12, 78);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.RowHeadersVisible = false;
@@ -199,55 +199,83 @@
             this.toolStripSeparator4,
             this.toolStripMenuItemShowContent});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(149, 211);
+            this.contextMenuStrip.Size = new System.Drawing.Size(153, 233);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // toolStripMenuItemSetDelete
             // 
             this.toolStripMenuItemSetDelete.Name = "toolStripMenuItemSetDelete";
-            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemSetDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetDelete.Text = "设为待删";
             this.toolStripMenuItemSetDelete.Click += new System.EventHandler(this.toolStripMenuItemSetDelete_Click);
             // 
             // toolStripMenuItemCancelDelete
             // 
             this.toolStripMenuItemCancelDelete.Name = "toolStripMenuItemCancelDelete";
-            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemCancelDelete.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelDelete.Text = "取消待删";
             this.toolStripMenuItemCancelDelete.Click += new System.EventHandler(this.toolStripMenuItemCancelDelete_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripMenuItemSetWatch
             // 
             this.toolStripMenuItemSetWatch.Name = "toolStripMenuItemSetWatch";
-            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemSetWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemSetWatch.Text = "设为待看";
             this.toolStripMenuItemSetWatch.Click += new System.EventHandler(this.toolStripMenuItemSetWatch_Click);
             // 
             // toolStripMenuItemCancelWatch
             // 
             this.toolStripMenuItemCancelWatch.Name = "toolStripMenuItemCancelWatch";
-            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemCancelWatch.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemCancelWatch.Text = "取消待看";
             this.toolStripMenuItemCancelWatch.Click += new System.EventHandler(this.toolStripMenuItemCancelWatch_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripMenuItemOpenFolder
             // 
             this.toolStripMenuItemOpenFolder.Name = "toolStripMenuItemOpenFolder";
-            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemOpenFolder.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemOpenFolder.Text = "打开位置";
             this.toolStripMenuItemOpenFolder.Click += new System.EventHandler(this.toolStripMenuItemOpenFolder_Click);
+            // 
+            // toolStripComboBox
+            // 
+            this.toolStripComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStripComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            this.toolStripComboBox.Name = "toolStripComboBox";
+            this.toolStripComboBox.Size = new System.Drawing.Size(75, 25);
+            this.toolStripComboBox.ToolTipText = "设置打开位置实际所在磁盘";
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripMenuItemPrintFolderTree
             // 
             this.toolStripMenuItemPrintFolderTree.Name = "toolStripMenuItemPrintFolderTree";
-            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemPrintFolderTree.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemPrintFolderTree.Text = "打印目录树";
             this.toolStripMenuItemPrintFolderTree.Click += new System.EventHandler(this.toolStripMenuItemPrintFolderTree_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(149, 6);
             // 
             // toolStripMenuItemShowContent
             // 
             this.toolStripMenuItemShowContent.Name = "toolStripMenuItemShowContent";
-            this.toolStripMenuItemShowContent.Size = new System.Drawing.Size(148, 22);
+            this.toolStripMenuItemShowContent.Size = new System.Drawing.Size(152, 22);
             this.toolStripMenuItemShowContent.Text = "查看文件内容";
             this.toolStripMenuItemShowContent.Click += new System.EventHandler(this.toolStripMenuItemShowContent_Click);
             // 
@@ -376,34 +404,6 @@
             this.btnDeleteOrderByDisk.Text = "待删(磁盘)";
             this.btnDeleteOrderByDisk.UseVisualStyleBackColor = true;
             this.btnDeleteOrderByDisk.Click += new System.EventHandler(this.btnDeleteOrderByDisk_Click);
-            // 
-            // toolStripComboBox
-            // 
-            this.toolStripComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.toolStripComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
-            this.toolStripComboBox.Name = "toolStripComboBox";
-            this.toolStripComboBox.Size = new System.Drawing.Size(75, 25);
-            this.toolStripComboBox.ToolTipText = "打开位置实际所在磁盘";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(145, 6);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(145, 6);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(145, 6);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(145, 6);
             // 
             // tbePageRowCount
             // 
