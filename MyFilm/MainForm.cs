@@ -133,7 +133,7 @@ namespace MyFilm
 
             InitPageCombox();
             InitDiskCombox();
-            InitComboxMapDisk();
+
             SetGridView();
 
             // 首次显示时，若关键字为空，则显示根目录，否则显示搜索界面
@@ -161,25 +161,6 @@ namespace MyFilm
 
             Log.Information("----------    {A} EXIT    ----------\r\n\r\n", mainFormTitleString);
             Log.CloseAndFlush();
-        }
-
-        private void InitComboxMapDisk()
-        {
-            this.comboBoxMapDisk.SuspendLayout();
-            this.comboBoxMapDisk.Items.Clear();
-
-            System.IO.DriveInfo[] drives = System.IO.DriveInfo.GetDrives();
-            // 是否含磁盘E
-            bool eDrive = false;
-            for (int i = 0; i < drives.Length; i++)
-            {
-                if ((!eDrive) && drives[i].Name == @"E:\") eDrive = true;
-                this.comboBoxMapDisk.Items.Add(drives[i].Name);
-            }
-
-            if (eDrive) this.comboBoxMapDisk.SelectedItem = @"E:\";
-            else this.comboBoxMapDisk.SelectedIndex = drives.Length - 1;
-            this.comboBoxMapDisk.ResumeLayout();
         }
 
         private void SetGridView()
@@ -760,6 +741,44 @@ namespace MyFilm
                 this.toolStripMenuItemPrintFolderTree.Enabled = false;
                 this.toolStripMenuItemShowContent.Enabled = false;
             }
+
+            this.toolStripComboBox.Enabled = this.toolStripMenuItemOpenFolder.Enabled;
+            if (this.toolStripComboBox.Enabled)
+            {
+                // 是否与原先列表相同，相同使用先前的选中项
+                string[] comboBoxItems = null;
+                string selectedItem = null;
+                bool sameWithPrevious = false;
+
+                if (this.toolStripComboBox.Items.Count > 0)
+                {
+                    comboBoxItems = this.toolStripComboBox.Items.Cast<string>().ToArray();
+                    selectedItem = this.toolStripComboBox.SelectedItem.ToString();
+                    sameWithPrevious = true;
+                }
+
+                this.toolStripComboBox.Items.Clear();
+
+                System.IO.DriveInfo[] drives = System.IO.DriveInfo.GetDrives();
+                if (sameWithPrevious && drives.Length != comboBoxItems.Length)
+                    sameWithPrevious = false;
+
+                // 是否含磁盘E
+                bool eDrive = false;
+
+                for (int i = 0; i < drives.Length; i++)
+                {
+                    if ((!eDrive) && drives[i].Name == @"E:\") eDrive = true;
+                    if (sameWithPrevious && drives[i].Name != comboBoxItems[i])
+                        sameWithPrevious = false;
+
+                    this.toolStripComboBox.Items.Add(drives[i].Name);
+                }
+
+                if (sameWithPrevious) this.toolStripComboBox.SelectedItem = selectedItem;
+                else if (eDrive) this.toolStripComboBox.SelectedItem = @"E:\";
+                else this.toolStripComboBox.SelectedIndex = drives.Length - 1;
+            }
         }
 
         private void toolStripMenuItemSetDelete_Click(object sender, EventArgs e)
@@ -876,7 +895,7 @@ namespace MyFilm
             String folderPath = upFolderPath;
             if (isFolder) folderPath = Path.Combine(upFolderPath, fileName);
             // 打开位置实际磁盘
-            folderPath = this.comboBoxMapDisk.SelectedItem.ToString()[0] + folderPath.Substring(1);
+            folderPath = this.toolStripComboBox.SelectedItem.ToString()[0] + folderPath.Substring(1);
 
             try
             {
@@ -1359,11 +1378,6 @@ namespace MyFilm
             }
 
             return connectState;
-        }
-
-        private void btnRefreshMapdisk_Click(object sender, EventArgs e)
-        {
-            InitComboxMapDisk();
         }
     }
 }
