@@ -230,6 +230,7 @@ namespace MyFilm
             }
 
             this.dataGridView.AutoGenerateColumns = false;
+            this.dataGridView.AllowUserToResizeRows = false;
             this.dataGridView.ContextMenuStrip = this.contextMenuStrip;
         }
 

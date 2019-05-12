@@ -47,6 +47,7 @@ namespace MyFilm
             this.ColumnScanLayer.DataPropertyName = "scan_layer";
 
             this.dataGridView.AutoGenerateColumns = false;
+            this.dataGridView.AllowUserToResizeRows = false;
 
             foreach (DataGridViewColumn col in this.dataGridView.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;

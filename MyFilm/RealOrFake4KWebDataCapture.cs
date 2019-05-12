@@ -32,7 +32,7 @@ namespace MyFilm
             this.threadWebDataCaptureFinish = threadFinish;
         }
 
-        private static List<string> CrawlData(ref string errMsg)
+        private static DataTable CrawlData(ref string errMsg)
         {
             HtmlWeb htmlWeb = new HtmlWeb();
             HtmlDocument document = null;
@@ -49,39 +49,35 @@ namespace MyFilm
 
             if (document == null) return null;
 
-            var divLabels = document.DocumentNode.Descendants("div").Where(
-                x => x.Attributes.Contains("class") &&
-                x.Attributes["class"].Value == "stacks_in_4400_page34_accordion_label");
-            var divContents = document.DocumentNode.Descendants("div").Where(
-                x => x.Attributes.Contains("class") &&
-                x.Attributes["class"].Value == "stacks_in_4400_page34_accordion_content");
+            var tableHeadContents = document.DocumentNode.SelectSingleNode(
+                "//*[@id='grid-iron-stacks_in_4955_page34']/thead");
+            var tableBodyContents = document.DocumentNode.SelectSingleNode(
+                "//*[@id='grid-iron-stacks_in_4955_page34']/tbody");
 
-            if (divLabels == null || divContents == null) return null;
+            if (tableHeadContents == null || tableBodyContents == null) return null;
+            var tableHeadTr = tableHeadContents.SelectNodes(".//tr");
+            Debug.Assert(tableHeadTr.Count == 1);
 
-            int divLabelCount = divLabels.Count();
-            int divContentCount = divContents.Count();
-            Debug.Assert(divLabelCount == divContentCount);
-
-            List<string> resultStringList = new List<string>();
-
-            foreach (HtmlNode divNode in divContents)
+            DataTable dt = new DataTable();
+            foreach (var th in tableHeadTr[0].SelectNodes(".//th"))
             {
-                var lis = divNode.Descendants("li");
-                if (lis == null) continue;
+                dt.Columns.Add(th.InnerText.Trim(), typeof(string));
+            }
+            Debug.Assert(dt.Columns.Count == 6);
 
-                foreach (HtmlNode liNode in lis)
+            var tableBodyTr = tableBodyContents.SelectNodes(".//tr");
+            foreach (HtmlNode rowNode in tableBodyTr)
+            {
+                DataRow dr = dt.NewRow();
+                int i = 0;
+                foreach (var td in rowNode.SelectNodes(".//td"))
                 {
-                    string tempText = liNode.InnerText.Trim().Replace("&rsquo;", "'");
-
-                    if (!(string.IsNullOrWhiteSpace(tempText) ||
-                        tempText.Contains("none just yet")))
-                    {
-                        resultStringList.Add(tempText);
-                    }
+                    dr[i++] = td.InnerText.Trim();
                 }
+                dt.Rows.Add(dr);
             }
 
-            return resultStringList;
+            return dt;
         }
 
         /// <summary>
@@ -97,8 +93,8 @@ namespace MyFilm
             rst.crawlTime = DateTime.Now;
 
             string errMsg = "";
-            List<string> infoList = CrawlData(ref errMsg);
-            if (infoList == null || infoList.Count == 0)
+            DataTable crawlDt = CrawlData(ref errMsg);
+            if (crawlDt == null || crawlDt.Rows.Count == 0)
             {
                 rst.strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
                     webPageAddress, errMsg);
@@ -110,7 +106,7 @@ namespace MyFilm
 
             int diskCount = SqlData.GetInstance().CountRowsOfDiskFromFilmInfo(
                 CommonString.RealOrFake4KDiskName);
-            if ((diskCount - 1) >= infoList.Count)
+            if ((diskCount - 1) >= crawlDt.Rows.Count)
             {
                 // 更新时间
                 int affectedCount =
@@ -120,7 +116,7 @@ namespace MyFilm
 
                 rst.strMsg = string.Format(
                     "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
-                    webPageAddress, infoList.Count, diskCount - 1);
+                    webPageAddress, crawlDt.Rows.Count, diskCount - 1);
                 rst.code = 0;
                 this.threadWebDataCaptureCallback?.Invoke(rst);
                 this.threadWebDataCaptureFinish?.Invoke();
@@ -151,15 +147,16 @@ namespace MyFilm
             drDisk["s_d_t"] = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
             drDisk["content"] = String.Empty;
             drDisk["pid"] = -1;
-            drDisk["max_cid"] = startId - 1 + infoList.Count;
+            drDisk["max_cid"] = startId - 1 + crawlDt.Rows.Count;
             drDisk["disk_desc"] = CommonString.RealOrFake4KDiskName;
             dt.Rows.Add(drDisk);
 
-            foreach (string strInfo in infoList)
+            foreach (DataRow crawlDr in crawlDt.Rows)
             {
                 DataRow dr = dt.NewRow();
                 dr["id"] = startId++;
-                dr["name"] = strInfo;
+                dr["name"] = string.Join(" | ", crawlDr.ItemArray.Cast<string>().
+                    Where(x => !string.IsNullOrWhiteSpace(x)));
                 dr["path"] = "------";
                 dr["size"] = -1;
                 dr["create_t"] = rst.crawlTime;
@@ -181,8 +178,8 @@ namespace MyFilm
             SqlData.GetInstance().InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
 
             rst.strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
-                webPageAddress, infoList.Count);
-            rst.code = infoList.Count;
+                webPageAddress, crawlDt.Rows.Count);
+            rst.code = crawlDt.Rows.Count;
             this.threadWebDataCaptureCallback?.Invoke(rst);
             this.threadWebDataCaptureFinish?.Invoke();
         }
