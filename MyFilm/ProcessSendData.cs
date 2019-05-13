@@ -34,7 +34,6 @@ namespace MyFilm
 
         private static void SendDataByPipe(String data)
         {
-            bool searchEnable = false;
             bool connectFlag = true;
             string connectErrMsg = "";
             string title = "";
@@ -50,12 +49,9 @@ namespace MyFilm
 
                     byte[] bytesRead = new byte[1024];
                     int length = pipeSend.Read(bytesRead, 0, 1024);
-                    string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
+                    title = Encoding.Default.GetString(bytesRead, 0, length);
 
-                    if (strTemp[0] == '1') searchEnable = true;
-                    title = strTemp.Substring(1);
-
-                    bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+                    bool searchFlag = ((!exitCall) && (data.Length <= sendDataMaxLength));
                     string strSend = string.Format("{0}{1}{2}",
                         exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
 
@@ -75,9 +71,6 @@ namespace MyFilm
                 if (!connectFlag)
                     MessageBox.Show(string.Format(
                         "搜索 {0} 失败\n{1}！", data, connectErrMsg));
-                else if (!searchEnable)
-                    MessageBox.Show(string.Format(
-                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
                 else if (data.Length > sendDataMaxLength)
                     MessageBox.Show(string.Format(
                         "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
@@ -86,7 +79,6 @@ namespace MyFilm
 
         private static void SendDataBySharedMemory(String data)
         {
-            bool searchEnable = false;
             bool connectFlag = true;
             string connectErrMsg = "";
             string title = "";
@@ -113,12 +105,9 @@ namespace MyFilm
                         byte[] bytesRead = new byte[1024];
                         int length = viewAccessor.ReadInt32(0);
                         viewAccessor.ReadArray<byte>(4, bytesRead, 0, length);
-                        string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
+                        title = Encoding.Default.GetString(bytesRead, 0, length);
 
-                        if (strTemp[0] == '1') searchEnable = true;
-                        title = strTemp.Substring(1);
-
-                        bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+                        bool searchFlag = ((!exitCall) && (data.Length <= sendDataMaxLength));
                         string strSend = string.Format("{0}{1}{2}",
                             exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
 
@@ -142,9 +131,6 @@ namespace MyFilm
                 if (!connectFlag)
                     MessageBox.Show(string.Format(
                         "搜索 {0} 失败\n{1}！", data, connectErrMsg));
-                else if (!searchEnable)
-                    MessageBox.Show(string.Format(
-                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
                 else if (data.Length > sendDataMaxLength)
                     MessageBox.Show(string.Format(
                         "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
@@ -153,7 +139,6 @@ namespace MyFilm
 
         private static void SendDataByTcp(String data)
         {
-            bool searchEnable = false;
             string title = "";
 
             IPAddress ip = IPAddress.Parse("127.0.0.1");
@@ -162,12 +147,9 @@ namespace MyFilm
 
             byte[] bytesRead = new byte[1024];
             int length = clientSocket.Receive(bytesRead);
-            string strTemp = Encoding.Default.GetString(bytesRead, 0, length);
+            title = Encoding.Default.GetString(bytesRead, 0, length);
 
-            if (strTemp[0] == '1') searchEnable = true;
-            title = strTemp.Substring(1);
-
-            bool searchFlag = (searchEnable && (!exitCall) && (data.Length <= sendDataMaxLength));
+            bool searchFlag = ((!exitCall) && (data.Length <= sendDataMaxLength));
             string strSend = string.Format("{0}{1}{2}",
                 exitCall ? "1" : "0", searchFlag ? "1" : "0", searchFlag ? data : "");
 
@@ -177,10 +159,7 @@ namespace MyFilm
 
             if (!exitCall)
             {
-                if (!searchEnable)
-                    MessageBox.Show(string.Format(
-                        "搜索 {0} 失败\n当前搜索不可用！", data), title);
-                else if (data.Length > sendDataMaxLength)
+                if (data.Length > sendDataMaxLength)
                     MessageBox.Show(string.Format(
                         "搜索的字符串\n{0}\n长度为 {1}\n超过 50 ！", data, data.Length), title);
             }

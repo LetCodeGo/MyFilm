@@ -17,13 +17,6 @@ namespace MyFilm
         /// </summary>
         public static Action ShowSearchResultAction = null;
 
-        public delegate bool GetSearchEnableAndTitleFunc(out string title);
-
-        /// <summary>
-        /// 搜索是否可用
-        /// </summary>
-        public static GetSearchEnableAndTitleFunc GetSearchEnableAction = null;
-
         public static void ReceiveData(object hWnd)
         {
             Log.Information("ReceiveData by [{Type}]", processCommunicateType.ToString());
@@ -53,18 +46,9 @@ namespace MyFilm
                 {
                     pipeServer.WaitForConnection();
 
-                    bool searchEnable = true;
-                    string title = "";
-
-                    if (GetSearchEnableAction != null)
-                        searchEnable = GetSearchEnableAction.Invoke(out title);
-
-                    byte[] bytesWrite = Encoding.Default.GetBytes(
-                        string.Format("{0}{1}", searchEnable ? "1" : "0", title));
+                    byte[] bytesWrite = Encoding.Default.GetBytes(CommonString.MainFormTitle);
                     pipeServer.Write(bytesWrite, 0, bytesWrite.Length);
                     pipeServer.Flush();
-
-                    Log.Information("ReceiveData searchEnable[{A}]", searchEnable);
 
                     byte[] bytes = new byte[1024];
                     int length = pipeServer.Read(bytes, 0, 1024);
@@ -109,14 +93,7 @@ namespace MyFilm
                     {
                         mmfReceiveWrite.WaitOne();
 
-                        bool searchEnable = true;
-                        string title = "";
-
-                        if (GetSearchEnableAction != null)
-                            searchEnable = GetSearchEnableAction.Invoke(out title);
-
-                        byte[] bytesWrite = Encoding.Default.GetBytes(
-                            string.Format("{0}{1}", searchEnable ? "1" : "0", title));
+                        byte[] bytesWrite = Encoding.Default.GetBytes(CommonString.MainFormTitle);
 
                         viewAccessor.Write(0, bytesWrite.Length);
                         viewAccessor.WriteArray<byte>(4, bytesWrite, 0, bytesWrite.Length);
@@ -155,14 +132,7 @@ namespace MyFilm
             {
                 Socket acceptSocket = serverSocket.Accept();
 
-                bool searchEnable = true;
-                string title = "";
-
-                if (GetSearchEnableAction != null)
-                    searchEnable = GetSearchEnableAction.Invoke(out title);
-
-                byte[] bytesWrite = Encoding.Default.GetBytes(
-                    string.Format("{0}{1}", searchEnable ? "1" : "0", title));
+                byte[] bytesWrite = Encoding.Default.GetBytes(CommonString.MainFormTitle);
                 acceptSocket.Send(bytesWrite);
 
                 byte[] bytes = new byte[1024];

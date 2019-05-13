@@ -506,23 +506,23 @@ namespace MyFilm
             this.btnUpdateDisk.Enabled = enabledFlag;
         }
 
-        public void SetControlEnable(bool connectState)
-        {
-            if (connectState)
-            {
-                int i = 0;
-                foreach (Control cl in this.Controls) cl.Enabled = controlEnableArray[i++];
-            }
-            else
-            {
-                int i = 0;
-                foreach (Control cl in this.Controls)
-                {
-                    controlEnableArray[i++] = cl.Enabled;
-                    cl.Enabled = false;
-                }
-            }
-        }
+        //public void SetControlEnable(bool connectState)
+        //{
+        //    if (connectState)
+        //    {
+        //        int i = 0;
+        //        foreach (Control cl in this.Controls) cl.Enabled = controlEnableArray[i++];
+        //    }
+        //    else
+        //    {
+        //        int i = 0;
+        //        foreach (Control cl in this.Controls)
+        //        {
+        //            controlEnableArray[i++] = cl.Enabled;
+        //            cl.Enabled = false;
+        //        }
+        //    }
+        //}
 
         private void ManagerForm_FormClosed(object sender, FormClosedEventArgs e)
         {

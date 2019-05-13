@@ -346,7 +346,7 @@ namespace MyFilm
             try
             {
                 SqlData sqlData = SqlData.GetInstance();
-                sqlData.OpenMySql();
+                //sqlData.OpenMySql();
                 sqlData.CreateTables();
 
                 if (!loginConfig.hostIPs.Contains(CommonString.DbIP))

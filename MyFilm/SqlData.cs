@@ -12,20 +12,32 @@ namespace MyFilm
     public class SqlData
     {
         /// <summary>
-        /// 连接MySql
+        /// 打开数据库
         /// </summary>
-        private MySqlConnection sqlConnection = null;
+        private static String SQLOpenCmdText =
+            String.Format(
+            @"server = {0}; uid = {1}; pwd = {2}; database = {3};
+            sslmode = none; convert zero datetime = true; allow zero datetime = true;",
+            CommonString.DbIP, CommonString.DbUserName,
+            CommonString.DbPassword, CommonString.DbName);
 
         /// <summary>
         /// 搜索关键字分隔符
         /// </summary>
         private static readonly char[] searchKeyWordSplitter =
-            " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·".ToCharArray();
+            " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·"
+            .ToCharArray();
 
+        /// <summary>
+        /// 内存中存储数据库文件结构
+        /// </summary>
         private class FileNamePathID
         {
+            // 文件名
             public string FileName;
+            // 文件路径
             public string FilePath;
+            // 文件在数据库中 id
             public int FileDataBaseID;
 
             public FileNamePathID(string fileName, string filePath, int fileDataBaseID)
@@ -47,6 +59,10 @@ namespace MyFilm
                 return isContain;
             }
         }
+
+        /// <summary>
+        /// 在程序打开或修改数据库时加载全部数据库到内存
+        /// </summary>
         private Dictionary<string, List<FileNamePathID>> ramData = null;
         private bool ramDataCompleted = false;
 
@@ -71,56 +87,53 @@ namespace MyFilm
             return sqlData;
         }
 
+        /// <summary>
+        /// 查找所有已存在数据库名
+        /// </summary>
+        /// <returns></returns>
         public static List<String> QueryAllDataBaseNames()
         {
-            MySqlConnection conn = new MySqlConnection(
-                String.Format("Data Source={0};Persist Security Info=yes;SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword));
-            MySqlCommand cmd = new MySqlCommand("show databases;", conn);
+            List<String> nameList = new List<String>();
 
-            conn.Open();
-            List<String> rstList = new List<String>();
-
-            using (MySqlDataReader sqlDataReader = cmd.ExecuteReader())
+            using (MySqlConnection sqlCon = new MySqlConnection(
+                String.Format(@"Data Source={0};Persist Security Info=yes;
+                SslMode = none;UserId={1}; PWD={2};",
+                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
             {
-                while (sqlDataReader.Read()) rstList.Add(sqlDataReader[0].ToString());
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand("show databases;", sqlCon))
+                {
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        while (sqlDataReader.Read())
+                            nameList.Add(sqlDataReader[0].ToString());
+                    }
+                }
+                sqlCon.Close();
             }
-            conn.Close();
 
-            return rstList;
+            return nameList;
         }
 
+        /// <summary>
+        /// 创建数据库
+        /// </summary>
+        /// <param name="databaseName"></param>
         public static void CreateDataBase(String databaseName)
         {
-            MySqlConnection conn = new MySqlConnection(
-                String.Format("Data Source={0};Persist Security Info=yes;SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword));
-            MySqlCommand cmd = new MySqlCommand(
-                String.Format("create database {0};", databaseName), conn);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-            conn.Close();
-        }
-
-        /// <summary>
-        /// 打开数据库
-        /// </summary>
-        public void OpenMySql()
-        {
-            String cmdText = String.Format(
-                "server = {0}; uid = {1}; pwd = {2}; database = {3}; SslMode = none; convert zero datetime=true; allow zero datetime=true;",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword, CommonString.DbName);
-            sqlConnection = new MySqlConnection(cmdText);
-            sqlConnection.Open();
-        }
-
-        /// <summary>
-        /// 关闭数据库连接
-        /// </summary>
-        public void CloseMySql()
-        {
-            sqlConnection.Close();
+            using (MySqlConnection sqlCon = new MySqlConnection(
+                String.Format(@"Data Source={0};Persist Security Info=yes;
+                SslMode = none;UserId={1}; PWD={2};",
+                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(
+                    String.Format("create database {0};", databaseName), sqlCon))
+                {
+                    sqlCmd.ExecuteNonQuery();
+                }
+                sqlCon.Close();
+            }
         }
 
         /// <summary>
@@ -187,8 +200,7 @@ namespace MyFilm
             cmdText += String.Format(@"index {0}_index({0}), ", "pid");
             cmdText += String.Format(@"index {0}_index({0}) );", "disk_desc");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.ExecuteNonQuery();
+            ExecuteNonQueryGetAffected(cmdText, null);
         }
 
         /// <summary>
@@ -214,8 +226,7 @@ namespace MyFilm
             cmdText += String.Format(@"{0} bool not null, ", "complete_scan");
             cmdText += String.Format(@"{0} integer not null );", "scan_layer");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.ExecuteNonQuery();
+            ExecuteNonQueryGetAffected(cmdText, null);
         }
 
         /// <summary>
@@ -237,48 +248,61 @@ namespace MyFilm
             cmdText += String.Format(@"{0} integer not null, ", "result_count");
             cmdText += String.Format(@"{0} datetime not null );", "search_time");
 
-            MySqlCommand slqCom = new MySqlCommand(cmdText, sqlConnection);
-            slqCom.ExecuteNonQuery();
+            ExecuteNonQueryGetAffected(cmdText, null);
         }
 
+        /// <summary>
+        /// 加载数据库到内存
+        /// </summary>
         public void FillRamData()
         {
             String cmdText = String.Format(
                 "select id, name, path, disk_desc from {0};", "film_info");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-
-            using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
             {
-                ramData = new Dictionary<string, List<FileNamePathID>>();
-                int rowCount = 0;
-
-                while (sqlDataReader.Read())
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
                 {
-                    rowCount++;
-                    string strDiskDesc = sqlDataReader[3].ToString();
-
-                    if (ramData.ContainsKey(strDiskDesc))
-                        ramData[strDiskDesc].Add(new FileNamePathID(
-                            sqlDataReader[1].ToString().ToLower(),
-                            sqlDataReader[2].ToString().ToLower(),
-                            Convert.ToInt32(sqlDataReader[0])));
-                    else
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
                     {
-                        List<FileNamePathID> fnpiList = new List<FileNamePathID>();
-                        fnpiList.Add(new FileNamePathID(
-                            sqlDataReader[1].ToString().ToLower(),
-                            sqlDataReader[2].ToString().ToLower(),
-                            Convert.ToInt32(sqlDataReader[0])));
-                        ramData.Add(strDiskDesc, fnpiList);
+                        ramData = new Dictionary<string, List<FileNamePathID>>();
+                        int rowCount = 0;
+
+                        while (sqlDataReader.Read())
+                        {
+                            rowCount++;
+                            string strDiskDesc = sqlDataReader[3].ToString();
+
+                            if (ramData.ContainsKey(strDiskDesc))
+                                ramData[strDiskDesc].Add(new FileNamePathID(
+                                    sqlDataReader[1].ToString().ToLower(),
+                                    sqlDataReader[2].ToString().ToLower(),
+                                    Convert.ToInt32(sqlDataReader[0])));
+                            else
+                            {
+                                List<FileNamePathID> fnpiList = new List<FileNamePathID>();
+                                fnpiList.Add(new FileNamePathID(
+                                    sqlDataReader[1].ToString().ToLower(),
+                                    sqlDataReader[2].ToString().ToLower(),
+                                    Convert.ToInt32(sqlDataReader[0])));
+                                ramData.Add(strDiskDesc, fnpiList);
+                            }
+                        }
+
+                        Log.Information("Load all mysql data to ram, [{A}] rows", rowCount);
+                        ramDataCompleted = true;
                     }
                 }
-
-                Log.Information("Load all mysql data to ram, [{A}] rows", rowCount);
-                ramDataCompleted = true;
+                sqlCon.Close();
             }
         }
 
+        /// <summary>
+        /// 更新 CommonString.RealOrFake4KDiskName 数据库修改时间
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
         public int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
             DateTime dateTime)
         {
@@ -286,11 +310,12 @@ namespace MyFilm
             cmdText += String.Format(
                 "update {0} set modify_t = @modify_t where disk_desc = @disk_desc;",
                 "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@modify_t", dateTime);
-            sqlCmd.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
 
-            return sqlCmd.ExecuteNonQuery();
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@modify_t", dateTime);
+            sqlParamDic.Add("@disk_desc", CommonString.RealOrFake4KDiskName);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -301,44 +326,60 @@ namespace MyFilm
         /// <param name="count">个数</param>
         public void InsertDataToFilmInfo(DataTable dt, int start, int count)
         {
-            MySqlCommand sqlCmd = new MySqlCommand();
-            sqlCmd.Connection = sqlConnection;
-            sqlCmd.CommandText = String.Format(
+            String cmdText = String.Format(
                 @"insert into {0} (
-                id, name, path, size, create_t, modify_t, is_folder, to_watch, to_watch_ex, s_w_t, 
-                to_delete, to_delete_ex, s_d_t, content, pid, max_cid, disk_desc) values",
+                id, name, path, size, create_t, modify_t, is_folder, 
+                to_watch, to_watch_ex, s_w_t, to_delete, to_delete_ex, 
+                s_d_t, content, pid, max_cid, disk_desc) values",
                 "film_info");
 
-            int j = 0;
-            for (int i = start; i < dt.Rows.Count && j < count; i++, j++)
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            for (int i = start, j = 0; i < dt.Rows.Count && j < count; i++, j++)
             {
-                sqlCmd.CommandText += String.Format(
-                    @"(@id{0}, @name{0}, @path{0}, @size{0}, @create_t{0}, @modify_t{0}, @is_folder{0}, 
-                    @to_watch{0}, @to_watch_ex{0}, @s_w_t{0}, @to_delete{0}, @to_delete_ex{0}, 
-                    @s_d_t{0}, @content{0}, @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
+                cmdText += String.Format(
+                    @"(@id{0}, @name{0}, @path{0}, @size{0}, @create_t{0}, @modify_t{0}, 
+                    @is_folder{0}, @to_watch{0}, @to_watch_ex{0}, @s_w_t{0}, 
+                    @to_delete{0}, @to_delete_ex{0}, @s_d_t{0}, @content{0}, 
+                    @pid{0}, @max_cid{0}, @disk_desc{0}){1}",
                     i, i == dt.Rows.Count - 1 || j == count - 1 ? ";" : ",");
 
-                sqlCmd.Parameters.AddWithValue(String.Format("@id{0}", i), dt.Rows[i]["id"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@name{0}", i), dt.Rows[i]["name"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@path{0}", i), dt.Rows[i]["path"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@size{0}", i), dt.Rows[i]["size"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@create_t{0}", i), dt.Rows[i]["create_t"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@modify_t{0}", i), dt.Rows[i]["modify_t"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@is_folder{0}", i), dt.Rows[i]["is_folder"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@to_watch{0}", i), dt.Rows[i]["to_watch"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@to_watch_ex{0}", i), dt.Rows[i]["to_watch_ex"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@s_w_t{0}", i), dt.Rows[i]["s_w_t"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@to_delete{0}", i), dt.Rows[i]["to_delete"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@to_delete_ex{0}", i), dt.Rows[i]["to_delete_ex"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@s_d_t{0}", i), dt.Rows[i]["s_d_t"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@content{0}", i), dt.Rows[i]["content"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@pid{0}", i), dt.Rows[i]["pid"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@max_cid{0}", i), dt.Rows[i]["max_cid"]);
-                sqlCmd.Parameters.AddWithValue(String.Format("@disk_desc{0}", i), dt.Rows[i]["disk_desc"]);
+                sqlParamDic.Add(String.Format("@id{0}", i),
+                    dt.Rows[i]["id"]);
+                sqlParamDic.Add(String.Format("@name{0}", i),
+                    dt.Rows[i]["name"]);
+                sqlParamDic.Add(String.Format("@path{0}", i),
+                    dt.Rows[i]["path"]);
+                sqlParamDic.Add(String.Format("@size{0}", i),
+                    dt.Rows[i]["size"]);
+                sqlParamDic.Add(String.Format("@create_t{0}", i),
+                    dt.Rows[i]["create_t"]);
+                sqlParamDic.Add(String.Format("@modify_t{0}", i),
+                    dt.Rows[i]["modify_t"]);
+                sqlParamDic.Add(String.Format("@is_folder{0}", i),
+                    dt.Rows[i]["is_folder"]);
+                sqlParamDic.Add(String.Format("@to_watch{0}", i),
+                    dt.Rows[i]["to_watch"]);
+                sqlParamDic.Add(String.Format("@to_watch_ex{0}", i),
+                    dt.Rows[i]["to_watch_ex"]);
+                sqlParamDic.Add(String.Format("@s_w_t{0}", i),
+                    dt.Rows[i]["s_w_t"]);
+                sqlParamDic.Add(String.Format("@to_delete{0}", i),
+                    dt.Rows[i]["to_delete"]);
+                sqlParamDic.Add(String.Format("@to_delete_ex{0}", i),
+                    dt.Rows[i]["to_delete_ex"]);
+                sqlParamDic.Add(String.Format("@s_d_t{0}", i),
+                    dt.Rows[i]["s_d_t"]);
+                sqlParamDic.Add(String.Format("@content{0}", i),
+                    dt.Rows[i]["content"]);
+                sqlParamDic.Add(String.Format("@pid{0}", i),
+                    dt.Rows[i]["pid"]);
+                sqlParamDic.Add(String.Format("@max_cid{0}", i),
+                    dt.Rows[i]["max_cid"]);
+                sqlParamDic.Add(String.Format("@disk_desc{0}", i),
+                    dt.Rows[i]["disk_desc"]);
             }
 
-            int affectedRows = sqlCmd.ExecuteNonQuery();
-            Debug.Assert(affectedRows == j);
+            ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -353,22 +394,22 @@ namespace MyFilm
             String diskDescribe, Int64 freeSpace, Int64 totalSize,
             Boolean completeScan, int scanLayer)
         {
-            MySqlCommand sqlCmd = new MySqlCommand();
-            sqlCmd.Connection = sqlConnection;
-            sqlCmd.CommandText = String.Format(
-                @"insert into {0} (disk_desc, free_space, total_size, complete_scan, scan_layer) values(
+            String cmdText = String.Format(
+                @"insert into {0} (
+                disk_desc, free_space, total_size, complete_scan, scan_layer) values(
                 @disk_desc, @free_space, @total_size, @complete_scan, @scan_layer) 
                 on duplicate key update free_space = values(free_space),
                 total_size = values(total_size), complete_scan = values(complete_scan),
                 scan_layer = values(scan_layer);", "disk_info");
-            sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
-            sqlCmd.Parameters.AddWithValue("@free_space", freeSpace);
-            sqlCmd.Parameters.AddWithValue("@total_size", totalSize);
-            sqlCmd.Parameters.AddWithValue("@complete_scan", completeScan);
-            sqlCmd.Parameters.AddWithValue("@scan_layer", scanLayer);
 
-            int affectedRows = sqlCmd.ExecuteNonQuery();
-            Debug.Assert(affectedRows == 1 || affectedRows == 2);
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@disk_desc", diskDescribe);
+            sqlParamDic.Add("@free_space", freeSpace);
+            sqlParamDic.Add("@total_size", totalSize);
+            sqlParamDic.Add("@complete_scan", completeScan);
+            sqlParamDic.Add("@scan_layer", scanLayer);
+
+            ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -377,79 +418,19 @@ namespace MyFilm
         /// <param name="searchKey">搜索关键字</param>
         /// <param name="resultCount">搜索结果条数</param>
         /// <param name="searchTime">搜索时间</param>
-        public void InsertDataToSearchLog(String searchKey, int resultCount, DateTime searchTime)
+        public void InsertDataToSearchLog(
+            String searchKey, int resultCount, DateTime searchTime)
         {
-            MySqlCommand sqlCmd = new MySqlCommand();
-            sqlCmd.Connection = sqlConnection;
-            sqlCmd.CommandText = String.Format(
-                @"insert into {0} (search_key, result_count, search_time) values
-                (@search_key, @result_count, @search_time);", "search_log");
-            sqlCmd.Parameters.AddWithValue("@search_key", searchKey);
-            sqlCmd.Parameters.AddWithValue("@result_count", resultCount);
-            sqlCmd.Parameters.AddWithValue("@search_time", searchTime);
+            String cmdText = String.Format(
+                @"insert into {0} (search_key, result_count, search_time) values(
+                @search_key, @result_count, @search_time);", "search_log");
 
-            int affectedRows = sqlCmd.ExecuteNonQuery();
-            Debug.Assert(affectedRows == 1);
-        }
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@search_key", searchKey);
+            sqlParamDic.Add("@result_count", resultCount);
+            sqlParamDic.Add("@search_time", searchTime);
 
-        /// <summary>
-        /// 执行 sqlCmd.ExecuteReader 并获取所有数据
-        /// </summary>
-        /// <param name="sqlCom"></param>
-        /// <param name="errMsg">错误信息</param>
-        /// <returns>出错返回 null</returns>
-        private DataTable SqlComExecuteReaderGetAllData(MySqlCommand sqlCmd, ref String errMsg)
-        {
-            try
-            {
-                using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                {
-                    DataTable dt = new DataTable();
-                    for (int i = 0; i < sqlDataReader.FieldCount; i++)
-                    {
-                        dt.Columns.Add(sqlDataReader.GetName(i),
-                            sqlDataReader.GetFieldType(i) == typeof(MySql.Data.Types.MySqlDateTime) ?
-                            typeof(DateTime) : sqlDataReader.GetFieldType(i));
-                    }
-
-                    while (sqlDataReader.Read())
-                    {
-                        DataRow dr = dt.NewRow();
-                        for (int i = 0; i < dt.Columns.Count; i++) dr[i] = sqlDataReader[i];
-                        dt.Rows.Add(dr);
-                    }
-                    return dt;
-                }
-            }
-            catch (Exception e)
-            {
-                errMsg = e.Message;
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 执行 sqlCmd.ExecuteReader（只返回id列） 并获取 ID
-        /// </summary>
-        /// <param name="sqlCom"></param>
-        /// <param name="errMsg">错误信息</param>
-        /// <returns>出错返回 null</returns>
-        private int[] SqlComExecuteReaderGetID(MySqlCommand sqlCmd, ref String errMsg)
-        {
-            try
-            {
-                using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                {
-                    List<int> idList = new List<int>();
-                    while (sqlDataReader.Read()) idList.Add(Convert.ToInt32(sqlDataReader[0]));
-                    return idList.ToArray();
-                }
-            }
-            catch (Exception e)
-            {
-                errMsg = e.Message;
-                return null;
-            }
+            ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -465,10 +446,7 @@ namespace MyFilm
                 "select * from {0} where id in ({1}) order by field(id, {1});",
                 "film_info", String.Join(",", idList));
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            String errMsg = String.Empty;
-
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, null);
         }
 
         /// <summary>
@@ -477,14 +455,12 @@ namespace MyFilm
         /// <param name="keyWord">搜索关键字</param>
         /// <param name="diskDescribe">null时所有磁盘，否则特定磁盘</param>
         /// <returns></returns>
-        public int[] SearchKeyWordFromFilmInfo(String keyWord, String diskDescribe = null)
+        public int[] SearchKeyWordFromFilmInfo(
+            String keyWord, String diskDescribe = null)
         {
             String[] keyWords = keyWord.ToLower().Split(searchKeyWordSplitter,
                 StringSplitOptions.RemoveEmptyEntries);
             if (keyWords.Length == 0) return null;
-
-            Log.Information("Search key word [{KeyWord}] split to {@KeyWords}, search in [{Where}]",
-                keyWord, keyWords, ramDataCompleted ? "Ram" : "DataBase");
 
             if (ramDataCompleted)
             {
@@ -521,15 +497,17 @@ namespace MyFilm
                     "select id from {0} where {1} {2} order by id;", "film_info",
                     strTemp, diskDescribe == null ? "" : "and disk_desc = @disk_desc");
 
-                MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-
+                Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
                 for (int i = 0; i < keyWords.Length; i++)
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", i), keyWords[i]);
-                if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+                {
+                    sqlParamDic.Add(String.Format("@{0}", i), keyWords[i]);
+                }
+                if (diskDescribe != null)
+                {
+                    sqlParamDic.Add("@disk_desc", diskDescribe);
+                }
 
-                String errMsg = String.Empty;
-
-                return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+                return ExecuteReaderGetIDs(cmdText, sqlParamDic);
             }
         }
 
@@ -540,10 +518,8 @@ namespace MyFilm
         public DataTable GetDescriptionOfFilmInfo()
         {
             String cmdText = String.Format("desc {0}", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
 
-            String errMsg = String.Empty;
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, null);
         }
 
         /// <summary>
@@ -552,7 +528,10 @@ namespace MyFilm
         /// <param name="cmdText">sql 语句</param>
         /// <param name="errMsg">错误信息</param>
         /// <returns>sql 语句解析出错时返回 null</returns>
-        private MySqlCommand DealWithSqlQueryText(String cmdText, ref String errMsg)
+        private bool DealWithSqlQueryText(String cmdText,
+            ref String actualCmdText,
+            ref Dictionary<string, object> sqlParamDic,
+            ref String errMsg)
         {
             SortedDictionary<int, char> dict1 = new SortedDictionary<int, char>();
             int a1 = cmdText.IndexOf('\'', 0);
@@ -583,28 +562,27 @@ namespace MyFilm
                     }
                 }
             }
-            if (tempChar != ' ') { errMsg = "error sql statement"; return null; }
+            if (tempChar != ' ') { errMsg = "error sql statement"; return false; }
 
             int index = 0;
             int n = 0;
-            String cmdTextActual = String.Empty;
+            actualCmdText = string.Empty;
             foreach (KeyValuePair<int, int> kv in dict2)
             {
-                cmdTextActual += cmdText.Substring(index, kv.Key - index);
-                cmdTextActual += String.Format("@{0}", n++);
+                actualCmdText += cmdText.Substring(index, kv.Key - index);
+                actualCmdText += String.Format("@{0}", n++);
                 index = kv.Value + 1;
             }
-            cmdTextActual += cmdText.Substring(index);
+            actualCmdText += cmdText.Substring(index);
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdTextActual, sqlConnection);
             n = 0;
             foreach (KeyValuePair<int, int> kv in dict2)
             {
-                sqlCmd.Parameters.AddWithValue(String.Format("@{0}", n++),
+                sqlParamDic.Add(String.Format("@{0}", n++),
                     cmdText.Substring(kv.Key + 1, kv.Value - kv.Key - 1));
             }
 
-            return sqlCmd;
+            return true;
         }
 
         /// <summary>
@@ -615,10 +593,15 @@ namespace MyFilm
         /// <returns>sql 语句解析出错时返回 null</returns>
         public DataTable SelectAllDataBySqlText(String cmdText, ref String errMsg)
         {
-            MySqlCommand sqlCmd = DealWithSqlQueryText(cmdText, ref errMsg);
+            String actualCmdText = String.Empty;
+            Dictionary<string, object> sqlParamDic = new Dictionary<string, object>();
 
-            if (sqlCmd == null) return null;
-            else return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            if (DealWithSqlQueryText(
+                cmdText, ref actualCmdText, ref sqlParamDic, ref errMsg))
+            {
+                return ExecuteReaderGetAll(cmdText, sqlParamDic);
+            }
+            else return null;
         }
 
         /// <summary>
@@ -636,11 +619,15 @@ namespace MyFilm
                 return null;
             }
 
-            MySqlCommand sqlCmd = DealWithSqlQueryText(
-                "SELECT id FROM" + cmdText.Substring(prefix.Length), ref errMsg);
+            String actualCmdText = String.Empty;
+            Dictionary<string, object> sqlParamDic = new Dictionary<string, object>();
 
-            if (sqlCmd == null) return null;
-            else return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            if (DealWithSqlQueryText("SELECT id FROM" + cmdText.Substring(prefix.Length),
+                ref actualCmdText, ref sqlParamDic, ref errMsg))
+            {
+                return ExecuteReaderGetIDs(cmdText, sqlParamDic);
+            }
+            else return null;
         }
 
         /// <summary>
@@ -650,10 +637,8 @@ namespace MyFilm
         public DataTable GetAllDataFromDiskInfo()
         {
             String cmdText = String.Format("select * from {0};", "disk_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            String errMsg = String.Empty;
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, null);
         }
 
         /// <summary>
@@ -662,11 +647,10 @@ namespace MyFilm
         /// <returns></returns>
         public DataTable GetAllRootDirectoryFromFilmInfo()
         {
-            String cmdText = String.Format("select * from {0} where pid = -1;", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            String errMsg = String.Empty;
+            String cmdText = String.Format(
+                "select * from {0} where pid = -1;", "film_info");
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, null);
         }
 
         /// <summary>
@@ -676,13 +660,13 @@ namespace MyFilm
         /// <returns></returns>
         public DataTable GetDataByIdFromFilmInfo(int id)
         {
-            String cmdText = String.Format("select * from {0} where id = @id;", "film_info");
+            String cmdText = String.Format(
+                "select * from {0} where id = @id;", "film_info");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@id", id);
-            String errMsg = String.Empty;
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@id", id);
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -692,14 +676,14 @@ namespace MyFilm
         /// <returns></returns>
         public int[] GetDataByPidFromFilmInfo(int pid)
         {
-            String cmdText = String.Format("select id from {0} where pid = @pid order by id;",
+            String cmdText = String.Format(
+                "select id from {0} where pid = @pid order by id;",
                 "film_info");
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@pid", pid);
-            String errMsg = String.Empty;
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@pid", pid);
 
-            return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            return ExecuteReaderGetIDs(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -712,12 +696,15 @@ namespace MyFilm
             String cmdText = String.Format(
                 "select id from {0} where to_watch = 1 {1} order by s_w_t desc, id asc;",
                 "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
-            String errMsg = String.Empty;
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+            Dictionary<String, Object> sqlParamDic = null;
+            if (diskDescribe != null)
+            {
+                sqlParamDic = new Dictionary<string, object>();
+                sqlParamDic.Add("@disk_desc", diskDescribe);
+            }
 
-            return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            return ExecuteReaderGetIDs(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -730,12 +717,15 @@ namespace MyFilm
             String cmdText = String.Format(
                 "select id from {0} where to_delete = 1 {1} order by s_d_t desc, id asc;",
                 "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
-            String errMsg = String.Empty;
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+            Dictionary<String, Object> sqlParamDic = null;
+            if (diskDescribe != null)
+            {
+                sqlParamDic = new Dictionary<string, object>();
+                sqlParamDic.Add("@disk_desc", diskDescribe);
+            }
 
-            return SqlComExecuteReaderGetID(sqlCmd, ref errMsg);
+            return ExecuteReaderGetIDs(cmdText, sqlParamDic);
         }
 
         public int[] GetDeleteDataFromFilmInfoGroupByDisk(String diskDescribe = null)
@@ -744,27 +734,35 @@ namespace MyFilm
                 @"select group_concat(id order by id), count(id) as id_count from {0} where 
                 to_delete = 1 {1} group by disk_desc order by id_count desc;",
                 "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
-            String errMsg = String.Empty;
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            if (diskDescribe != null) sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
-
-            try
+            int[] ids = null;
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
             {
-                using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
                 {
-                    String strTemp = String.Empty;
-                    while (sqlDataReader.Read()) strTemp += ("," + sqlDataReader[0].ToString());
-                    List<String> strIdList = strTemp.Split(
-                        new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                    return strIdList.ConvertAll(x => Convert.ToInt32(x)).ToArray();
+                    if (diskDescribe != null)
+                    {
+                        sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
+                    }
+
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        String strTemp = String.Empty;
+                        while (sqlDataReader.Read())
+                        {
+                            strTemp += ("," + sqlDataReader[0].ToString());
+                        }
+                        List<String> strIdList = strTemp.Split(
+                            new char[] { ',' },
+                            StringSplitOptions.RemoveEmptyEntries).ToList();
+                        ids = strIdList.ConvertAll(x => Convert.ToInt32(x)).ToArray();
+                    }
                 }
+                sqlCon.Close();
             }
-            catch (Exception e)
-            {
-                errMsg = e.Message;
-                return null;
-            }
+
+            return ids;
         }
 
         public void UpdateWatchOrDeleteStateFromFilmInfo(bool isWatch,
@@ -774,7 +772,7 @@ namespace MyFilm
             // 用 pid 排序（最顶层的文件夹在前面）
             setStateStructList.Sort((x, y) => x.pid.CompareTo(y.pid));
 
-            MySqlCommand sqlCmd = new MySqlCommand();
+            Dictionary<string, object> sqlParamDic = new Dictionary<string, object>();
 
             int pi = 0;
             string k1 = isWatch ? "to_watch" : "to_delete";
@@ -794,7 +792,9 @@ namespace MyFilm
             {
                 for (int i = 0; i < setStateStructList.Count; i++)
                 {
-                    if ((isWatch ? setStateStructList[i].to_watch_ex : setStateStructList[i].to_delete_ex) ||
+                    if ((isWatch ?
+                        setStateStructList[i].to_watch_ex :
+                        setStateStructList[i].to_delete_ex) ||
                         dealedIDList.Contains(setStateStructList[i].id))
                         continue;
 
@@ -821,7 +821,7 @@ namespace MyFilm
                         }
                     }
 
-                    sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++), setTime);
+                    sqlParamDic.Add(String.Format("@{0}", pi++), setTime);
                 }
             }
             else
@@ -830,7 +830,9 @@ namespace MyFilm
 
                 for (int i = 0; i < setStateStructList.Count; i++)
                 {
-                    if ((!(isWatch ? setStateStructList[i].to_watch_ex : setStateStructList[i].to_delete_ex)) ||
+                    if ((!(isWatch ?
+                        setStateStructList[i].to_watch_ex :
+                        setStateStructList[i].to_delete_ex)) ||
                         dealedIDList.Contains(setStateStructList[i].id))
                         continue;
 
@@ -857,9 +859,11 @@ namespace MyFilm
                             setTimeWithPositive = Convert.ToDateTime(pdt.Rows[0][k3]);
 
                             TreeSetState upNodeSetState = new TreeSetState();
-                            upNodeSetState.name = Convert.ToString(pdt.Rows[0]["name"]);
+                            upNodeSetState.name =
+                                Convert.ToString(pdt.Rows[0]["name"]);
                             upNodeSetState.id = id;
-                            upNodeSetState.max_cid = Convert.ToInt32(pdt.Rows[0]["max_cid"]);
+                            upNodeSetState.max_cid =
+                                Convert.ToInt32(pdt.Rows[0]["max_cid"]);
                             upNodeSetState.cancelIDList = new List<TreeSetState>();
                             upNodeSetState.Add(nodeSetState);
 
@@ -870,8 +874,7 @@ namespace MyFilm
 
                     if (setTimeWithPositive != setTime)
                     {
-                        sqlCmd.Parameters.AddWithValue(String.Format("@{0}", pi++),
-                            setTimeWithPositive);
+                        sqlParamDic.Add(String.Format("@{0}", pi++), setTimeWithPositive);
                     }
 
                     for (int j = i + 1; j < setStateStructList.Count; j++)
@@ -899,9 +902,11 @@ namespace MyFilm
                                 _pid = Convert.ToInt32(_pdt.Rows[0]["pid"]);
 
                                 TreeSetState _upNodeSetState = new TreeSetState();
-                                _upNodeSetState.name = Convert.ToString(_pdt.Rows[0]["name"]);
+                                _upNodeSetState.name =
+                                    Convert.ToString(_pdt.Rows[0]["name"]);
                                 _upNodeSetState.id = _id;
-                                _upNodeSetState.max_cid = Convert.ToInt32(_pdt.Rows[0]["max_cid"]);
+                                _upNodeSetState.max_cid =
+                                    Convert.ToInt32(_pdt.Rows[0]["max_cid"]);
                                 _upNodeSetState.cancelIDList = new List<TreeSetState>();
                                 _upNodeSetState.Add(_nodeSetState);
 
@@ -915,7 +920,7 @@ namespace MyFilm
                     nodeTreeSetStateList.Add(nodeSetState);
                 }
 
-                sqlCmd.Parameters.AddWithValue("@cancel", setTime);
+                sqlParamDic.Add("@cancel", setTime);
 
                 pi = 0;
                 foreach (TreeSetState nodeSetState in nodeTreeSetStateList)
@@ -925,7 +930,8 @@ namespace MyFilm
                     GenerateConditionString(nodeSetState, ref c1, ref c2, ref tc3, ref c4);
 
                     if (tc3.Count > 0)
-                        s1.Add(String.Format("when {0} then @{1}", string.Join(" or ", tc3), pi++));
+                        s1.Add(String.Format(
+                            "when {0} then @{1}", string.Join(" or ", tc3), pi++));
 
                     c3.AddRange(tc3);
                 }
@@ -943,18 +949,18 @@ namespace MyFilm
                 string str4 = c4.Count == 0 ? " " :
                     string.Format(" when {0} then 0 ", string.Join(" or ", c4));
 
-                sqlCmd.Connection = sqlConnection;
-                sqlCmd.CommandText = String.Format(@"update {0} set 
+                String cmdText = String.Format(@"update {0} set 
                     {6} = (case {1} {2} else {6} end),
                     {7} = (case {3} {4} else {7} end),
                     {8} = (case {5} else {8} end);",
                     "film_info", str1, str2, str3, str4, string.Join(" ", s1), k1, k2, k3);
 
-                sqlCmd.ExecuteNonQuery();
+                ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
             }
         }
 
-        private void GenerateConditionString(TreeSetState nodeSetState, ref List<string> c1,
+        private void GenerateConditionString(
+            TreeSetState nodeSetState, ref List<string> c1,
             ref List<string> c2, ref List<string> c3, ref List<string> c4)
         {
             if (nodeSetState == null) return;
@@ -962,15 +968,19 @@ namespace MyFilm
             if (nodeSetState.cancelIDList == null)
             {
                 c2.Add(String.Format("(pid={0} or id={0})", nodeSetState.id));
-                c4.Add(String.Format("(id>={0} and id<={1})", nodeSetState.id, nodeSetState.max_cid));
+                c4.Add(String.Format("(id>={0} and id<={1})",
+                    nodeSetState.id, nodeSetState.max_cid));
             }
             else
             {
                 // 不可能为空
                 Debug.Assert(nodeSetState.cancelIDList.Count > 0);
 
-                List<int> idList = nodeSetState.cancelIDList.Select(x => x.id).ToList();
-                List<int> maxcidList = nodeSetState.cancelIDList.Select(x => x.max_cid).ToList();
+                List<int> idList =
+                    nodeSetState.cancelIDList.Select(x => x.id).ToList();
+                List<int> maxcidList =
+                    nodeSetState.cancelIDList.Select(x => x.max_cid).ToList();
+
                 idList.Sort();
                 maxcidList.Sort();
 
@@ -979,9 +989,14 @@ namespace MyFilm
 
                 string strTemp = String.Join(",", idList);
 
-                c1.Add(String.Format("(pid={0} and id not in ({1}))", nodeSetState.id, strTemp));
-                c2.Add(String.Format("(id={0})", nodeSetState.id));
-                if (!string.IsNullOrEmpty(strC3Range)) c3.Add(String.Format("({0})", strC3Range));
+                c1.Add(String.Format(
+                    "(pid={0} and id not in ({1}))", nodeSetState.id, strTemp));
+                c2.Add(String.Format(
+                    "(id={0})", nodeSetState.id));
+                if (!string.IsNullOrEmpty(strC3Range))
+                {
+                    c3.Add(String.Format("({0})", strC3Range));
+                }
                 c4.Add(String.Format("(id={0})", nodeSetState.id));
 
                 foreach (TreeSetState _nodeSetState in nodeSetState.cancelIDList)
@@ -989,20 +1004,32 @@ namespace MyFilm
             }
         }
 
-        private string GenerateRangeString(int id, int max_cid, List<int> idList, List<int> maxcidList)
+        private string GenerateRangeString(
+            int id, int max_cid, List<int> idList, List<int> maxcidList)
         {
-            Debug.Assert(idList != null && maxcidList != null && idList.Count == maxcidList.Count);
-            Debug.Assert(id <= idList[0] && max_cid >= maxcidList[maxcidList.Count - 1]);
+            Debug.Assert(
+                idList != null &&
+                maxcidList != null &&
+                idList.Count == maxcidList.Count);
+            Debug.Assert(
+                id <= idList[0] &&
+                max_cid >= maxcidList[maxcidList.Count - 1]);
 
             List<string> strList = new List<string>();
 
             int pos = id;
             for (int i = 0; i < idList.Count; i++)
             {
-                if (idList[i] > pos) strList.Add(string.Format("(id>{0} and id<{1})", pos, idList[i]));
+                if (idList[i] > pos)
+                {
+                    strList.Add(string.Format("(id>{0} and id<{1})", pos, idList[i]));
+                }
                 pos = maxcidList[i];
             }
-            if (pos < max_cid) strList.Add(string.Format("(id>{0} and id<{1})", pos, max_cid));
+            if (pos < max_cid)
+            {
+                strList.Add(string.Format("(id>{0} and id<{1})", pos, max_cid));
+            }
 
             return string.Join(" or ", strList);
         }
@@ -1016,9 +1043,8 @@ namespace MyFilm
         {
             String cmdText = String.Format("delete from {0} where id in ({1});",
                 "film_info", String.Join(",", idList));
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
 
-            return sqlCmd.ExecuteNonQuery();
+            return ExecuteNonQueryGetAffected(cmdText, null);
         }
 
         /// <summary>
@@ -1031,10 +1057,11 @@ namespace MyFilm
             String cmdText = "set sql_safe_updates = 0;";
             cmdText += String.Format("delete from {0} where disk_desc = @disk_desc;",
                 "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            return sqlCmd.ExecuteNonQuery();
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@disk_desc", diskDescribe);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1047,10 +1074,11 @@ namespace MyFilm
             String cmdText = "set sql_safe_updates = 0;";
             cmdText += String.Format("delete from {0} where disk_desc = @disk_desc;",
                 "disk_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
 
-            return sqlCmd.ExecuteNonQuery();
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@disk_desc", diskDescribe);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1059,16 +1087,19 @@ namespace MyFilm
         /// <param name="fromDiskDescribe">原</param>
         /// <param name="toDiskDescribe">新</param>
         /// <returns></returns>
-        public int UpdateDiskDescribeFromFilmInfo(String fromDiskDescribe, String toDiskDescribe)
+        public int UpdateDiskDescribeFromFilmInfo(
+            String fromDiskDescribe, String toDiskDescribe)
         {
             String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
+            cmdText += String.Format(
+                "update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
                 "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@t_disk_desc", toDiskDescribe);
-            sqlCmd.Parameters.AddWithValue("@f_disk_desc", fromDiskDescribe);
 
-            return sqlCmd.ExecuteNonQuery();
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@t_disk_desc", toDiskDescribe);
+            sqlParamDic.Add("@f_disk_desc", fromDiskDescribe);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1077,16 +1108,19 @@ namespace MyFilm
         /// <param name="fromDiskDescribe">原</param>
         /// <param name="toDiskDescribe">新</param>
         /// <returns></returns>
-        public int UpdateDiskDescribeFromDiskInfo(String fromDiskDescribe, String toDiskDescribe)
+        public int UpdateDiskDescribeFromDiskInfo(
+            String fromDiskDescribe, String toDiskDescribe)
         {
             String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
+            cmdText += String.Format(
+                "update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
                 "disk_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@t_disk_desc", toDiskDescribe);
-            sqlCmd.Parameters.AddWithValue("@f_disk_desc", fromDiskDescribe);
 
-            return sqlCmd.ExecuteNonQuery();
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@t_disk_desc", toDiskDescribe);
+            sqlParamDic.Add("@f_disk_desc", fromDiskDescribe);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1096,14 +1130,14 @@ namespace MyFilm
         /// <returns></returns>
         public DataTable GetChildFolderFromFilmInfo(int folderID)
         {
-            String cmdText = String.Format("select * from {0} where pid = @pid and is_folder = 1;",
+            String cmdText = String.Format(
+                "select * from {0} where pid = @pid and is_folder = 1;",
                 "film_info");
-            String errMsg = String.Empty;
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@pid", folderID);
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@pid", folderID);
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1113,30 +1147,32 @@ namespace MyFilm
         /// <returns></returns>
         public DataTable GetChildFileFromFilmInfo(int folderID)
         {
-            String cmdText = String.Format("select * from {0} where pid = @pid and is_folder = 0;",
+            String cmdText = String.Format(
+                "select * from {0} where pid = @pid and is_folder = 0;",
                 "film_info");
-            String errMsg = String.Empty;
 
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@pid", folderID);
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@pid", folderID);
 
-            return SqlComExecuteReaderGetAllData(sqlCmd, ref errMsg);
+            return ExecuteReaderGetAll(cmdText, sqlParamDic);
         }
 
         public int GetMaxIdOfFilmInfo()
         {
             String cmdText = String.Format("select max(id) from {0};", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            return Convert.ToInt32(sqlCmd.ExecuteScalar());
+
+            return ExecuteScalarGetNum(cmdText, null);
         }
 
         public int CountRowsOfDiskFromFilmInfo(string diskDescribe)
         {
             String cmdText = String.Format(
                 "select count(*) from {0} where disk_desc=@disk_desc;", "film_info");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
-            return Convert.ToInt32(sqlCmd.ExecuteScalar());
+
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@disk_desc", diskDescribe);
+
+            return ExecuteScalarGetNum(cmdText, sqlParamDic);
         }
 
         /// <summary>
@@ -1146,8 +1182,135 @@ namespace MyFilm
         public int CountRowsFromSearchLog()
         {
             String cmdText = String.Format("select count(*) from {0};", "search_log");
-            MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlConnection);
-            return Convert.ToInt32(sqlCmd.ExecuteScalar());
+
+            return ExecuteScalarGetNum(cmdText, null);
+        }
+
+        private int ExecuteNonQueryGetAffected(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null)
+        {
+            int affected = 0;
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    if (sqlParamDic != null)
+                    {
+                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
+                        {
+                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                        }
+                    }
+                    affected = sqlCmd.ExecuteNonQuery();
+                }
+                sqlCon.Close();
+            }
+
+            return affected;
+        }
+
+        private int ExecuteScalarGetNum(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null)
+        {
+            int num = 0;
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    if (sqlParamDic != null)
+                    {
+                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
+                        {
+                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                        }
+                    }
+                    object obj = sqlCmd.ExecuteScalar();
+                    if (obj != System.DBNull.Value) num = Convert.ToInt32(obj);
+                }
+                sqlCon.Close();
+            }
+
+            return num;
+        }
+
+        private DataTable ExecuteReaderGetAll(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null)
+        {
+            DataTable dt = null;
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    if (sqlParamDic != null)
+                    {
+                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
+                        {
+                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                        }
+                    }
+
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        dt = new DataTable();
+                        for (int i = 0; i < sqlDataReader.FieldCount; i++)
+                        {
+                            dt.Columns.Add(sqlDataReader.GetName(i),
+                                sqlDataReader.GetFieldType(i) ==
+                                typeof(MySql.Data.Types.MySqlDateTime) ?
+                                typeof(DateTime) : sqlDataReader.GetFieldType(i));
+                        }
+
+                        while (sqlDataReader.Read())
+                        {
+                            DataRow dr = dt.NewRow();
+                            for (int i = 0; i < dt.Columns.Count; i++)
+                            {
+                                dr[i] = sqlDataReader[i];
+                            }
+                            dt.Rows.Add(dr);
+                        }
+                    }
+                }
+                sqlCon.Close();
+            }
+
+            return dt;
+        }
+
+        private int[] ExecuteReaderGetIDs(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null)
+        {
+            int[] ids = null;
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    if (sqlParamDic != null)
+                    {
+                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
+                        {
+                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
+                        }
+                    }
+
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        List<int> idList = new List<int>();
+                        while (sqlDataReader.Read())
+                        {
+                            idList.Add(Convert.ToInt32(sqlDataReader[0]));
+                        }
+                        ids = idList.ToArray();
+                    }
+                }
+                sqlCon.Close();
+            }
+
+            return ids;
         }
     }
 }

@@ -30,26 +30,36 @@ namespace MyFilm
         /// </summary>
         private int currentPageIndex = 0;
 
-        private string comboxDiskDefaultString = "全部";
-        private string mainFormTitleString = "";
-
-        private Mutex connectStateMutex = null;
-        private bool connectState = true;
-        private bool[] controlEnableArray = null;
-        private Action<bool> managerFormSetEnableAction = null;
-
+        /// <summary>
+        /// 枚举操作类型
+        /// </summary>
         private enum ActionType
         {
+            // 点击磁盘根目录
             ACTION_DISK_ROOT,
+            // 搜索关键字
             ACTION_KEY_WORD_SEARCH,
+            // 点击待删
             ACTION_DELETE_SEARCH,
+            // 点击待看
             ACTION_WATCH_SEARCH,
+            // 直接 sql 查询
             ACTION_SQL_QUERY,
+            // 父文件夹
             ACTION_FOLDER_UP,
+            // 子文件夹
             ACTION_FOLDER_DOWN
         }
 
+        /// <summary>
+        /// 操作类型
+        /// </summary>
         private ActionType actionType = ActionType.ACTION_DISK_ROOT;
+
+        /// <summary>
+        /// 此变量用来保存当进入文件夹时，此文件夹的 id
+        /// 如果此文件夹为空，进入文件夹后就没法获得此文件夹的 id
+        /// </summary>
         private int folderDownID = int.MinValue;
 
         /// <summary>
@@ -78,10 +88,8 @@ namespace MyFilm
         private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "nfos");
 
         /// <summary>
-        /// 定时发送心跳包
+        /// 同步更新 SqlForm
         /// </summary>
-        private bool heartBeatFlag = true;
-
         private Action<DataTable> UpdateSqlFormRichTextBoxActionByDataTable = null;
         private Action<String> UpdateSqlFormRichTextBoxActionByString = null;
 
@@ -92,19 +100,15 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            mainFormTitleString = String.Format("{0}@{1} [MyFilm v{2}]",
+            CommonString.MainFormTitle = String.Format("{0}@{1} [MyFilm v{2}]",
                 CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
-            Log.Information("----------    {A} LOAD    ----------", mainFormTitleString);
 
-            this.connectStateMutex = new Mutex();
-            this.controlEnableArray = new bool[this.Controls.Count];
-
-            this.Text = mainFormTitleString;
+            this.Text = CommonString.MainFormTitle;
             this.tbePageRowCount.Text = this.pageRowCount.ToString();
             this.Icon = Properties.Resources.Film;
             this.notifyIcon.Icon = Properties.Resources.Film;
             this.notifyIcon.Visible = false;
-            this.notifyIcon.Text = mainFormTitleString;
+            this.notifyIcon.Text = CommonString.MainFormTitle;
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
             // 删除NFO文件夹中所有的nfo文件
@@ -117,19 +121,12 @@ namespace MyFilm
 
             // 开启线程，接收从另一进程发送的数据
             ProcessReceiveData.ShowSearchResultAction = this.ShowSearchResult;
-            ProcessReceiveData.GetSearchEnableAction = this.GetSearchEnableState;
             Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             thread.Start(this.Handle);
 
             // 获取根目录数据源
             diskRootDataTable = GetDiskRootDirectoryInfo();
             totalRowCount = diskRootDataTable.Rows.Count;
-
-            this.comboxDiskDefaultString = string.Format("全部（共 {0} 磁盘）", totalRowCount);
-
-            // 开启心跳线程
-            Thread thread1 = new Thread(new ThreadStart(MySqlHeartBeat));
-            thread1.Start();
 
             InitPageCombox();
             InitDiskCombox();
@@ -152,14 +149,11 @@ namespace MyFilm
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            heartBeatFlag = false;
-
             ProcessSendData.exitCall = true;
             ProcessSendData.SendData("quit");
 
-            SqlData.GetInstance().CloseMySql();
+            //SqlData.GetInstance().CloseMySql();
 
-            Log.Information("----------    {A} EXIT    ----------\r\n\r\n", mainFormTitleString);
             Log.CloseAndFlush();
         }
 
@@ -241,7 +235,7 @@ namespace MyFilm
         {
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
-            this.comboBoxDisk.Items.Add(comboxDiskDefaultString);
+            this.comboBoxDisk.Items.Add(string.Format("全部（共 {0} 磁盘）", totalRowCount));
             for (int i = 0; i < diskRootDataTable.Rows.Count; i++)
             {
                 this.comboBoxDisk.Items.Add(diskRootDataTable.Rows[i]["disk_desc"]);
@@ -425,12 +419,12 @@ namespace MyFilm
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
 
             queryInfo = String.Format("在 {0} 里搜索 \'{1}\'",
-                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe,
+                            this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe,
                             keyWord);
             actionType = ActionType.ACTION_KEY_WORD_SEARCH;
 
             idList = SqlData.GetInstance().SearchKeyWordFromFilmInfo(
-                keyWord, diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
+                keyWord, this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = (idList == null ? 0 : idList.Length);
 
             Log.Information("Search key word [{A}], result [{B}] rows", keyWord, totalRowCount);
@@ -450,11 +444,11 @@ namespace MyFilm
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待删（结果以设置时间倒序）",
-                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
+                            this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
             idList = SqlData.GetInstance().GetDeleteDataFromFilmInfo(
-                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
+                this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
             Log.Information("待删（结果以设置时间倒序）, result [{A}] rows", totalRowCount);
@@ -468,11 +462,11 @@ namespace MyFilm
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待删（结果以磁盘分组）",
-                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
+                            this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
             idList = SqlData.GetInstance().GetDeleteDataFromFilmInfoGroupByDisk(
-                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
+                this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
             Log.Information("待删（结果以磁盘分组）, result [{A}] rows", totalRowCount);
@@ -487,11 +481,11 @@ namespace MyFilm
 
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待看",
-                            diskDescribe == comboxDiskDefaultString ? "所有磁盘" : diskDescribe);
+                            this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_WATCH_SEARCH;
 
             idList = SqlData.GetInstance().GetWatchDataFromFilmInfo(
-                diskDescribe == comboxDiskDefaultString ? null : diskDescribe);
+                this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
             Log.Information("待看, result [{A}] rows", totalRowCount);
@@ -504,7 +498,7 @@ namespace MyFilm
         private void btnManager_Click(object sender, EventArgs e)
         {
             ManagerForm form = new ManagerForm();
-            this.managerFormSetEnableAction = form.SetControlEnable;
+            //this.managerFormSetEnableAction = form.SetControlEnable;
             form.closeAction = this.ManagerFormClosed;
             form.ShowDialog();
         }
@@ -595,8 +589,6 @@ namespace MyFilm
             diskRootDataTable = GetDiskRootDirectoryInfo();
 
             totalRowCount = diskRootDataTable.Rows.Count;
-
-            this.comboxDiskDefaultString = string.Format("全部（共 {0} 磁盘）", totalRowCount);
 
             InitPageCombox();
             InitDiskCombox();
@@ -1211,174 +1203,10 @@ namespace MyFilm
             Helper.OpenEdit(filePath, content);
         }
 
-        private void MySqlHeartBeat()
-        {
-            bool exitFlag = false;
-            bool connectStatePrevious = connectState;
-            // 30分钟查询一次，10分钟检测一次网卡
-            int[] timeIntervals = new int[] { 1800000, 600000 };
-            int[] timeIntervalsTest = new int[] { 60000, 30000 };
-            int timeInterval = timeIntervals[0];
-            int flags = 0;
-
-            while (heartBeatFlag)
-            {
-                int msTime = 0;
-                while (heartBeatFlag && msTime < timeInterval)
-                {
-                    Thread.Sleep(500);
-                    msTime += 500;
-                }
-                if (!heartBeatFlag) break;
-
-                try
-                {
-                    this.connectStateMutex.WaitOne();
-
-                    connectStatePrevious = connectState;
-                    if (connectState)
-                    {
-                        try
-                        {
-                            Log.Information("MainForm heartbeat CountRowsFromSearchLog");
-                            SqlData.GetInstance().CountRowsFromSearchLog();
-                        }
-                        // 电脑睡眠时，网卡睡眠
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "MainForm heartbeat CountRowsFromSearchLog fail");
-
-                            connectState = false;
-                        }
-                    }
-                    else
-                    {
-                        connectState = Win32API.InternetGetConnectedState(ref flags, 0);
-                        Log.Information("MainForm heartbeat Win32API.InternetGetConnectedState[{A}]",
-                            connectState);
-                        if (connectState)
-                        {
-                            try
-                            {
-                                Log.Information("MainForm heartbeat OpenMySql");
-                                SqlData.GetInstance().OpenMySql();
-                            }
-                            catch (Exception ex)
-                            {
-                                heartBeatFlag = false;
-                                exitFlag = true;
-
-                                Log.Error(ex, "MainForm heartbeat OpenMySql fail");
-
-                                // 依然打开失败，退出
-                                MessageBox.Show(string.Format("{0}\n{1}",
-                                    DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), ex.Message));
-                                break;
-                            }
-                        }
-                    }
-
-                    Log.Information("MainForm heartbeat ConnectState[B:{A}][A:{B}]",
-                        connectStatePrevious, connectState);
-
-                    if (connectState) timeInterval = timeIntervals[0];
-                    else timeInterval = timeIntervals[1];
-
-                    if (heartBeatFlag && (connectStatePrevious != connectState))
-                    {
-                        MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
-                        this.BeginInvoke(mi);
-                    }
-                }
-                finally
-                {
-                    this.connectStateMutex.ReleaseMutex();
-                }
-            }
-
-            if (exitFlag) this.Close();
-        }
-
-        private void ChangeControlEnable()
-        {
-            Log.Information("MainForm ChangeControlEnable[{A}]", connectState);
-
-            if (connectState)
-            {
-                int i = 0;
-                foreach (Control cl in this.Controls) cl.Enabled = controlEnableArray[i++];
-            }
-            else
-            {
-                int i = 0;
-                foreach (Control cl in this.Controls)
-                {
-                    controlEnableArray[i++] = cl.Enabled;
-                    cl.Enabled = false;
-                }
-            }
-
-            this.managerFormSetEnableAction?.Invoke(connectState);
-        }
-
         private void ManagerFormClosed()
         {
-            this.managerFormSetEnableAction = null;
-
-            if (connectState)
-            {
-                // 设置返回后显示根目录
-                ReLoadDiskRootDataAndShow();
-            }
-        }
-
-        private bool GetSearchEnableState(out string title)
-        {
-            title = mainFormTitleString;
-            if (!heartBeatFlag) return false;
-
-            try
-            {
-                this.connectStateMutex.WaitOne();
-
-                bool connectStateBefore = connectState;
-                int flags = 0;
-                connectState = Win32API.InternetGetConnectedState(ref flags, 0);
-
-                Log.Information("MainForm GetSearchEnableState Win32API.InternetGetConnectedState[B:{A}][A:{B}]",
-                    connectStateBefore, connectState);
-
-                if (connectStateBefore != connectState)
-                {
-                    if (connectState)
-                    {
-                        try
-                        {
-                            Log.Information("MainForm GetSearchEnableState OpenMySql");
-                            SqlData.GetInstance().OpenMySql();
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(ex, "MainForm GetSearchEnableState OpenMySql fail");
-                            connectState = false;
-                        }
-                    }
-                }
-
-                Log.Information("MainForm GetSearchEnableState ConnectState[B:{A}][A:{B}]", connectStateBefore, connectState);
-
-                if (connectStateBefore != connectState)
-                {
-                    MethodInvoker mi = new MethodInvoker(ChangeControlEnable);
-                    this.BeginInvoke(mi);
-                }
-            }
-            finally
-            {
-                this.connectStateMutex.ReleaseMutex();
-            }
-
-            return connectState;
+            // 设置返回后显示根目录
+            ReLoadDiskRootDataAndShow();
         }
     }
 }

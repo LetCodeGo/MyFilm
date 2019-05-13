@@ -14,7 +14,10 @@ namespace MyFilm
         public static String DbPassword = string.Empty;
         public static String DbName = "myfilm";
 
+        // Web搜索关键字
         public static String WebSearchKeyWord = String.Empty;
+        // 主界面标题
+        public static String MainFormTitle = String.Empty;
 
         public readonly static String RealOrFake4KDiskName = "REAL_OR_FAKE_4K";
 
