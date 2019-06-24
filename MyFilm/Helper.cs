@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MyFilm
 {
@@ -29,15 +31,15 @@ namespace MyFilm
         /// <returns></returns>
         public static String GetSizeString(long lSize)
         {
-            if (lSize == 0) return "0KB";
-            else if (lSize < KB) return "1KB";
+            if (lSize == 0) return "0 KB";
+            else if (lSize < KB) return "1 KB";
 
             double dSize = (double)lSize;
 
-            if (lSize < MB) return String.Format("{0:F}KB", dSize / KB);
-            else if (lSize < GB) return String.Format("{0:F}MB", dSize / MB);
-            else if (lSize < TB) return String.Format("{0:F}GB", dSize / GB);
-            else if (lSize < PB) return String.Format("{0:F}TB", dSize / TB);
+            if (lSize < MB) return String.Format("{0:F} KB", dSize / KB);
+            else if (lSize < GB) return String.Format("{0:F} MB", dSize / MB);
+            else if (lSize < TB) return String.Format("{0:F} GB", dSize / GB);
+            else if (lSize < PB) return String.Format("{0:F} TB", dSize / TB);
             else return "N/A";
         }
 
@@ -88,6 +90,44 @@ namespace MyFilm
             int[] r = new int[Math.Min(a.Length - startIndex, len)];
             for (int i = startIndex, n = 0; i < a.Length && n < len; i++, n++) r[n] = a[i];
             return r;
+        }
+
+        /// <summary>
+        /// 加密
+        /// </summary>
+        /// <param name="expressText"></param>
+        /// <returns></returns>
+        public static string Encryption(string expressText)
+        {
+            CspParameters param = new CspParameters();
+            // 密匙容器的名称，保持加密解密一致才能解密成功
+            param.KeyContainerName = CommonString.RSAKeyContainerName;
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(param))
+            {
+                // 将要加密的字符串转换为字节数组
+                byte[] plainData = Encoding.Default.GetBytes(expressText);
+                // 加密
+                byte[] encryptdata = rsa.Encrypt(plainData, false);
+                // 将加密后的字节数组转换为Base64字符串
+                return Convert.ToBase64String(encryptdata);
+            }
+        }
+
+        /// <summary>
+        /// 解密
+        /// </summary>
+        /// <param name="cipherText"></param>
+        /// <returns></returns>
+        public static string Decrypt(string cipherText)
+        {
+            CspParameters param = new CspParameters();
+            param.KeyContainerName = CommonString.RSAKeyContainerName;
+            using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(param))
+            {
+                byte[] encryptData = Convert.FromBase64String(cipherText);
+                byte[] decryptData = rsa.Decrypt(encryptData, false);
+                return Encoding.Default.GetString(decryptData);
+            }
         }
 
         /// <summary>

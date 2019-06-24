@@ -104,13 +104,13 @@ namespace MyFilm
                 return;
             }
 
-            int diskCount = SqlData.GetInstance().CountRowsOfDiskFromFilmInfo(
+            int diskCount = SqlData.GetSqlData().CountRowsOfDiskFromFilmInfo(
                 CommonString.RealOrFake4KDiskName);
             if ((diskCount - 1) >= crawlDt.Rows.Count)
             {
                 // 更新时间
                 int affectedCount =
-                    SqlData.GetInstance().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
+                    SqlData.GetSqlData().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
                         rst.crawlTime);
                 Debug.Assert(diskCount == affectedCount);
 
@@ -123,9 +123,9 @@ namespace MyFilm
                 return;
             }
 
-            SqlData.GetInstance().DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
+            SqlData.GetSqlData().DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
 
-            int maxId = SqlData.GetInstance().GetMaxIdOfFilmInfo();
+            int maxId = SqlData.GetSqlData().GetMaxIdOfFilmInfo();
             int startId = maxId + 1;
             int diskId = startId;
 
@@ -175,7 +175,7 @@ namespace MyFilm
                 dt.Rows.Add(dr);
             }
 
-            SqlData.GetInstance().InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
+            SqlData.GetSqlData().InsertDataToFilmInfo(dt);
 
             rst.strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
                 webPageAddress, crawlDt.Rows.Count);

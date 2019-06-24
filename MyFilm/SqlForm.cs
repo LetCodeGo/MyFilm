@@ -37,7 +37,7 @@ namespace MyFilm
                 String errMsg = String.Empty;
                 String outputText = String.Empty;
 
-                DataTable dt = SqlData.GetInstance().SelectAllDataBySqlText(cmdText, ref errMsg);
+                DataTable dt = SqlData.GetSqlData().SelectAllDataBySqlText(cmdText, ref errMsg);
 
                 if (dt == null)
                 {
@@ -142,7 +142,7 @@ namespace MyFilm
             this.richTextBoxInfo.Text = "mysql> desc film_info" + Environment.NewLine;
 
             String descFilmInfo = CommonDataTable.DataTableFormatToString(
-                SqlData.GetInstance().GetDescriptionOfFilmInfo(), null);
+                SqlData.GetSqlData().GetDescriptionOfFilmInfo(), null);
             UpdateRichTextBox(descFilmInfo);
         }
 

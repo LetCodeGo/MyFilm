@@ -1,6 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -9,29 +7,12 @@ using static MyFilm.CommonDataTable;
 
 namespace MyFilm
 {
-    public class SqlData
+    public abstract class SqlData
     {
-        /// <summary>
-        /// 打开数据库
-        /// </summary>
-        private static String SQLOpenCmdText =
-            String.Format(
-            @"server = {0}; uid = {1}; pwd = {2}; database = {3};
-            sslmode = none; convert zero datetime = true; allow zero datetime = true;",
-            CommonString.DbIP, CommonString.DbUserName,
-            CommonString.DbPassword, CommonString.DbName);
-
-        /// <summary>
-        /// 搜索关键字分隔符
-        /// </summary>
-        private static readonly char[] searchKeyWordSplitter =
-            " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·"
-            .ToCharArray();
-
         /// <summary>
         /// 内存中存储数据库文件结构
         /// </summary>
-        private class FileNamePathID
+        protected class FileNamePathID
         {
             // 文件名
             public string FileName;
@@ -61,80 +42,58 @@ namespace MyFilm
         }
 
         /// <summary>
+        /// 搜索关键字分隔符
+        /// </summary>
+        private static readonly char[] searchKeyWordSplitter =
+            " `~!@#$%^&*()-_=+[]{}|\\;:\'\",./<>?《》（），。？；：’“【】、—￥·"
+            .ToCharArray();
+
+        /// <summary>
         /// 在程序打开或修改数据库时加载全部数据库到内存
         /// </summary>
-        private Dictionary<string, List<FileNamePathID>> ramData = null;
-        private bool ramDataCompleted = false;
+        protected Dictionary<string, List<FileNamePathID>> ramData = null;
+        protected bool ramDataCompleted = false;
 
-        private static SqlData sqlData = null;
-        private static readonly object locker = new object();
-
-        private SqlData() { }
-
-        public static SqlData GetInstance()
+        public static SqlData GetSqlData()
         {
-            if (sqlData == null)
-            {
-                lock (locker)
-                {
-                    // 如果类的实例不存在则创建，否则直接返回
-                    if (sqlData == null)
-                    {
-                        sqlData = new SqlData();
-                    }
-                }
-            }
-            return sqlData;
+            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                return SqlDataInMySql.GetInstance();
+            else return SqlDataInSqlite.GetInstance();
         }
+
+        protected abstract int ExecuteNonQueryGetAffected(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null);
+        protected abstract int ExecuteScalarGetNum(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null);
+        protected abstract DataTable ExecuteReaderGetAll(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null);
+        protected abstract int[] ExecuteReaderGetIDs(
+            String cmdText, Dictionary<String, Object> sqlParamDic = null);
+
+        /// <summary>
+        /// 加载数据库到内存
+        /// </summary>
+        public abstract void FillRamData();
+
+        /// <summary>
+        /// 获取待删文件，group by disk
+        /// </summary>
+        /// <param name="diskDescribe"></param>
+        /// <returns></returns>
+        public abstract int[] GetDeleteDataFromFilmInfoGroupByDisk(
+            String diskDescribe = null);
 
         /// <summary>
         /// 查找所有已存在数据库名
         /// </summary>
         /// <returns></returns>
-        public static List<String> QueryAllDataBaseNames()
-        {
-            List<String> nameList = new List<String>();
-
-            using (MySqlConnection sqlCon = new MySqlConnection(
-                String.Format(@"Data Source={0};Persist Security Info=yes;
-                SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand("show databases;", sqlCon))
-                {
-                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlDataReader.Read())
-                            nameList.Add(sqlDataReader[0].ToString());
-                    }
-                }
-                sqlCon.Close();
-            }
-
-            return nameList;
-        }
+        public abstract List<String> QueryAllDataBaseNames();
 
         /// <summary>
         /// 创建数据库
         /// </summary>
         /// <param name="databaseName"></param>
-        public static void CreateDataBase(String databaseName)
-        {
-            using (MySqlConnection sqlCon = new MySqlConnection(
-                String.Format(@"Data Source={0};Persist Security Info=yes;
-                SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(
-                    String.Format("create database {0};", databaseName), sqlCon))
-                {
-                    sqlCmd.ExecuteNonQuery();
-                }
-                sqlCon.Close();
-            }
-        }
+        public abstract void CreateDataBase(String databaseName);
 
         /// <summary>
         /// 创建表
@@ -170,7 +129,7 @@ namespace MyFilm
         /// | disk_desc    | varchar(256)  | NO   | MUL | NULL    |       |
         /// +--------------+---------------+------+-----+---------+-------+
         /// </summary>
-        private void CreateFilmInfoTable()
+        virtual protected void CreateFilmInfoTable()
         {
             String cmdText = String.Format(@"create table if not exists {0} ( ", "film_info");
             cmdText += String.Format(@"{0} integer primary key, ", "id");
@@ -216,7 +175,7 @@ namespace MyFilm
         /// | scan_layer    | int(11)      | NO   |     | NULL    |                |
         /// +---------------+--------------+------+-----+---------+----------------+
         /// </summary>
-        private void CreateDiskInfoTable()
+        virtual protected void CreateDiskInfoTable()
         {
             String cmdText = String.Format(@"create table if not exists {0} ( ", "disk_info");
             cmdText += String.Format(@"{0} integer primary key auto_increment, ", "id");
@@ -240,7 +199,7 @@ namespace MyFilm
         /// | search_time  | datetime     | NO   |     | NULL    |                |
         /// +--------------+--------------+------+-----+---------+----------------+
         /// </summary>
-        private void CreateSearchLogTable()
+        virtual protected void CreateSearchLogTable()
         {
             String cmdText = String.Format(@"create table if not exists {0} ( ", "search_log");
             cmdText += String.Format(@"{0} integer primary key auto_increment, ", "id");
@@ -252,53 +211,6 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// 加载数据库到内存
-        /// </summary>
-        public void FillRamData()
-        {
-            String cmdText = String.Format(
-                "select id, name, path, disk_desc from {0};", "film_info");
-
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        ramData = new Dictionary<string, List<FileNamePathID>>();
-                        int rowCount = 0;
-
-                        while (sqlDataReader.Read())
-                        {
-                            rowCount++;
-                            string strDiskDesc = sqlDataReader[3].ToString();
-
-                            if (ramData.ContainsKey(strDiskDesc))
-                                ramData[strDiskDesc].Add(new FileNamePathID(
-                                    sqlDataReader[1].ToString().ToLower(),
-                                    sqlDataReader[2].ToString().ToLower(),
-                                    Convert.ToInt32(sqlDataReader[0])));
-                            else
-                            {
-                                List<FileNamePathID> fnpiList = new List<FileNamePathID>();
-                                fnpiList.Add(new FileNamePathID(
-                                    sqlDataReader[1].ToString().ToLower(),
-                                    sqlDataReader[2].ToString().ToLower(),
-                                    Convert.ToInt32(sqlDataReader[0])));
-                                ramData.Add(strDiskDesc, fnpiList);
-                            }
-                        }
-
-                        Log.Information("Load all mysql data to ram, [{A}] rows", rowCount);
-                        ramDataCompleted = true;
-                    }
-                }
-                sqlCon.Close();
-            }
-        }
-
-        /// <summary>
         /// 更新 CommonString.RealOrFake4KDiskName 数据库修改时间
         /// </summary>
         /// <param name="dateTime"></param>
@@ -306,8 +218,7 @@ namespace MyFilm
         public int UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
             DateTime dateTime)
         {
-            String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format(
+            String cmdText = String.Format(
                 "update {0} set modify_t = @modify_t where disk_desc = @disk_desc;",
                 "film_info");
 
@@ -318,13 +229,24 @@ namespace MyFilm
             return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
+        virtual public void InsertDataToFilmInfo(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i += 500)
+                {
+                    InsertDataToFilmInfo(dt, i, 500);
+                }
+            }
+        }
+
         /// <summary>
         /// 向film_info数据库插入数据，注意dt的列为FillFilmInfoColumn生成
         /// </summary>
         /// <param name="dt">插入的数据</param>
         /// <param name="start">起始，从0开始</param>
         /// <param name="count">个数</param>
-        public void InsertDataToFilmInfo(DataTable dt, int start, int count)
+        protected void InsertDataToFilmInfo(DataTable dt, int start, int count)
         {
             String cmdText = String.Format(
                 @"insert into {0} (
@@ -390,7 +312,7 @@ namespace MyFilm
         /// <param name="totalSize">总大小</param>
         /// <param name="completeScan">完全扫描</param>
         /// <param name="scanLayer">扫描的层数</param>
-        public void InsertOrUpdateDataToDiskInfo(
+        virtual public void InsertOrUpdateDataToDiskInfo(
             String diskDescribe, Int64 freeSpace, Int64 totalSize,
             Boolean completeScan, int scanLayer)
         {
@@ -438,7 +360,7 @@ namespace MyFilm
         /// </summary>
         /// <param name="idList">id列表</param>
         /// <returns></returns>
-        public DataTable SelectDataByIDList(int[] idList)
+        virtual public DataTable SelectDataByIDList(int[] idList)
         {
             if (idList == null || idList.Length == 0) return null;
 
@@ -726,43 +648,6 @@ namespace MyFilm
             }
 
             return ExecuteReaderGetIDs(cmdText, sqlParamDic);
-        }
-
-        public int[] GetDeleteDataFromFilmInfoGroupByDisk(String diskDescribe = null)
-        {
-            String cmdText = String.Format(
-                @"select group_concat(id order by id), count(id) as id_count from {0} where 
-                to_delete = 1 {1} group by disk_desc order by id_count desc;",
-                "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
-
-            int[] ids = null;
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    if (diskDescribe != null)
-                    {
-                        sqlCmd.Parameters.AddWithValue("@disk_desc", diskDescribe);
-                    }
-
-                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        String strTemp = String.Empty;
-                        while (sqlDataReader.Read())
-                        {
-                            strTemp += ("," + sqlDataReader[0].ToString());
-                        }
-                        List<String> strIdList = strTemp.Split(
-                            new char[] { ',' },
-                            StringSplitOptions.RemoveEmptyEntries).ToList();
-                        ids = strIdList.ConvertAll(x => Convert.ToInt32(x)).ToArray();
-                    }
-                }
-                sqlCon.Close();
-            }
-
-            return ids;
         }
 
         public void UpdateWatchOrDeleteStateFromFilmInfo(bool isWatch,
@@ -1054,8 +939,7 @@ namespace MyFilm
         /// <returns></returns>
         public int DeleteByDiskDescribeFromFilmInfo(String diskDescribe)
         {
-            String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("delete from {0} where disk_desc = @disk_desc;",
+            String cmdText = String.Format("delete from {0} where disk_desc = @disk_desc;",
                 "film_info");
 
             Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
@@ -1071,8 +955,7 @@ namespace MyFilm
         /// <returns></returns>
         public int DeleteByDiskDescribeFromDiskInfo(String diskDescribe)
         {
-            String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format("delete from {0} where disk_desc = @disk_desc;",
+            String cmdText = String.Format("delete from {0} where disk_desc = @disk_desc;",
                 "disk_info");
 
             Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
@@ -1090,8 +973,7 @@ namespace MyFilm
         public int UpdateDiskDescribeFromFilmInfo(
             String fromDiskDescribe, String toDiskDescribe)
         {
-            String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format(
+            String cmdText = String.Format(
                 "update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
                 "film_info");
 
@@ -1111,8 +993,7 @@ namespace MyFilm
         public int UpdateDiskDescribeFromDiskInfo(
             String fromDiskDescribe, String toDiskDescribe)
         {
-            String cmdText = "set sql_safe_updates = 0;";
-            cmdText += String.Format(
+            String cmdText = String.Format(
                 "update {0} set disk_desc = @t_disk_desc where disk_desc = @f_disk_desc;",
                 "disk_info");
 
@@ -1184,133 +1065,6 @@ namespace MyFilm
             String cmdText = String.Format("select count(*) from {0};", "search_log");
 
             return ExecuteScalarGetNum(cmdText, null);
-        }
-
-        private int ExecuteNonQueryGetAffected(
-            String cmdText, Dictionary<String, Object> sqlParamDic = null)
-        {
-            int affected = 0;
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    if (sqlParamDic != null)
-                    {
-                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
-                        {
-                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
-                        }
-                    }
-                    affected = sqlCmd.ExecuteNonQuery();
-                }
-                sqlCon.Close();
-            }
-
-            return affected;
-        }
-
-        private int ExecuteScalarGetNum(
-            String cmdText, Dictionary<String, Object> sqlParamDic = null)
-        {
-            int num = 0;
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    if (sqlParamDic != null)
-                    {
-                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
-                        {
-                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
-                        }
-                    }
-                    object obj = sqlCmd.ExecuteScalar();
-                    if (obj != System.DBNull.Value) num = Convert.ToInt32(obj);
-                }
-                sqlCon.Close();
-            }
-
-            return num;
-        }
-
-        private DataTable ExecuteReaderGetAll(
-            String cmdText, Dictionary<String, Object> sqlParamDic = null)
-        {
-            DataTable dt = null;
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    if (sqlParamDic != null)
-                    {
-                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
-                        {
-                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
-                        }
-                    }
-
-                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        dt = new DataTable();
-                        for (int i = 0; i < sqlDataReader.FieldCount; i++)
-                        {
-                            dt.Columns.Add(sqlDataReader.GetName(i),
-                                sqlDataReader.GetFieldType(i) ==
-                                typeof(MySql.Data.Types.MySqlDateTime) ?
-                                typeof(DateTime) : sqlDataReader.GetFieldType(i));
-                        }
-
-                        while (sqlDataReader.Read())
-                        {
-                            DataRow dr = dt.NewRow();
-                            for (int i = 0; i < dt.Columns.Count; i++)
-                            {
-                                dr[i] = sqlDataReader[i];
-                            }
-                            dt.Rows.Add(dr);
-                        }
-                    }
-                }
-                sqlCon.Close();
-            }
-
-            return dt;
-        }
-
-        private int[] ExecuteReaderGetIDs(
-            String cmdText, Dictionary<String, Object> sqlParamDic = null)
-        {
-            int[] ids = null;
-            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
-                {
-                    if (sqlParamDic != null)
-                    {
-                        foreach (KeyValuePair<String, Object> kv in sqlParamDic)
-                        {
-                            sqlCmd.Parameters.AddWithValue(kv.Key, kv.Value);
-                        }
-                    }
-
-                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        List<int> idList = new List<int>();
-                        while (sqlDataReader.Read())
-                        {
-                            idList.Add(Convert.ToInt32(sqlDataReader[0]));
-                        }
-                        ids = idList.ToArray();
-                    }
-                }
-                sqlCon.Close();
-            }
-
-            return ids;
         }
     }
 }

@@ -9,6 +9,19 @@ namespace MyFilm
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
                 Environment.SpecialFolderOption.Create), "MyFilm");
 
+        public static LoginConfig.DataBaseType DataBaseType =
+            LoginConfig.DataBaseType.MYSQL;
+        /// <summary>
+        /// 登陆配置文件路径
+        /// </summary>
+        public static String LoginConfigPath = Path.Combine(
+            CommonString.AppDataFolder, "myfilm.xml");
+        /// <summary>
+        /// sqlite 数据库文件路径
+        /// </summary>
+        public static String SqliteDateBasePath = Path.Combine(
+            CommonString.AppDataFolder, "myfilm_sqlite.db");
+
         public static String DbIP = "127.0.0.1";
         public static String DbUserName = string.Empty;
         public static String DbPassword = string.Empty;

@@ -105,7 +105,7 @@ namespace MyFilm
             actualMaxScanLayer = 0;
             bCompleteScan = true;
 
-            int maxId = SqlData.GetInstance().GetMaxIdOfFilmInfo();
+            int maxId = SqlData.GetSqlData().GetMaxIdOfFilmInfo();
             int startId = maxId + 1;
             startIdGlobal = startId;
             diskScanIndex = 1;
@@ -168,17 +168,10 @@ namespace MyFilm
                     dt.Rows[kv.Key]["size"] = kv.Value;
             }
 
-            //InsertDataToFilmInfo(dt, 0, dt.Rows.Count);
-            int maxInsertRows = 1000;
-            int insertTimes = dt.Rows.Count / maxInsertRows;
-            if (dt.Rows.Count % maxInsertRows != 0) insertTimes += 1;
-            for (int i = 0; i < insertTimes; i++)
-            {
-                SqlData.GetInstance().InsertDataToFilmInfo(dt, i * maxInsertRows, maxInsertRows);
-            }
+            SqlData.GetSqlData().InsertDataToFilmInfo(dt);
 
             // 更新磁盘信息
-            SqlData.GetInstance().InsertOrUpdateDataToDiskInfo(
+            SqlData.GetSqlData().InsertOrUpdateDataToDiskInfo(
                 diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize,
                 bCompleteScan, bCompleteScan ? actualMaxScanLayer : setMaxScanLayer);
 
