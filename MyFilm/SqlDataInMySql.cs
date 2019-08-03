@@ -255,7 +255,8 @@ namespace MyFilm
             String diskDescribe = null)
         {
             String cmdText = String.Format(
-                @"select group_concat(id order by id), count(id) as id_count from {0} where 
+                @"select group_concat(id order by s_d_t desc, id asc), 
+                count(id) as id_count from {0} where 
                 to_delete = 1 {1} group by disk_desc order by id_count desc;",
                 "film_info", diskDescribe == null ? "" : "and disk_desc = @disk_desc");
 

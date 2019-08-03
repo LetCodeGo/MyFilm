@@ -28,18 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.comboBoxDataBase = new System.Windows.Forms.ComboBox();
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.tabControl = new MyFilm.TableControlEx();
+            this.tabPageMySQL = new System.Windows.Forms.TabPage();
+            this.labelIP = new System.Windows.Forms.Label();
+            this.textBoxPwd = new System.Windows.Forms.TextBox();
+            this.comboBoxDataBase = new System.Windows.Forms.ComboBox();
+            this.comboBoxIP = new System.Windows.Forms.ComboBox();
             this.labelDataBase = new System.Windows.Forms.Label();
             this.labelPwd = new System.Windows.Forms.Label();
             this.comboBoxUser = new System.Windows.Forms.ComboBox();
             this.labelUser = new System.Windows.Forms.Label();
-            this.comboBoxIP = new System.Windows.Forms.ComboBox();
-            this.labelIP = new System.Windows.Forms.Label();
-            this.textBoxPwd = new System.Windows.Forms.TextBox();
-            this.tabControl = new System.Windows.Forms.TabControl();
-            this.tabPageMySQL = new System.Windows.Forms.TabPage();
             this.tabPageSQLite = new System.Windows.Forms.TabPage();
             this.btnSelectSQLiteDataBase = new System.Windows.Forms.Button();
             this.cbSQLiteDataBase = new System.Windows.Forms.ComboBox();
@@ -47,14 +47,6 @@
             this.tabPageMySQL.SuspendLayout();
             this.tabPageSQLite.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // comboBoxDataBase
-            // 
-            this.comboBoxDataBase.FormattingEnabled = true;
-            this.comboBoxDataBase.Location = new System.Drawing.Point(181, 121);
-            this.comboBoxDataBase.Name = "comboBoxDataBase";
-            this.comboBoxDataBase.Size = new System.Drawing.Size(158, 20);
-            this.comboBoxDataBase.TabIndex = 0;
             // 
             // btnConnect
             // 
@@ -76,73 +68,17 @@
             this.btnCancel.Text = "取消";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // labelDataBase
-            // 
-            this.labelDataBase.AutoSize = true;
-            this.labelDataBase.Location = new System.Drawing.Point(129, 125);
-            this.labelDataBase.Name = "labelDataBase";
-            this.labelDataBase.Size = new System.Drawing.Size(41, 12);
-            this.labelDataBase.TabIndex = 3;
-            this.labelDataBase.Text = "数据库";
-            // 
-            // labelPwd
-            // 
-            this.labelPwd.AutoSize = true;
-            this.labelPwd.Location = new System.Drawing.Point(129, 92);
-            this.labelPwd.Name = "labelPwd";
-            this.labelPwd.Size = new System.Drawing.Size(41, 12);
-            this.labelPwd.TabIndex = 5;
-            this.labelPwd.Text = "密  码";
-            // 
-            // comboBoxUser
-            // 
-            this.comboBoxUser.Location = new System.Drawing.Point(181, 54);
-            this.comboBoxUser.Name = "comboBoxUser";
-            this.comboBoxUser.Size = new System.Drawing.Size(158, 20);
-            this.comboBoxUser.TabIndex = 8;
-            this.comboBoxUser.SelectedIndexChanged += new System.EventHandler(this.comboBoxUser_SelectedIndexChanged);
-            // 
-            // labelUser
-            // 
-            this.labelUser.AutoSize = true;
-            this.labelUser.Location = new System.Drawing.Point(129, 59);
-            this.labelUser.Name = "labelUser";
-            this.labelUser.Size = new System.Drawing.Size(41, 12);
-            this.labelUser.TabIndex = 7;
-            this.labelUser.Text = "用  户";
-            // 
-            // comboBoxIP
-            // 
-            this.comboBoxIP.Location = new System.Drawing.Point(181, 21);
-            this.comboBoxIP.Name = "comboBoxIP";
-            this.comboBoxIP.Size = new System.Drawing.Size(158, 20);
-            this.comboBoxIP.TabIndex = 10;
-            // 
-            // labelIP
-            // 
-            this.labelIP.AutoSize = true;
-            this.labelIP.Location = new System.Drawing.Point(129, 26);
-            this.labelIP.Name = "labelIP";
-            this.labelIP.Size = new System.Drawing.Size(41, 12);
-            this.labelIP.TabIndex = 9;
-            this.labelIP.Text = "IP地址";
-            // 
-            // textBoxPwd
-            // 
-            this.textBoxPwd.Location = new System.Drawing.Point(181, 87);
-            this.textBoxPwd.Name = "textBoxPwd";
-            this.textBoxPwd.PasswordChar = '*';
-            this.textBoxPwd.Size = new System.Drawing.Size(158, 21);
-            this.textBoxPwd.TabIndex = 11;
-            // 
             // tabControl
             // 
+            this.tabControl.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.tabControl.Controls.Add(this.tabPageMySQL);
             this.tabControl.Controls.Add(this.tabPageSQLite);
+            this.tabControl.ItemSize = new System.Drawing.Size(65, 25);
             this.tabControl.Location = new System.Drawing.Point(12, 32);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(460, 186);
+            this.tabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl.TabIndex = 12;
             // 
             // tabPageMySQL
@@ -155,29 +91,96 @@
             this.tabPageMySQL.Controls.Add(this.labelPwd);
             this.tabPageMySQL.Controls.Add(this.comboBoxUser);
             this.tabPageMySQL.Controls.Add(this.labelUser);
-            this.tabPageMySQL.Location = new System.Drawing.Point(4, 22);
+            this.tabPageMySQL.Location = new System.Drawing.Point(4, 29);
             this.tabPageMySQL.Name = "tabPageMySQL";
             this.tabPageMySQL.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageMySQL.Size = new System.Drawing.Size(452, 160);
+            this.tabPageMySQL.Size = new System.Drawing.Size(452, 153);
             this.tabPageMySQL.TabIndex = 0;
             this.tabPageMySQL.Text = "MySQL";
             this.tabPageMySQL.UseVisualStyleBackColor = true;
+            // 
+            // labelIP
+            // 
+            this.labelIP.AutoSize = true;
+            this.labelIP.Location = new System.Drawing.Point(129, 22);
+            this.labelIP.Name = "labelIP";
+            this.labelIP.Size = new System.Drawing.Size(41, 12);
+            this.labelIP.TabIndex = 9;
+            this.labelIP.Text = "IP地址";
+            // 
+            // textBoxPwd
+            // 
+            this.textBoxPwd.Location = new System.Drawing.Point(181, 83);
+            this.textBoxPwd.Name = "textBoxPwd";
+            this.textBoxPwd.PasswordChar = '*';
+            this.textBoxPwd.Size = new System.Drawing.Size(158, 21);
+            this.textBoxPwd.TabIndex = 11;
+            // 
+            // comboBoxDataBase
+            // 
+            this.comboBoxDataBase.FormattingEnabled = true;
+            this.comboBoxDataBase.Location = new System.Drawing.Point(181, 117);
+            this.comboBoxDataBase.Name = "comboBoxDataBase";
+            this.comboBoxDataBase.Size = new System.Drawing.Size(158, 20);
+            this.comboBoxDataBase.TabIndex = 0;
+            // 
+            // comboBoxIP
+            // 
+            this.comboBoxIP.Location = new System.Drawing.Point(181, 17);
+            this.comboBoxIP.Name = "comboBoxIP";
+            this.comboBoxIP.Size = new System.Drawing.Size(158, 20);
+            this.comboBoxIP.TabIndex = 10;
+            // 
+            // labelDataBase
+            // 
+            this.labelDataBase.AutoSize = true;
+            this.labelDataBase.Location = new System.Drawing.Point(129, 121);
+            this.labelDataBase.Name = "labelDataBase";
+            this.labelDataBase.Size = new System.Drawing.Size(41, 12);
+            this.labelDataBase.TabIndex = 3;
+            this.labelDataBase.Text = "数据库";
+            // 
+            // labelPwd
+            // 
+            this.labelPwd.AutoSize = true;
+            this.labelPwd.Location = new System.Drawing.Point(129, 88);
+            this.labelPwd.Name = "labelPwd";
+            this.labelPwd.Size = new System.Drawing.Size(41, 12);
+            this.labelPwd.TabIndex = 5;
+            this.labelPwd.Text = "密  码";
+            // 
+            // comboBoxUser
+            // 
+            this.comboBoxUser.Location = new System.Drawing.Point(181, 50);
+            this.comboBoxUser.Name = "comboBoxUser";
+            this.comboBoxUser.Size = new System.Drawing.Size(158, 20);
+            this.comboBoxUser.TabIndex = 8;
+            this.comboBoxUser.SelectedIndexChanged += new System.EventHandler(this.comboBoxUser_SelectedIndexChanged);
+            // 
+            // labelUser
+            // 
+            this.labelUser.AutoSize = true;
+            this.labelUser.Location = new System.Drawing.Point(129, 55);
+            this.labelUser.Name = "labelUser";
+            this.labelUser.Size = new System.Drawing.Size(41, 12);
+            this.labelUser.TabIndex = 7;
+            this.labelUser.Text = "用  户";
             // 
             // tabPageSQLite
             // 
             this.tabPageSQLite.Controls.Add(this.btnSelectSQLiteDataBase);
             this.tabPageSQLite.Controls.Add(this.cbSQLiteDataBase);
-            this.tabPageSQLite.Location = new System.Drawing.Point(4, 22);
+            this.tabPageSQLite.Location = new System.Drawing.Point(4, 29);
             this.tabPageSQLite.Name = "tabPageSQLite";
             this.tabPageSQLite.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSQLite.Size = new System.Drawing.Size(452, 160);
+            this.tabPageSQLite.Size = new System.Drawing.Size(452, 153);
             this.tabPageSQLite.TabIndex = 1;
             this.tabPageSQLite.Text = "SQLite";
             this.tabPageSQLite.UseVisualStyleBackColor = true;
             // 
             // btnSelectSQLiteDataBase
             // 
-            this.btnSelectSQLiteDataBase.Location = new System.Drawing.Point(6, 91);
+            this.btnSelectSQLiteDataBase.Location = new System.Drawing.Point(6, 87);
             this.btnSelectSQLiteDataBase.Name = "btnSelectSQLiteDataBase";
             this.btnSelectSQLiteDataBase.Size = new System.Drawing.Size(440, 23);
             this.btnSelectSQLiteDataBase.TabIndex = 2;
@@ -187,7 +190,7 @@
             // 
             // cbSQLiteDataBase
             // 
-            this.cbSQLiteDataBase.Location = new System.Drawing.Point(6, 55);
+            this.cbSQLiteDataBase.Location = new System.Drawing.Point(6, 51);
             this.cbSQLiteDataBase.Name = "cbSQLiteDataBase";
             this.cbSQLiteDataBase.Size = new System.Drawing.Size(440, 20);
             this.cbSQLiteDataBase.TabIndex = 1;
@@ -228,10 +231,10 @@
         private System.Windows.Forms.ComboBox comboBoxIP;
         private System.Windows.Forms.Label labelIP;
         private System.Windows.Forms.TextBox textBoxPwd;
-        private System.Windows.Forms.TabControl tabControl;
         private System.Windows.Forms.TabPage tabPageMySQL;
         private System.Windows.Forms.TabPage tabPageSQLite;
         private System.Windows.Forms.Button btnSelectSQLiteDataBase;
         private System.Windows.Forms.ComboBox cbSQLiteDataBase;
+        private TableControlEx tabControl;
     }
 }

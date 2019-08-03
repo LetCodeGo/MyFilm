@@ -132,6 +132,9 @@
     <Compile Include="SqlForm.Designer.cs">
       <DependentUpon>SqlForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TableControlEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TextBoxEx.cs">
       <SubType>Component</SubType>
     </Compile>

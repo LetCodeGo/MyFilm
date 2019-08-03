@@ -13,8 +13,7 @@ namespace MyFilm
         /// 打开数据库
         /// </summary>
         private static String SQLOpenCmdText =
-            String.Format("data source = {0};",
-            CommonString.SqliteDateBasePath);
+            String.Format("data source = {0};", CommonString.SqliteDateBasePath);
 
         private static SqlDataInSqlite sqliteData = null;
         private static readonly object locker = new object();
@@ -166,7 +165,37 @@ namespace MyFilm
                 "select * from {0} where id in ({1});",
                 "film_info", String.Join(",", idList));
 
-            return ExecuteReaderGetAll(cmdText, null);
+            DataTable dt = ExecuteReaderGetAll(cmdText, null);
+
+            if ((!Helper.IsArrayAscended(idList)) && dt != null)
+            {
+                DataTable rdt = dt.Clone();
+                Dictionary<int, DataRow> dic = new Dictionary<int, DataRow>();
+                // id列
+                int idIndex = 0;
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    if (dt.Columns[i].ColumnName == "id")
+                    {
+                        idIndex = i;
+                        break;
+                    }
+                }
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    dic.Add(Convert.ToInt32(dr[idIndex]), dr);
+                }
+
+                foreach (int id in idList)
+                {
+                    rdt.Rows.Add(dic[id].ItemArray);
+                }
+
+                return rdt;
+            }
+
+            return dt;
         }
 
         /// <summary>

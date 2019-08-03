@@ -93,6 +93,20 @@ namespace MyFilm
         }
 
         /// <summary>
+        /// 判断数组是否为升序排列
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
+        public static bool IsArrayAscended(int[] a)
+        {
+            for (int i = 0; i < a.Length - 1; i++)
+            {
+                if (a[i] > a[i + 1]) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 加密
         /// </summary>
         /// <param name="expressText"></param>

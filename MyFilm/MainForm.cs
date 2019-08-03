@@ -56,6 +56,11 @@ namespace MyFilm
         private ActionType actionType = ActionType.ACTION_DISK_ROOT;
 
         /// <summary>
+        /// 系统托盘点击退出
+        /// </summary>
+        private bool notifyIconExitFlag = false;
+
+        /// <summary>
         /// 此变量用来保存当进入文件夹时，此文件夹的 id
         /// 如果此文件夹为空，进入文件夹后就没法获得此文件夹的 id
         /// </summary>
@@ -99,15 +104,39 @@ namespace MyFilm
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            CommonString.MainFormTitle = String.Format("{0}@{1} [MyFilm v{2}]",
-                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+            {
+                CommonString.MainFormTitle = String.Format("{0}@{1} [MyFilm v{2}][MySQL]",
+                    CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            }
+            else if (CommonString.DataBaseType == LoginConfig.DataBaseType.SQLITE)
+            {
+                CommonString.MainFormTitle = String.Format("{0} [MyFilm v{1}][SQLite]",
+                    CommonString.SqliteDateBasePath, Application.ProductVersion);
+            }
 
             this.Text = CommonString.MainFormTitle;
             this.tbePageRowCount.Text = this.pageRowCount.ToString();
             this.Icon = Properties.Resources.Film;
             this.notifyIcon.Icon = Properties.Resources.Film;
             this.notifyIcon.Visible = false;
-            this.notifyIcon.Text = CommonString.MainFormTitle;
+            if (CommonString.MainFormTitle.Length < 64)
+            {
+                this.notifyIcon.Text = CommonString.MainFormTitle;
+            }
+            else
+            {
+                if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                {
+                    this.notifyIcon.Text = String.Format("[MyFilm v{0}][MySQL]",
+                        Application.ProductVersion);
+                }
+                else if (CommonString.DataBaseType == LoginConfig.DataBaseType.SQLITE)
+                {
+                    this.notifyIcon.Text = String.Format("[MyFilm v{0}][SQLite]",
+                        Application.ProductVersion);
+                }
+            }
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
             // 删除NFO文件夹中所有的nfo文件
@@ -146,10 +175,30 @@ namespace MyFilm
             }
         }
 
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            ProcessSendData.exitCall = true;
-            ProcessSendData.SendData("quit");
+            // 通知栏右键退出
+            if (notifyIconExitFlag)
+            {
+                ProcessSendData.exitCall = true;
+                ProcessSendData.SendData("quit");
+            }
+            else
+            {
+                switch (e.CloseReason)
+                {
+                    case CloseReason.UserClosing:
+                        e.Cancel = true;
+                        this.WindowState = FormWindowState.Minimized;
+                        this.ShowInTaskbar = false;
+                        this.notifyIcon.Visible = true;
+                        break;
+                    default:
+                        ProcessSendData.exitCall = true;
+                        ProcessSendData.SendData("quit");
+                        break;
+                }
+            }
         }
 
         private void SetGridView()
@@ -1166,6 +1215,7 @@ namespace MyFilm
 
         private void toolStripMenuItemExitWindow_Click(object sender, EventArgs e)
         {
+            notifyIconExitFlag = true;
             this.Close();
         }
 

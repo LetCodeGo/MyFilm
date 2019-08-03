@@ -364,9 +364,13 @@ namespace MyFilm
         {
             if (idList == null || idList.Length == 0) return null;
 
+            bool isIDListAscended = Helper.IsArrayAscended(idList);
+            string strIDs = String.Join(",", idList);
+
             String cmdText = String.Format(
-                "select * from {0} where id in ({1}) order by field(id, {1});",
-                "film_info", String.Join(",", idList));
+                "select * from {0} where id in ({1}){2};",
+                "film_info", strIDs,
+                isIDListAscended ? "" : String.Format(" order by field(id, {0})", strIDs));
 
             return ExecuteReaderGetAll(cmdText, null);
         }
