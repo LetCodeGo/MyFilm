@@ -61,6 +61,26 @@ namespace MyFilm.Properties {
         }
         
         /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap chara {
+            get {
+                object obj = ResourceManager.GetObject("chara", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap file {
+            get {
+                object obj = ResourceManager.GetObject("file", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   查找类似于 (图标) 的 System.Drawing.Icon 类型的本地化资源。
         /// </summary>
         public static System.Drawing.Icon Film {
@@ -73,9 +93,106 @@ namespace MyFilm.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
+        public static System.Drawing.Bitmap folder {
+            get {
+                object obj = ResourceManager.GetObject("folder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 * {
+        ///    padding: 0px;
+        ///    margin: 0px;
+        ///}
+        ///
+        ///body {
+        ///    padding: 4px;
+        ///}
+        ///
+        ///body, td, div {
+        ///    font-family: Arial, sans-serif;
+        ///    font-size: 12px;
+        ///}
+        ///
+        ///td, tr, img {
+        ///    border-width: 0px;
+        ///    vertical-align: middle;
+        ///}
+        ///
+        ///a {
+        ///    text-decoration: none;
+        ///}
+        ///
+        ///.indexof {
+        ///    text-align: left;
+        ///    font-weight: bold;
+        ///    font-size: 125%;
+        ///    margin-top: 32px;
+        ///}
+        ///
+        ///.numresults {
+        ///    text-align: left;
+        ///    font-weight: bold;
+        ///    font-size: 125%;
+        ///    margin-top: 24px;
+        ///}
+        ///
+        ///.updir {
+        ///    text-a [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        /// </summary>
+        public static string main_css {
+            get {
+                return ResourceManager.GetString("main_css", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap myfilm {
+            get {
+                object obj = ResourceManager.GetObject("myfilm", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap up {
+            get {
+                object obj = ResourceManager.GetObject("up", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap updir {
+            get {
+                object obj = ResourceManager.GetObject("updir", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
         public static System.Drawing.Bitmap waiting {
             get {
                 object obj = ResourceManager.GetObject("waiting", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        public static System.Drawing.Bitmap warn {
+            get {
+                object obj = ResourceManager.GetObject("warn", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

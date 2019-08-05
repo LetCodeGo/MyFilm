@@ -54,6 +54,11 @@ namespace MyFilm
         protected Dictionary<string, List<FileNamePathID>> ramData = null;
         protected bool ramDataCompleted = false;
 
+        /// <summary>
+        /// 磁盘根目录表
+        /// </summary>
+        public DataTable DiskRootDataTable { get; private set; }
+
         public static SqlData GetSqlData()
         {
             if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
@@ -1069,6 +1074,33 @@ namespace MyFilm
             String cmdText = String.Format("select count(*) from {0};", "search_log");
 
             return ExecuteScalarGetNum(cmdText, null);
+        }
+
+        public void SetDiskRootDirectoryInfo()
+        {
+            DataTable dt1 = GetAllRootDirectoryFromFilmInfo();
+            DataTable dt2 = GetAllDataFromDiskInfo();
+            Debug.Assert(dt1.Rows.Count == dt2.Rows.Count || dt1.Rows.Count == dt2.Rows.Count + 1);
+
+            DiskRootDataTable = CommonDataTable.ConvertFilmInfoToGrid(dt1);
+
+            for (int i = 0; i < DiskRootDataTable.Rows.Count; i++)
+            {
+                String diskDescribe = DiskRootDataTable.Rows[i]["disk_desc"].ToString();
+                if (diskDescribe == CommonString.RealOrFake4KDiskName) continue;
+
+                for (int j = 0; j < dt2.Rows.Count; j++)
+                {
+                    if (diskDescribe.Equals(dt2.Rows[j]["disk_desc"]))
+                    {
+                        long freeSpace = Convert.ToInt64(dt2.Rows[j]["free_space"]);
+                        long totalSize = Convert.ToInt64(dt2.Rows[j]["total_size"]);
+                        DiskRootDataTable.Rows[i]["size"] = String.Format("{0} / {1}",
+                            Helper.GetSizeString(freeSpace), Helper.GetSizeString(totalSize));
+                        break;
+                    }
+                }
+            }
         }
     }
 }

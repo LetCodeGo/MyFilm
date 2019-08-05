@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -104,6 +106,24 @@ namespace MyFilm
                 if (a[i] > a[i + 1]) return false;
             }
             return true;
+        }
+
+        public static byte[] IconToBytes(Icon icon)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                icon.Save(ms);
+                return ms.ToArray();
+            }
+        }
+
+        public static byte[] ImageToBytes(Image img, ImageFormat imageFormat)
+        {
+            using (var stream = new MemoryStream())
+            {
+                img.Save(stream, imageFormat);
+                return stream.ToArray();
+            }
         }
 
         /// <summary>

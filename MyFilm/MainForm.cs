@@ -72,11 +72,6 @@ namespace MyFilm
         private int[] idList = null;
 
         /// <summary>
-        /// 磁盘根目录表
-        /// </summary>
-        private DataTable diskRootDataTable = null;
-
-        /// <summary>
         /// 显示的查询信息
         /// </summary>
         private String queryInfo = String.Empty;
@@ -96,6 +91,11 @@ namespace MyFilm
         /// </summary>
         private Action<DataTable> UpdateSqlFormRichTextBoxActionByDataTable = null;
         private Action<String> UpdateSqlFormRichTextBoxActionByString = null;
+
+        /// <summary>
+        /// 网页服务器
+        /// </summary>
+        WebServer webServer = null;
 
         public MainForm()
         {
@@ -149,12 +149,15 @@ namespace MyFilm
 
             // 开启线程，接收从另一进程发送的数据
             ProcessReceiveData.ShowSearchResultAction = this.ShowSearchResult;
-            Thread thread = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
-            thread.Start(this.Handle);
+            Thread t1 = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
+            t1.Start(this.Handle);
+
+            Thread t2 = new Thread(new ThreadStart(StartWebServer));
+            t2.Start();
 
             // 获取根目录数据源
-            diskRootDataTable = GetDiskRootDirectoryInfo();
-            totalRowCount = diskRootDataTable.Rows.Count;
+            SqlData.GetSqlData().SetDiskRootDirectoryInfo();
+            totalRowCount = SqlData.GetSqlData().DiskRootDataTable.Rows.Count;
 
             InitPageCombox();
             InitDiskCombox();
@@ -175,11 +178,19 @@ namespace MyFilm
             }
         }
 
+        private void StartWebServer()
+        {
+            webServer = new WebServer("0.0.0.0", 5555);
+            webServer.SetRoot(AppDomain.CurrentDomain.BaseDirectory);
+            webServer.Start();
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             // 通知栏右键退出
             if (notifyIconExitFlag)
             {
+                webServer.Stop();
                 ProcessSendData.exitCall = true;
                 ProcessSendData.SendData("quit");
             }
@@ -194,6 +205,7 @@ namespace MyFilm
                         this.notifyIcon.Visible = true;
                         break;
                     default:
+                        webServer.Stop();
                         ProcessSendData.exitCall = true;
                         ProcessSendData.SendData("quit");
                         break;
@@ -277,6 +289,8 @@ namespace MyFilm
         /// </summary>
         private void InitDiskCombox()
         {
+            DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
+
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
             this.comboBoxDisk.Items.Add(string.Format("全部（共 {0} 磁盘）", totalRowCount));
@@ -367,6 +381,7 @@ namespace MyFilm
                 totalRowCount, currentPageIndex + 1, totalPageCount);
 
             SetPageComboxIndex();
+            DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
 
             if (actionType == ActionType.ACTION_DISK_ROOT)
             {
@@ -622,9 +637,9 @@ namespace MyFilm
             queryInfo = "索引 根目录";
             actionType = ActionType.ACTION_DISK_ROOT;
 
-            diskRootDataTable = GetDiskRootDirectoryInfo();
+            SqlData.GetSqlData().SetDiskRootDirectoryInfo();
 
-            totalRowCount = diskRootDataTable.Rows.Count;
+            totalRowCount = SqlData.GetSqlData().DiskRootDataTable.Rows.Count;
 
             InitPageCombox();
             InitDiskCombox();
@@ -693,33 +708,6 @@ namespace MyFilm
                     this.dataGridView.CurrentCell = this.dataGridView.Rows[selectRow].Cells[0];
                 }
             }
-        }
-
-        private DataTable GetDiskRootDirectoryInfo()
-        {
-            DataTable dt1 = SqlData.GetSqlData().GetAllRootDirectoryFromFilmInfo();
-            DataTable dt2 = SqlData.GetSqlData().GetAllDataFromDiskInfo();
-            Debug.Assert(dt1.Rows.Count == dt2.Rows.Count || dt1.Rows.Count == dt2.Rows.Count + 1);
-
-            DataTable dt = CommonDataTable.ConvertFilmInfoToGrid(dt1);
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                String diskDescribe = dt.Rows[i]["disk_desc"].ToString();
-                if (diskDescribe == CommonString.RealOrFake4KDiskName) continue;
-
-                for (int j = 0; j < dt2.Rows.Count; j++)
-                {
-                    if (diskDescribe.Equals(dt2.Rows[j]["disk_desc"]))
-                    {
-                        long freeSpace = Convert.ToInt64(dt2.Rows[j]["free_space"]);
-                        long totalSize = Convert.ToInt64(dt2.Rows[j]["total_size"]);
-                        dt.Rows[i]["size"] = String.Format("{0} / {1}",
-                            Helper.GetSizeString(freeSpace), Helper.GetSizeString(totalSize));
-                        break;
-                    }
-                }
-            }
-            return dt;
         }
 
         private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
