@@ -442,6 +442,88 @@ namespace MyFilm
             }
         }
 
+        public int[] SearchKeyWordFromFilmInfo(
+            String keyWord, ref int total, int offset, int limit,
+            String diskDescribe = null)
+        {
+            String[] keyWords = keyWord.ToLower().Split(searchKeyWordSplitter,
+                StringSplitOptions.RemoveEmptyEntries);
+            if (keyWords.Length == 0) return null;
+            total = 0;
+
+            if (ramDataCompleted)
+            {
+                List<int> rstList = new List<int>();
+                int startIndex = 0;
+                int resultCount = 0;
+
+                if (diskDescribe == null)
+                {
+                    foreach (List<FileNamePathID> fnpiList in ramData.Values)
+                        foreach (FileNamePathID fnpi in fnpiList)
+                            if (fnpi.IsFileNameContainStrings(keyWords))
+                            {
+                                if (resultCount < limit && startIndex >= offset)
+                                {
+                                    resultCount++;
+                                    rstList.Add(fnpi.FileDataBaseID);
+                                }
+                                startIndex++;
+                                total++;
+                            }
+                }
+                else
+                {
+                    if (!ramData.ContainsKey(diskDescribe)) return null;
+
+                    List<FileNamePathID> fnpiList = ramData[diskDescribe];
+                    foreach (FileNamePathID fnpi in fnpiList)
+                        if (fnpi.IsFileNameContainStrings(keyWords))
+                        {
+                            if (resultCount < limit && startIndex >= offset)
+                            {
+                                resultCount++;
+                                rstList.Add(fnpi.FileDataBaseID);
+                            }
+                            startIndex++;
+                            total++;
+                        }
+                }
+
+                return rstList.ToArray();
+            }
+            else
+            {
+                String strTemp = String.Empty;
+                for (int i = 0; i < keyWords.Length; i++)
+                {
+                    strTemp += String.Format(" locate(@{0}, name)>0 {1}",
+                        i, i == keyWords.Length - 1 ? "" : "and");
+                }
+                String cmdText = String.Format(
+                    "select id from {0} where {1} {2} order by id;", "film_info",
+                    strTemp, diskDescribe == null ? "" : "and disk_desc = @disk_desc");
+
+                Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+                for (int i = 0; i < keyWords.Length; i++)
+                {
+                    sqlParamDic.Add(String.Format("@{0}", i), keyWords[i]);
+                }
+                if (diskDescribe != null)
+                {
+                    sqlParamDic.Add("@disk_desc", diskDescribe);
+                }
+
+                int[] idList = ExecuteReaderGetIDs(cmdText, sqlParamDic);
+                if (idList != null)
+                {
+                    total = idList.Length;
+                    return Helper.ArraySlice(idList, offset, limit);
+                }
+                else return null;
+            }
+        }
+
         /// <summary>
         /// 查看film_info表结构的详细信息
         /// </summary>

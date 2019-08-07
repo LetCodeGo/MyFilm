@@ -125,6 +125,7 @@
       <DependentUpon>ManagerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="RealOrFake4KWebDataCapture.cs" />
+    <Compile Include="RequestURL.cs" />
     <Compile Include="SqlData.cs" />
     <Compile Include="SqlDataInMySql.cs" />
     <Compile Include="SqlDataInSqlite.cs" />

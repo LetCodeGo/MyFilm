@@ -81,6 +81,8 @@ namespace HttpServer
             if (!string.IsNullOrEmpty(this.Content_Type))
                 builder.AppendLine("Content-Type:" + this.Content_Type);
 
+            builder.AppendLine("Cache-Control: max-age=360000");
+
             return builder.ToString();
         }
 

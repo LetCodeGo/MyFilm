@@ -40,44 +40,50 @@ a {
     padding-top: 4px;
 }
 
-.indexheader, .indexdata {
-    text-align: left;
-    padding: 2px 15px 2px 2px;
-    width: 0px;
+.table_style {
+    table-layout: fixed;
 }
 
-.nameheader, .namedata, .folder, .file {
+.indexheader, .indexdata {
+    text-align: center;
+    padding: 2px;
+    width: 20px;
+}
+
+.nameheader, .namedata {
+    padding: 4px;
     text-align: left;
-    width: 80px;
+    width: 450px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .pathheader, .pathdata {
+    padding: 4px;
     text-align: left;
-    width: 80px;
+    width: 450px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .sizeheader, .sizedata {
-    padding: 2px 15px 2px 2px;
+    padding: 2px;
     text-align: right;
-    width: 0px;
+    width: 60px;
 }
 
 .modifiedheader, .modifieddata {
-    text-align: left;
+    text-align: center;
     padding: 2px;
-    width: 0px;
+    width: 60px;
 }
 
 .discheader, .discdata {
     text-align: left;
     padding: 2px;
-    width: 0px;
+    width: 60px;
 }
 
 .indexheader, .sizeheader, .modifiedheader, .nameheader, .pathheader, .discheader {
@@ -86,9 +92,9 @@ a {
     padding-bottom: 2px;
 }
 
-.indexheader a, .sizeheader a, .modifiedheader a, .nameheader a, .pathheader a, .discheader a {
-    color: #000;
-}
+    .indexheader a, .sizeheader a, .modifiedheader a, .nameheader a, .pathheader a, .discheader a {
+        color: #000;
+    }
 
 tr.trdata1:hover, tr.trdata2:hover {
     background-color: #eee;
@@ -131,4 +137,16 @@ tr.trdata1:hover, tr.trdata2:hover {
     font-weight: bold;
     padding-left: 8px;
     padding-right: 8px;
+}
+
+.tr_watch_delete {
+    background-color: yellow;
+}
+
+.tr_watch {
+    background-color: green;
+}
+
+.tr_delete {
+    background-color: red;
 }

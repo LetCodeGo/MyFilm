@@ -27,7 +27,12 @@ namespace HttpServer
         /// <summary>
         /// HTTP(S)地址
         /// </summary>
-        public string URL { get; set; }
+        public string URL { get; private set; }
+
+        /// <summary>
+        /// 未解码的 URL 地址
+        /// </summary>
+        public string RawURL { get; private set; }
 
         /// <summary>
         /// HTTP协议版本
@@ -55,7 +60,12 @@ namespace HttpServer
                 .Where(e => e.Trim() != string.Empty)
                 .ToArray();
             if (first.Length > 0) this.Method = first[0];
-            if (first.Length > 1) this.URL = Uri.UnescapeDataString(first[1].Replace('+', ' '));
+            if (first.Length > 1)
+            {
+                // URL 中+号表示空格
+                this.RawURL = first[1].Replace("+", "%20");
+                this.URL = Uri.UnescapeDataString(this.RawURL);
+            }
             if (first.Length > 2) this.ProtocolVersion = first[2];
 
             //Request Headers
@@ -66,7 +76,7 @@ namespace HttpServer
             {
                 this.Body = GetRequestBody(rows);
                 var isUrlencoded = this.URL.Contains('?');
-                if (isUrlencoded) this.Params = GetRequestParameters(URL.Split('?')[1]);
+                if (isUrlencoded) this.Params = GetRequestParameters(RawURL.Split('?')[1], true);
             }
 
             //Request "POST"
@@ -75,7 +85,7 @@ namespace HttpServer
                 this.Body = GetRequestBody(rows);
                 var contentType = GetHeader(RequestHeaders.ContentType);
                 var isUrlencoded = contentType == @"application/x-www-form-urlencoded";
-                if (isUrlencoded) this.Params = GetRequestParameters(this.Body);
+                if (isUrlencoded) this.Params = GetRequestParameters(this.Body, false);
             }
         }
 
@@ -136,13 +146,25 @@ namespace HttpServer
             return range.Select(e => rows.ElementAt(e)).ToDictionary(e => e.Split(':')[0], e => e.Split(':')[1].Trim());
         }
 
-        private Dictionary<string, string> GetRequestParameters(string row)
+        private Dictionary<string, string> GetRequestParameters(string row, bool needDecode)
         {
             if (string.IsNullOrEmpty(row)) return null;
             var kvs = Regex.Split(row, "&");
             if (kvs == null || kvs.Count() <= 0) return null;
 
-            return kvs.ToDictionary(e => Regex.Split(e, "=")[0], e => Regex.Split(e, "=")[1]);
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            foreach (string str in kvs)
+            {
+                int index = str.IndexOf('=');
+                if (index > 0 && index < str.Length - 1)
+                {
+                    string s1 = Uri.UnescapeDataString(str.Substring(0, index));
+                    string s2 = Uri.UnescapeDataString(str.Substring(index + 1));
+                    if (dic.ContainsKey(s1)) dic[s1] = s2;
+                    else dic.Add(s1, s2);
+                }
+            }
+            return dic;
         }
     }
 }
