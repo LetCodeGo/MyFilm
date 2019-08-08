@@ -148,6 +148,48 @@ namespace MyFilm.Properties {
         }
         
         /// <summary>
+        ///   查找类似 &lt;html&gt;
+        ///&lt;head&gt;
+        ///    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
+        ///    &lt;title&gt;${title}&lt;/title&gt;
+        ///    &lt;link rel=&quot;stylesheet&quot; href=&quot;/main.css&quot; type=&quot;text/css&quot;&gt;
+        ///    &lt;link rel=&quot;shortcut icon&quot; href=&quot;/favicon.ico&quot; type=&quot;image/x-icon&quot;&gt;
+        ///    &lt;script type=&quot;text/javascript&quot; src=&quot;main.js&quot;&gt;&lt;/script&gt;
+        ///&lt;/head&gt;
+        ///&lt;body&gt;
+        ///    &lt;center&gt;
+        ///        &lt;br&gt;
+        ///        &lt;a href=&quot;/&quot;&gt;&lt;img class=&quot;logo&quot; src=&quot;/myfilm.png&quot; title=&quot;${title_app}&quot;&gt;&lt;/a&gt;
+        ///        &lt;br&gt;
+        ///        &lt;br&gt;
+        ///    &lt;/center&gt;
+        ///    &lt;center&gt;
+        ///        &lt;form c [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        /// </summary>
+        public static string main_html {
+            get {
+                return ResourceManager.GetString("main_html", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 function button_todelete_time() {
+        ///    window.location = &quot;/todeletebytime&quot;;
+        ///}
+        ///function button_todelete_disk() {
+        ///    window.location = &quot;/todeletebydisk&quot;;
+        ///}
+        ///function button_towatch() {
+        ///    window.location = &quot;/towatch&quot;;
+        ///} 的本地化字符串。
+        /// </summary>
+        public static string main_js {
+            get {
+                return ResourceManager.GetString("main_js", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
         public static System.Drawing.Bitmap myfilm {

@@ -12,7 +12,6 @@ namespace MyFilm
     {
         public enum RequestTypeEnum
         {
-            INDEX,
             FILE,
             QUERY
         }
@@ -22,11 +21,17 @@ namespace MyFilm
             DISK_ROOT,
             SEARCH,
             DATABASE_ID,
-            DATABASE_PID
+            DATABASE_PID,
+            TO_DELETE_BY_TIME,
+            TO_DELETE_BY_DISK,
+            TO_WATCH
         }
 
+        private static readonly Regex CheckRegex =
+            new Regex(@"^/(todeletebytime|todeletebydisk|towatch)?(\?(.+))?$");
+
         private static readonly string[] ParamKeys =
-            new string[] { "search", "databaseid", "databasepid" };
+            new string[] { "search", "databaseid", "databasepid", "diskdesc" };
 
         public bool IsValid { get; private set; }
 
@@ -34,6 +39,7 @@ namespace MyFilm
         public QueryTypeEnum QueryType { get; private set; }
 
         public string SearchKeyWord { get; private set; }
+        public string DiskDescribe { get; set; }
         public int DataBaseId { get; private set; }
         public int DataBasePid { get; private set; }
         public int Offset { get; private set; }
@@ -44,30 +50,48 @@ namespace MyFilm
 
             IsValid = true;
 
-            RequestType = RequestTypeEnum.INDEX;
+            RequestType = RequestTypeEnum.QUERY;
             QueryType = QueryTypeEnum.DISK_ROOT;
 
             SearchKeyWord = "";
+            DiskDescribe = "";
             DataBaseId = -2;
             DataBasePid = -2;
             Offset = 0;
 
             if (URL == "/")
             {
-                RequestType = RequestTypeEnum.INDEX;
+                RequestType = RequestTypeEnum.QUERY;
                 QueryType = QueryTypeEnum.DISK_ROOT;
 
                 DataBasePid = -1;
             }
             else
             {
-                if (URL.StartsWith("/?"))
+                Match match = CheckRegex.Match(rawURL);
+                if (match.Success)
                 {
                     RequestType = RequestTypeEnum.QUERY;
 
-                    string strType = "";
-                    string strValue = "";
-                    string[] kvs = rawURL.Substring(2).Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+                    switch (match.Groups[1].Value)
+                    {
+                        case "todeletebytime":
+                            QueryType = QueryTypeEnum.TO_DELETE_BY_TIME;
+                            break;
+                        case "todeletebydisk":
+                            QueryType = QueryTypeEnum.TO_DELETE_BY_DISK;
+                            break;
+                        case "towatch":
+                            QueryType = QueryTypeEnum.TO_WATCH;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    List<string> queryKeyList = new List<string>();
+                    string[] kvs = match.Groups[3].Value.Split(
+                        new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+
                     foreach (string kv in kvs)
                     {
                         int index = kv.IndexOf('=');
@@ -76,53 +100,65 @@ namespace MyFilm
                             string s1 = Uri.UnescapeDataString(kv.Substring(0, index));
                             string s2 = Uri.UnescapeDataString(kv.Substring(index + 1));
 
-                            if (s1 == "offset")
-                            {
-                                try { Offset = Convert.ToInt32(s2); }
-                                catch { IsValid = false; return; }
+                            if (queryKeyList.Contains(s1)) { IsValid = false; return; }
+                            else queryKeyList.Add(s1);
 
-                                if (Offset < 0) { IsValid = false; return; }
-                            }
-                            else if (ParamKeys.Contains(s1))
+                            switch (s1)
                             {
-                                if (strType == "")
-                                {
-                                    strType = s1;
-                                    strValue = s2;
-                                }
-                                else { IsValid = false; return; }
+                                case "offset":
+                                    try { Offset = Convert.ToInt32(s2); }
+                                    catch { IsValid = false; return; }
+
+                                    if (Offset < 0) { IsValid = false; return; }
+                                    break;
+                                case "diskdesc":
+                                    if (queryKeyList.Contains("databaseid") ||
+                                        queryKeyList.Contains("databasepid"))
+                                    { IsValid = false; return; }
+                                    else DiskDescribe = s2;
+                                    break;
+                                case "search":
+                                    if (queryKeyList.Contains("databaseid") ||
+                                        queryKeyList.Contains("databasepid"))
+                                    { IsValid = false; return; }
+                                    else
+                                    {
+                                        QueryType = QueryTypeEnum.SEARCH;
+                                        SearchKeyWord = s2;
+                                    }
+                                    break;
+                                case "databaseid":
+                                    if (queryKeyList.Contains("diskdesc") ||
+                                        queryKeyList.Contains("search") ||
+                                        queryKeyList.Contains("databasepid"))
+                                    { IsValid = false; return; }
+                                    else
+                                    {
+                                        QueryType = QueryTypeEnum.DATABASE_ID;
+                                        try { DataBaseId = Convert.ToInt32(s2); }
+                                        catch { IsValid = false; return; }
+                                        if (DataBaseId < 0) { IsValid = false; return; }
+                                    }
+                                    break;
+                                case "databasepid":
+                                    if (queryKeyList.Contains("diskdesc") ||
+                                        queryKeyList.Contains("search") ||
+                                        queryKeyList.Contains("databaseid"))
+                                    { IsValid = false; return; }
+                                    else
+                                    {
+                                        QueryType = QueryTypeEnum.DATABASE_PID;
+                                        try { DataBasePid = Convert.ToInt32(s2); }
+                                        catch { IsValid = false; return; }
+                                        if (DataBasePid < -1) { IsValid = false; return; }
+                                    }
+                                    break;
+                                default:
+                                    IsValid = false;
+                                    return;
                             }
                         }
                         else { IsValid = false; return; }
-                    }
-
-                    switch (strType)
-                    {
-                        case "search":
-                            QueryType = QueryTypeEnum.SEARCH;
-                            SearchKeyWord = strValue;
-                            break;
-                        case "databaseid":
-                            QueryType = QueryTypeEnum.DATABASE_ID;
-                            try { DataBaseId = Convert.ToInt32(strValue); }
-                            catch { IsValid = false; return; }
-                            if (DataBaseId < 0) IsValid = false;
-                            break;
-                        case "databasepid":
-                            QueryType = QueryTypeEnum.DATABASE_PID;
-                            try { DataBasePid = Convert.ToInt32(strValue); }
-                            catch { IsValid = false; return; }
-                            if (DataBasePid < -1) IsValid = false;
-                            break;
-                        case "":
-                            RequestType = RequestTypeEnum.INDEX;
-                            QueryType = QueryTypeEnum.DISK_ROOT;
-
-                            DataBasePid = -1;
-                            break;
-                        default:
-                            IsValid = false;
-                            break;
                     }
                 }
                 else RequestType = RequestTypeEnum.FILE;

@@ -1,0 +1,34 @@
+﻿<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>${title}</title>
+    <link rel="stylesheet" href="/main.css" type="text/css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+    <center>
+        <br>
+        <a href="/"><img src="/myfilm.png" title="${title_app}"></a>
+        <br>
+        <br>
+    </center>
+    <center>
+        <form class="rectangle_normal" id="searchform" action="/" method="get" onsubmit="return SearchContentCheck()">
+            <select class="rectangle_normal" name="diskdesc">
+                ${select_items}
+            </select>
+            <input class="rectangle_search" id="search" name="search" type="text" title="搜索 ${title_app}" value="${search_keyword}">
+            <input class="rectangle_search_button" type="submit" value="搜索">
+        </form>
+        <input type="button" class="rectangle_button" onclick="location = '/todeletebytime'" value="待删(时间)">
+        <input type="button" class="rectangle_button" onclick="location = '/todeletebydisk'" value="待删(磁盘)">
+        <input type="button" class="rectangle_button" onclick="location = '/towatch'" value="待看">
+    </center>
+    ${cut_page_index}
+    <center>
+        ${table_content}
+    </center>
+    ${cut_page_index}
+</body>
+</html>

@@ -246,6 +246,12 @@
   <ItemGroup>
     <None Include="Resources\warn.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\main_html.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\main_js.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if "$(ConfigurationName)" == "Release" (

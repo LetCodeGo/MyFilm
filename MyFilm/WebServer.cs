@@ -23,6 +23,9 @@ namespace MyFilm
         private int UpFolderId = -2;
         private int CurrentFolderId = -2;
 
+        private string CurrentFolderPath = "";
+        private string SelectAllDisk = "";
+        private List<string> DiskDescList = new List<string>();
         private string TitleSuffix = "";
         private DataTable gridData = null;
 
@@ -80,9 +83,12 @@ namespace MyFilm
 
             ExistResourcesBytesDic.Add("main.css",
                 Encoding.UTF8.GetBytes(Properties.Resources.main_css));
+            ExistResourcesBytesDic.Add("main.js",
+                Encoding.UTF8.GetBytes(Properties.Resources.main_js));
 
             ContentTypeDic.Add(".html", "text/html; charset=UTF-8");
             ContentTypeDic.Add(".css", "text/css; charset=UTF-8");
+            ContentTypeDic.Add(".js", "text/javascript; charset=UTF-8");
             ContentTypeDic.Add(".ico", "image/x-icon");
             ContentTypeDic.Add(".png", "image/png");
             ContentTypeDic.Add(".gif", "image/gif");
@@ -160,6 +166,7 @@ namespace MyFilm
 
                 UpFolderId = -2;
                 CurrentFolderId = -2;
+                CurrentFolderPath = "";
 
                 if (RequestURLInfo.Offset >= 0)
                 {
@@ -172,12 +179,28 @@ namespace MyFilm
                 DataTable dt = null;
                 DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
 
+                SelectAllDisk = string.Format("全部(共 {0} 磁盘)",
+                    diskRootDataTable.Rows.Count);
+                DiskDescList.Clear();
+                foreach (DataRow dr in diskRootDataTable.Rows)
+                {
+                    DiskDescList.Add(dr["disk_desc"].ToString());
+                }
+
+                if (RequestURLInfo.DiskDescribe != "")
+                {
+                    if (RequestURLInfo.DiskDescribe != SelectAllDisk &&
+                        (!DiskDescList.Contains(RequestURLInfo.DiskDescribe)))
+                        return false;
+                }
+                else RequestURLInfo.DiskDescribe = SelectAllDisk;
+
                 switch (RequestURLInfo.QueryType)
                 {
                     case RequestURL.QueryTypeEnum.DISK_ROOT:
                         {
                             TotalItemCount = diskRootDataTable.Rows.Count;
-                            strTitle = string.Format("Index[{0}]", TotalItemCount);
+                            strTitle = string.Format("INDEX[{0}]", TotalItemCount);
                         }
                         break;
                     case RequestURL.QueryTypeEnum.DATABASE_ID:
@@ -193,7 +216,10 @@ namespace MyFilm
                                 {
                                     DataTable folderDt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(CurrentFolderId);
                                     if (folderDt != null && folderDt.Rows.Count == 1)
+                                    {
                                         UpFolderId = Convert.ToInt32(folderDt.Rows[0]["pid"]);
+                                        CurrentFolderPath = folderDt.Rows[0]["path"].ToString();
+                                    }
                                     else return false;
                                 }
                             }
@@ -207,7 +233,10 @@ namespace MyFilm
                             {
                                 dt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(CurrentFolderId);
                                 if (dt != null && dt.Rows.Count == 1)
+                                {
                                     UpFolderId = Convert.ToInt32(dt.Rows[0]["pid"]);
+                                    CurrentFolderPath = dt.Rows[0]["path"].ToString();
+                                }
                                 else return false;
                             }
 
@@ -219,13 +248,42 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.SEARCH:
                         {
-                            idList = SqlData.GetSqlData().SearchKeyWordFromFilmInfo(RequestURLInfo.SearchKeyWord);
+                            idList = SqlData.GetSqlData().SearchKeyWordFromFilmInfo(
+                                RequestURLInfo.SearchKeyWord,
+                                RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
                             if (idList != null) TotalItemCount = idList.Length;
 
                             SqlData.GetSqlData().InsertDataToSearchLog(
                                 RequestURLInfo.SearchKeyWord, TotalItemCount, DateTime.Now);
 
                             strTitle = string.Format("SEARCH[{0}][1]", RequestURLInfo.SearchKeyWord, TotalItemCount);
+                        }
+                        break;
+                    case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
+                        {
+                            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfo(
+                                RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
+                            if (idList != null) TotalItemCount = idList.Length;
+
+                            strTitle = string.Format("TO_DELETE_TIME[{0}][1]", RequestURLInfo.SearchKeyWord, TotalItemCount);
+                        }
+                        break;
+                    case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
+                        {
+                            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfoGroupByDisk(
+                                RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
+                            if (idList != null) TotalItemCount = idList.Length;
+
+                            strTitle = string.Format("TO_DELETE_DISK[{0}][1]", RequestURLInfo.SearchKeyWord, TotalItemCount);
+                        }
+                        break;
+                    case RequestURL.QueryTypeEnum.TO_WATCH:
+                        {
+                            idList = SqlData.GetSqlData().GetWatchDataFromFilmInfo(
+                                RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
+                            if (idList != null) TotalItemCount = idList.Length;
+
+                            strTitle = string.Format("TO_WATCH[{0}][1]", RequestURLInfo.SearchKeyWord, TotalItemCount);
                         }
                         break;
                     default:
@@ -251,6 +309,9 @@ namespace MyFilm
                             break;
                         case RequestURL.QueryTypeEnum.DATABASE_PID:
                         case RequestURL.QueryTypeEnum.SEARCH:
+                        case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
+                        case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
+                        case RequestURL.QueryTypeEnum.TO_WATCH:
                             dt = SqlData.GetSqlData().SelectDataByIDList(
                                 Helper.ArraySlice(idList, PageIndex * PageItemCount, PageItemCount));
                             gridData = CommonDataTable.ConvertFilmInfoToGrid(dt);
@@ -264,16 +325,15 @@ namespace MyFilm
                 PageCount = TotalItemCount / PageItemCount +
                     (TotalItemCount % PageItemCount == 0 ? 0 : 1);
 
-                StringBuilder sb = new StringBuilder("<head>\n", 2048);
-                sb.AppendFormat("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=1200\"><title>{0}</title>\n",
+                string strResponse = Properties.Resources.main_html.Replace("${title}",
                     string.Format("{0} - {1}", strTitle, TitleSuffix));
-                sb.AppendLine("<link rel=\"stylesheet\" href=\"/main.css\" type=\"text/css\">");
-                sb.AppendLine("<link rel=\"shortcut icon\" href=\"/favicon.ico\" type=\"image/x-icon\">");
-                sb.AppendLine("</head>");
+                strResponse = strResponse.Replace("${title_app}", TitleSuffix);
+                strResponse = strResponse.Replace("${select_items}", GetSelectBoxHtmlString());
+                strResponse = strResponse.Replace("${search_keyword}", RequestURLInfo.SearchKeyWord);
+                strResponse = strResponse.Replace("${table_content}", GetTableHtmlString());
+                strResponse = strResponse.Replace("${cut_page_index}", GetCutPageHtmlString());
 
-                SetBodyHtml(ref sb);
-
-                response.SetContent(sb.ToString());
+                response.SetContent(strResponse);
                 response.Content_Type = ContentTypeDic[".html"];
             }
 
@@ -294,21 +354,20 @@ namespace MyFilm
 
         }
 
-        private void SetBodyHtml(ref StringBuilder sb)
+        private string GetSelectBoxHtmlString()
         {
-            sb.AppendLine("<body><center><br>");
-            sb.AppendFormat("<a href=\"/\"><img class=\"logo\" src=\"/myfilm.png\" alt=\"{0}\"></a>", TitleSuffix);
-            sb.AppendLine("<br><br>");
-            sb.AppendFormat("<form id=\"searchform\" action=\"/\" method=\"get\"><input class=\"searchbox\" style=\"width:480px\" id=\"search\" name=\"search\" type=\"text\" title=\"搜索 {0}\" value=\"{1}\" ></form>",
-                TitleSuffix, string.IsNullOrWhiteSpace(RequestURLInfo.SearchKeyWord) ? "" : RequestURLInfo.SearchKeyWord);
-            SetTableHtml(ref sb);
-            sb.AppendLine("</center>");
-            if (PageCount > 1) SetCutPageHtml(ref sb);
-            sb.AppendLine("</body>");
+            StringBuilder sb = new StringBuilder(1024);
+            sb.AppendFormat("<option value=\"{0}\">{0}</option>", SelectAllDisk);
+            foreach (string str in DiskDescList)
+            {
+                sb.AppendFormat("<option value=\"{0}\">{0}</option>", str);
+            }
+            return sb.ToString();
         }
 
-        private void SetTableHtml(ref StringBuilder sb)
+        private string GetTableHtmlString()
         {
+            StringBuilder sb = new StringBuilder(1024);
             string explain1 = String.Format(
                 "总共 {0} 条记录，当前第 {1} 页，共 {2} 页",
                 TotalItemCount, PageIndex + 1, PageCount);
@@ -316,24 +375,40 @@ namespace MyFilm
             switch (RequestURLInfo.QueryType)
             {
                 case RequestURL.QueryTypeEnum.SEARCH:
-                    explain2 = string.Format("搜索 \'{0}\'", RequestURLInfo.SearchKeyWord);
+                    explain2 = string.Format("在 {0} 里搜索 \'{1}\'",
+                        RequestURLInfo.DiskDescribe == SelectAllDisk ? "所有磁盘" : RequestURLInfo.DiskDescribe,
+                        RequestURLInfo.SearchKeyWord);
                     break;
                 case RequestURL.QueryTypeEnum.DISK_ROOT:
                     explain2 = "索引 根目录";
                     break;
                 case RequestURL.QueryTypeEnum.DATABASE_ID:
-                    explain2 = string.Format("查询 数据库中 id 为 {0} 的数据", RequestURLInfo.DataBaseId);
+                    explain2 = string.Format("查询 数据库中 id 为 {0} 的数据，当前目录 \'{1}\'",
+                        RequestURLInfo.DataBaseId, CurrentFolderPath);
                     break;
                 case RequestURL.QueryTypeEnum.DATABASE_PID:
-                    explain2 = string.Format("查询 数据库中所有 pid 为 {0} 的数据", RequestURLInfo.DataBasePid);
+                    explain2 = string.Format("查询 数据库中所有 pid 为 {0} 的数据，当前目录 \'{1}\'",
+                        RequestURLInfo.DataBasePid, CurrentFolderPath);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
+                    explain2 = string.Format("在 {0} 里搜索 待删（结果以设置时间倒序）",
+                        RequestURLInfo.DiskDescribe == SelectAllDisk ? "所有磁盘" : RequestURLInfo.DiskDescribe);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
+                    explain2 = string.Format("在 {0} 里搜索 待删（结果以磁盘分组）",
+                        RequestURLInfo.DiskDescribe == SelectAllDisk ? "所有磁盘" : RequestURLInfo.DiskDescribe);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_WATCH:
+                    explain2 = string.Format("在 {0} 里搜索 待看",
+                        RequestURLInfo.DiskDescribe == SelectAllDisk ? "所有磁盘" : RequestURLInfo.DiskDescribe);
                     break;
                 default:
                     explain2 = "索引 根目录";
                     break;
             }
 
-            sb.AppendLine("<table class=\"table_style\" cellspacing=\"0\" width=\"1100px\">");
-            sb.AppendLine("<col style=\"width:40px\"/><col style=\"width:420px\"/><col style=\"width:200px\"/><col style=\"width:120px\"/><col style=\"width:120px\"/><col style=\"width:200px\"/>");
+            sb.AppendLine("<table class=\"table_style\" cellspacing=\"0\" width=\"1200px\">");
+            sb.AppendLine("<col style=\"width:40px\"/><col style=\"width:480px\"/><col style=\"width:240px\"/><col style=\"width:120px\"/><col style=\"width:120px\"/><col style=\"width:200px\"/>");
             sb.AppendFormat(
                 "<tr><td colspan=\"6\"><p class=\"numresults\">{0} （{1}）</p></td></tr>\n",
                 explain1, explain2);
@@ -343,11 +418,12 @@ namespace MyFilm
             {
                 string href = "/";
                 // -1 是为根目录，不显示上一目录
-                if (UpFolderId >= 0)
+                if (UpFolderId >= -1)
                 {
                     int[] idList = SqlData.GetSqlData().GetDataByPidFromFilmInfo(UpFolderId);
-                    href = string.Format("/?databasepid={0}&amp;offset={1}",
-                        UpFolderId, Array.IndexOf(idList, CurrentFolderId));
+                    if (UpFolderId == -1)
+                        href = string.Format("/?offset={0}", Array.IndexOf(idList, CurrentFolderId));
+                    else href = string.Format("/?databasepid={0}&amp;offset={1}", UpFolderId, Array.IndexOf(idList, CurrentFolderId));
                 }
 
                 sb.AppendFormat(
@@ -383,25 +459,28 @@ namespace MyFilm
                 }
                 sb.AppendFormat("<tr class=\"{0}\">", rowDataClass);
 
-                string strStyle = "";
-                string strTdStyleAndClass = "";
+                string strTdStyle = "";
+                string strTdStyleAndClassAndTitle = "";
+                object strTdTitle = "";
 
                 for (int j = 0; j < 6; j++)
                 {
                     if (ItemIndex > 0 && i == ItemIndex)
                     {
-                        if (j == 0) strStyle = "style=\"border-left: thin solid; border-top: thin solid; border-bottom: thin solid; \"";
-                        else if (j == 5) strStyle = "style=\"border-top: thin solid; border-bottom: thin solid; border-right: thin solid; \"";
-                        else strStyle = "style=\"border-top: thin solid; border-bottom: thin solid; \"";
+                        if (j == 0) strTdStyle = "style=\"border-left: thin solid; border-top: thin solid; border-bottom: thin solid; \"";
+                        else if (j == 5) strTdStyle = "style=\"border-top: thin solid; border-bottom: thin solid; border-right: thin solid; \"";
+                        else strTdStyle = "style=\"border-top: thin solid; border-bottom: thin solid; \"";
                     }
-                    strTdStyleAndClass = string.Format("{0}class=\"{1}\"", strStyle, ColumnClassDatas[j]);
+                    strTdTitle = (j == 0 ? startIndex : gridData.Rows[i][ColumnNamesInDataTable[j]]);
+                    strTdStyleAndClassAndTitle = string.Format("{0}class=\"{1}\" title=\"{2}\"",
+                        strTdStyle, ColumnClassDatas[j], strTdTitle);
 
                     if (j == 1)
                     {
                         if (Convert.ToBoolean(gridData.Rows[i]["is_folder"]))
                         {
                             sb.AppendFormat("<td {0}><span class=\"nobr\"><nobr><a href=\"/?databasepid={1}\"><img class=\"icon\" src=\"/folder.gif\" alt=\"\">{2}</a></nobr></span></td>",
-                                strTdStyleAndClass, gridData.Rows[i]["id"], gridData.Rows[i]["name"]);
+                                strTdStyleAndClassAndTitle, gridData.Rows[i]["id"], strTdTitle);
                         }
                         else
                         {
@@ -416,7 +495,7 @@ namespace MyFilm
                             }
 
                             sb.AppendFormat("<td {0}><span class=\"nobr\"><nobr><img class=\"icon\" src=\"/{1}\" alt=\"\">{2}</nobr></span></td>",
-                                strTdStyleAndClass, icoPath, gridData.Rows[i]["name"]);
+                                strTdStyleAndClassAndTitle, icoPath, strTdTitle);
                         }
                     }
                     else if (j == 2)
@@ -424,28 +503,33 @@ namespace MyFilm
                         if (Convert.ToInt32(gridData.Rows[i]["pid"]) >= 0)
                         {
                             sb.AppendFormat("<td {0}><span class=\"nobr\"><nobr><a href=\"/?databasepid={1}\"><span class=\"nobr\"><nobr>{2}</nobr></span></a></td>",
-                                strTdStyleAndClass, gridData.Rows[i]["pid"], gridData.Rows[i]["path"]);
+                                strTdStyleAndClassAndTitle, gridData.Rows[i]["pid"], strTdTitle);
                         }
                         else
                         {
                             sb.AppendFormat("<td {0}><span class=\"nobr\"><nobr><span class=\"nobr\"><nobr>{1}</nobr></span></td>",
-                                strTdStyleAndClass, gridData.Rows[i]["path"]);
+                                strTdStyleAndClassAndTitle, strTdTitle);
                         }
                     }
                     else
                     {
                         sb.AppendFormat("<td {0}><span class=\"nobr\"><nobr>{1}</nobr></span></td>",
-                            strTdStyleAndClass, j == 0 ? startIndex : gridData.Rows[i][ColumnNamesInDataTable[j]]);
+                            strTdStyleAndClassAndTitle, strTdTitle);
                     }
                 }
                 sb.AppendLine("</tr>");
             }
 
             sb.AppendLine("</table>");
+
+            return sb.ToString();
         }
 
-        private void SetCutPageHtml(ref StringBuilder sb)
+        private string GetCutPageHtmlString()
         {
+            if (PageCount <= 1) return "";
+
+            StringBuilder sb = new StringBuilder(1024);
             string hrefData = "";
             switch (RequestURLInfo.QueryType)
             {
@@ -503,19 +587,23 @@ namespace MyFilm
                     hrefData, Math.Min(offset + PageItemCount, TotalItemCount - 1));
             }
             sb.AppendLine("</center>");
+
+            return sb.ToString();
         }
 
         private void SetCutPageIndexSpan(ref StringBuilder sb, string hrefData, int index)
         {
+            int offset = index * PageItemCount;
             if (index == PageIndex)
             {
-                sb.AppendFormat("<span class=\"nav\"><b>{0}</b></span>", index + 1);
+                sb.AppendFormat("<span class=\"nav\"><b>{0} - {1}</b></span>",
+                    offset, Math.Min(offset + PageItemCount, TotalItemCount) - 1);
             }
             else
             {
                 sb.AppendFormat(
-                    "<span class=\"nav\"><a class=num href=\"/?{0}offset={1}\">{2}</a></span>",
-                    hrefData, index * PageItemCount, index + 1);
+                    "<span class=\"nav\"><a class=num href=\"/?{0}offset={1}\">{2} - {3}</a></span>",
+                    hrefData, offset, offset, Math.Min(offset + PageItemCount, TotalItemCount) - 1);
             }
         }
 
