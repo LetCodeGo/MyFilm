@@ -3,6 +3,10 @@
     margin: 0px;
 }
 
+.white-space {
+    white-space: pre;
+}
+
 body {
     padding: 4px;
 }
@@ -138,15 +142,22 @@ tr.trdata1:hover, tr.trdata2:hover {
 
 .tr_watch_delete {
     background-color: yellow;
+    color: white;
 }
 
 .tr_watch {
     background-color: green;
+    color: white;
 }
 
 .tr_delete {
     background-color: red;
+    color: white;
 }
+
+/*.tr_delete td a:link{
+    color: white;
+}*/
 
 input {
     outline: none;
@@ -157,6 +168,12 @@ textarea {
 }
 
 .rectangle_normal {
+    display: inline-block;
+    height: 32px;
+    vertical-align: top;
+}
+
+.rectangle_select {
     display: inline-block;
     height: 32px;
     vertical-align: top;
@@ -181,6 +198,6 @@ textarea {
     display: inline-block;
     width: 80px;
     height: 32px;
-    margin-left: -80px;
+    margin-left: -4px;
     vertical-align: top;
 }

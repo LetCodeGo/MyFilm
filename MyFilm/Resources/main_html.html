@@ -14,16 +14,16 @@
         <br>
     </center>
     <center>
-        <form class="rectangle_normal" id="searchform" action="/" method="get" onsubmit="return SearchContentCheck()">
-            <select class="rectangle_normal" name="diskdesc">
+        <form class="rectangle_normal" id="searchform" action="/" method="get">
+            <select class="rectangle_select" id="disk_select" name="diskdesc">
                 ${select_items}
             </select>
-            <input class="rectangle_search" id="search" name="search" type="text" title="搜索 ${title_app}" value="${search_keyword}">
-            <input class="rectangle_search_button" type="submit" value="搜索">
+            <input class="rectangle_search" id="search" name="search" type="text" title="搜索 ${title_app}" value="${search_keyword}" onkeydown="if (event.keyCode == 13) { SearchSubmit(); return false; }">
+            <input class="rectangle_search_button" type="submit" value="搜索" onclick="{ SearchSubmit(); return false; }">
         </form>
-        <input type="button" class="rectangle_button" onclick="location = '/todeletebytime'" value="待删(时间)">
-        <input type="button" class="rectangle_button" onclick="location = '/todeletebydisk'" value="待删(磁盘)">
-        <input type="button" class="rectangle_button" onclick="location = '/towatch'" value="待看">
+        <input type="button" class="rectangle_button" onclick="ToDeleteOrWatch('/todeletebytime')" value="待删(时间)">
+        <input type="button" class="rectangle_button" onclick="ToDeleteOrWatch('/todeletebydisk')" value="待删(磁盘)">
+        <input type="button" class="rectangle_button" onclick="ToDeleteOrWatch('/towatch')" value="待看">
     </center>
     ${cut_page_index}
     <center>

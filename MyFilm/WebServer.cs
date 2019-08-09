@@ -182,6 +182,7 @@ namespace MyFilm
                 SelectAllDisk = string.Format("全部(共 {0} 磁盘)",
                     diskRootDataTable.Rows.Count);
                 DiskDescList.Clear();
+                DiskDescList.Add(SelectAllDisk);
                 foreach (DataRow dr in diskRootDataTable.Rows)
                 {
                     DiskDescList.Add(dr["disk_desc"].ToString());
@@ -189,8 +190,7 @@ namespace MyFilm
 
                 if (RequestURLInfo.DiskDescribe != "")
                 {
-                    if (RequestURLInfo.DiskDescribe != SelectAllDisk &&
-                        (!DiskDescList.Contains(RequestURLInfo.DiskDescribe)))
+                    if (!DiskDescList.Contains(RequestURLInfo.DiskDescribe))
                         return false;
                 }
                 else RequestURLInfo.DiskDescribe = SelectAllDisk;
@@ -357,10 +357,11 @@ namespace MyFilm
         private string GetSelectBoxHtmlString()
         {
             StringBuilder sb = new StringBuilder(1024);
-            sb.AppendFormat("<option value=\"{0}\">{0}</option>", SelectAllDisk);
             foreach (string str in DiskDescList)
             {
-                sb.AppendFormat("<option value=\"{0}\">{0}</option>", str);
+                if (str == RequestURLInfo.DiskDescribe)
+                    sb.AppendFormat("<option value=\"{0}\" selected=\"selected\">{0}</option>", str.Replace(" ", "&ensp;"));
+                else sb.AppendFormat("<option value=\"{0}\">{0}</option>", str.Replace(" ", "&ensp;"));
             }
             return sb.ToString();
         }
@@ -461,7 +462,7 @@ namespace MyFilm
 
                 string strTdStyle = "";
                 string strTdStyleAndClassAndTitle = "";
-                object strTdTitle = "";
+                string strTdTitle = "";
 
                 for (int j = 0; j < 6; j++)
                 {
@@ -471,7 +472,14 @@ namespace MyFilm
                         else if (j == 5) strTdStyle = "style=\"border-top: thin solid; border-bottom: thin solid; border-right: thin solid; \"";
                         else strTdStyle = "style=\"border-top: thin solid; border-bottom: thin solid; \"";
                     }
-                    strTdTitle = (j == 0 ? startIndex : gridData.Rows[i][ColumnNamesInDataTable[j]]);
+
+                    if (j == 0) strTdTitle = startIndex.ToString();
+                    else
+                    {
+                        strTdTitle = gridData.Rows[i][ColumnNamesInDataTable[j]].ToString();
+                        if (j == 5) strTdTitle = strTdTitle.Replace(" ", "&ensp;");
+                    }
+
                     strTdStyleAndClassAndTitle = string.Format("{0}class=\"{1}\" title=\"{2}\"",
                         strTdStyle, ColumnClassDatas[j], strTdTitle);
 
@@ -530,19 +538,35 @@ namespace MyFilm
             if (PageCount <= 1) return "";
 
             StringBuilder sb = new StringBuilder(1024);
-            string hrefData = "";
+            string hrefData = "/?";
+            string diskDesc = "";
+            if (RequestURLInfo.DiskDescribe != SelectAllDisk)
+                diskDesc = string.Format("diskdesc={0}&amp;", RequestURLInfo.DiskDescribe);
             switch (RequestURLInfo.QueryType)
             {
                 case RequestURL.QueryTypeEnum.DATABASE_ID:
-                    hrefData = string.Format("databaseid={0}&amp;", RequestURLInfo.DataBaseId);
+                    hrefData = string.Format("/?databaseid={0}&amp;{1}",
+                        RequestURLInfo.DataBaseId, diskDesc);
                     break;
                 case RequestURL.QueryTypeEnum.DATABASE_PID:
-                    hrefData = string.Format("databasepid={0}&amp;", RequestURLInfo.DataBasePid);
+                    hrefData = string.Format("/?databasepid={0}&amp;{1}",
+                        RequestURLInfo.DataBasePid, diskDesc);
                     break;
                 case RequestURL.QueryTypeEnum.SEARCH:
-                    hrefData = string.Format("search={0}&amp;", Uri.EscapeDataString(RequestURLInfo.SearchKeyWord));
+                    hrefData = string.Format("/?search={0}&amp;{1}",
+                        Uri.EscapeDataString(RequestURLInfo.SearchKeyWord), diskDesc);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
+                    hrefData = string.Format("/todeletebytime?{0}", diskDesc);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
+                    hrefData = string.Format("/todeletebydisk?{0}", diskDesc);
+                    break;
+                case RequestURL.QueryTypeEnum.TO_WATCH:
+                    hrefData = string.Format("/towatch?{0}", diskDesc);
                     break;
                 default:
+                    hrefData = "/?";
                     break;
             }
 
@@ -554,7 +578,7 @@ namespace MyFilm
             sb.AppendLine("<center><br>");
             if (showPrePage)
             {
-                sb.AppendFormat("<span class=\"prevnext\"><a href=\"/?{0}offset={1}\">&lt; 上一页</a></span>",
+                sb.AppendFormat("<span class=\"prevnext\"><a href=\"{0}offset={1}\">&lt; 上一页</a></span>",
                     hrefData, Math.Max(offset - PageItemCount, 0));
             }
 
@@ -583,7 +607,7 @@ namespace MyFilm
 
             if (showNextPage)
             {
-                sb.AppendFormat("<span class=\"prevnext\"><a href=\"/?{0}offset={1}\">下一页 &gt;</a></span>",
+                sb.AppendFormat("<span class=\"prevnext\"><a href=\"{0}offset={1}\">下一页 &gt;</a></span>",
                     hrefData, Math.Min(offset + PageItemCount, TotalItemCount - 1));
             }
             sb.AppendLine("</center>");
@@ -602,7 +626,7 @@ namespace MyFilm
             else
             {
                 sb.AppendFormat(
-                    "<span class=\"nav\"><a class=num href=\"/?{0}offset={1}\">{2} - {3}</a></span>",
+                    "<span class=\"nav\"><a class=num href=\"{0}offset={1}\">{2} - {3}</a></span>",
                     hrefData, offset, offset, Math.Min(offset + PageItemCount, TotalItemCount) - 1);
             }
         }
