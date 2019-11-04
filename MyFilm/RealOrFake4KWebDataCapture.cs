@@ -16,9 +16,6 @@ namespace MyFilm
             public DateTime crawlTime;
         }
 
-        private readonly static string webPageAddress =
-            "https://digiraw.com/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
-
         public delegate void ThreadWebDataCaptureCallback(RealOrFake4KWebDataCaptureResult rst);
         public delegate void ThreadWebDataCaptureFinish();
 
@@ -39,7 +36,7 @@ namespace MyFilm
 
             try
             {
-                document = htmlWeb.Load(webPageAddress);
+                document = htmlWeb.Load(CommonString.CrawlURL);
             }
             catch (Exception ex)
             {
@@ -72,7 +69,7 @@ namespace MyFilm
                 int i = 0;
                 foreach (var td in rowNode.SelectNodes(".//td"))
                 {
-                    dr[i++] = td.InnerText.Trim();
+                    dr[i++] = td.InnerText.Replace("&amp;", "&").Trim();
                 }
                 dt.Rows.Add(dr);
             }
@@ -97,7 +94,7 @@ namespace MyFilm
             if (crawlDt == null || crawlDt.Rows.Count == 0)
             {
                 rst.strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
-                    webPageAddress, errMsg);
+                    CommonString.CrawlURL, errMsg);
                 rst.code = -1;
                 this.threadWebDataCaptureCallback?.Invoke(rst);
                 this.threadWebDataCaptureFinish?.Invoke();
@@ -116,7 +113,7 @@ namespace MyFilm
 
                 rst.strMsg = string.Format(
                     "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
-                    webPageAddress, crawlDt.Rows.Count, diskCount - 1);
+                    CommonString.CrawlURL, crawlDt.Rows.Count, diskCount - 1);
                 rst.code = 0;
                 this.threadWebDataCaptureCallback?.Invoke(rst);
                 this.threadWebDataCaptureFinish?.Invoke();
@@ -178,7 +175,7 @@ namespace MyFilm
             SqlData.GetSqlData().InsertDataToFilmInfo(dt);
 
             rst.strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
-                webPageAddress, crawlDt.Rows.Count);
+                CommonString.CrawlURL, crawlDt.Rows.Count);
             rst.code = crawlDt.Rows.Count;
             this.threadWebDataCaptureCallback?.Invoke(rst);
             this.threadWebDataCaptureFinish?.Invoke();

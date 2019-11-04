@@ -176,6 +176,8 @@ namespace MyFilm
                 CommonString.SqliteDateBasePath = this.cbSQLiteDataBase.Text;
             }
 
+            CommonString.CrawlURL = this.loginConfigData.crawlURL;
+
             try
             {
                 SqlData sqlData = SqlData.GetSqlData();

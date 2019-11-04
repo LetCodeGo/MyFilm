@@ -11,6 +11,10 @@ namespace MyFilm
 
         public static LoginConfig.DataBaseType DataBaseType =
             LoginConfig.DataBaseType.MYSQL;
+
+        public static String CrawlURL =
+            "https://digiraw.com/DVD-4K-Bluray-ripping-service/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
+
         /// <summary>
         /// 登陆配置文件路径
         /// </summary>
