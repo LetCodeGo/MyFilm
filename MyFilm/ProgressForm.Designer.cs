@@ -54,7 +54,6 @@
             this.richTextBox.TabIndex = 3;
             this.richTextBox.Text = "";
             this.richTextBox.WordWrap = false;
-            this.richTextBox.TextChanged += new System.EventHandler(this.richTextBox_TextChanged);
             // 
             // btnFinish
             // 

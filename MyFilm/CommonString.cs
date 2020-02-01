@@ -5,10 +5,6 @@ namespace MyFilm
 {
     public class CommonString
     {
-        public readonly static String AppDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData,
-                Environment.SpecialFolderOption.Create), "MyFilm");
-
         public static LoginConfig.DataBaseType DataBaseType =
             LoginConfig.DataBaseType.MYSQL;
 
@@ -19,12 +15,12 @@ namespace MyFilm
         /// 登陆配置文件路径
         /// </summary>
         public static String LoginConfigPath = Path.Combine(
-            CommonString.AppDataFolder, "myfilm.xml");
+            System.Windows.Forms.Application.StartupPath, "MyFilmConfig.xml");
         /// <summary>
         /// sqlite 数据库文件路径
         /// </summary>
         public static String SqliteDateBasePath = Path.Combine(
-            CommonString.AppDataFolder, "myfilm_sqlite.db");
+            System.Windows.Forms.Application.StartupPath, "MyFilmSqlite.db");
 
         public static String DbIP = "127.0.0.1";
         public static String DbUserName = string.Empty;

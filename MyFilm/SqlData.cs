@@ -1129,6 +1129,19 @@ namespace MyFilm
             return ExecuteReaderGetAll(cmdText, sqlParamDic);
         }
 
+        public int SetEmptyFolderToDelete()
+        {
+            String cmdText = String.Format(
+                "update {0} set to_delete=1, to_delete_ex=1, s_d_t=@s_d_t where size!=-1 and to_delete=0 and id in ({1});",
+                "film_info",
+                String.Format("select a.id from (select id from {0} where is_folder=1 and id not in (select pid from {0} group by pid)) as a", "film_info"));
+
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@s_d_t", DateTime.Now);
+
+            return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
+        }
+
         public int GetMaxIdOfFilmInfo()
         {
             String cmdText = String.Format("select max(id) from {0};", "film_info");

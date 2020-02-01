@@ -17,9 +17,6 @@ namespace MyFilm
             InitializeComponent();
 
             this.ControlBox = false;
-
-            if (!Directory.Exists(CommonString.AppDataFolder))
-                Directory.CreateDirectory(CommonString.AppDataFolder);
         }
 
         // 鼠标双击标题栏消息

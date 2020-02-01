@@ -84,7 +84,8 @@ namespace MyFilm
         /// <summary>
         /// 打开的 nfo 文件所在文件夹
         /// </summary>
-        private static String nfoFolder = Path.Combine(CommonString.AppDataFolder, "nfos");
+        private static String nfoFolder = Path.Combine(
+            System.Windows.Forms.Application.StartupPath, "nfos");
 
         /// <summary>
         /// 同步更新 SqlForm
@@ -945,7 +946,7 @@ namespace MyFilm
             PrintFolder(Convert.ToInt32(gridViewData.Rows[selectIndex]["id"]),
                 gridViewData.Rows[selectIndex]["name"].ToString(), 0, "", ref strResult);
 
-            String filePath = Path.Combine(CommonString.AppDataFolder, "myfilm.temp");
+            String filePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "MyfilmTemp.txt");
             File.WriteAllText(filePath, strResult, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, strResult);

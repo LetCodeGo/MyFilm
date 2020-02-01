@@ -40,22 +40,21 @@ namespace MyFilm
         {
             this.Invoke(new Action(() =>
             {
-                this.progressBar.Value = Convert.ToInt32(pos);
-                this.richTextBox.Text += string.Format("[{0}]  {1}\r\n",
-                    DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), msgStr);
                 this.Text = string.Format("Progress [{0}%]", pos.ToString("F2"));
+
+                this.progressBar.Value = Convert.ToInt32(pos);
+
+                this.richTextBox.AppendText(string.Format("[{0}]  {1}\r\n",
+                    DateTime.Now.ToString("yyyy-MM-dd HHH:mm:ss"), msgStr));
+                this.richTextBox.SelectionStart = this.richTextBox.Text.Length;
+                this.richTextBox.ScrollToCaret();
+
             }));
         }
 
         public void SetFinish()
         {
             this.Invoke(new Action(() => { this.btnFinish.Enabled = true; }));
-        }
-
-        private void richTextBox_TextChanged(object sender, EventArgs e)
-        {
-            this.richTextBox.SelectionStart = this.richTextBox.Text.Length;
-            this.richTextBox.ScrollToCaret();
         }
 
         private void btnFinish_Click(object sender, EventArgs e)

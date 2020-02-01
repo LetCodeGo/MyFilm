@@ -328,7 +328,7 @@ namespace MyFilm
             log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
                 moveSuccess, logSuccess, moveFailed, logFailed);
 
-            String filePath = Path.Combine(CommonString.AppDataFolder, "myfilm.temp");
+            String filePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "MyfilmTemp.txt");
             File.WriteAllText(filePath, log, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, log);
@@ -546,6 +546,13 @@ namespace MyFilm
         {
             if (needReFillRamData) SqlData.GetSqlData().FillRamData();
             this.closeAction?.Invoke();
+        }
+
+        private void btnSetEmptyFolderDelete_Click(object sender, EventArgs e)
+        {
+            int affectedRows = SqlData.GetSqlData().SetEmptyFolderToDelete();
+
+            MessageBox.Show(String.Format("已将 \'{0}\' 个空文件夹设为待删！", affectedRows));
         }
     }
 }

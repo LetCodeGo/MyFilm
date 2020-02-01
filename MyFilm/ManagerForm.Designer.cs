@@ -49,9 +49,10 @@
             this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             this.labelScanDepth = new System.Windows.Forms.Label();
-            this.tbeLayer = new MyFilm.TextBoxEx();
             this.btnUpdateROF4K = new System.Windows.Forms.Button();
             this.cbScanMedia = new System.Windows.Forms.CheckBox();
+            this.tbeLayer = new MyFilm.TextBoxEx();
+            this.btnSetEmptyFolderDelete = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -273,18 +274,6 @@
             this.labelScanDepth.TabIndex = 28;
             this.labelScanDepth.Text = "深度";
             // 
-            // tbeLayer
-            // 
-            this.tbeLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbeLayer.Enabled = false;
-            this.tbeLayer.Location = new System.Drawing.Point(897, 37);
-            this.tbeLayer.Name = "tbeLayer";
-            this.tbeLayer.Size = new System.Drawing.Size(75, 21);
-            this.tbeLayer.TabIndex = 26;
-            this.tbeLayer.Text = "3";
-            this.tbeLayer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.tbeLayer.MouseLeave += new System.EventHandler(this.tbeLayer_MouseLeave);
-            // 
             // btnUpdateROF4K
             // 
             this.btnUpdateROF4K.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -308,11 +297,35 @@
             this.cbScanMedia.UseVisualStyleBackColor = true;
             this.cbScanMedia.CheckedChanged += new System.EventHandler(this.cbScanMedia_CheckedChanged);
             // 
+            // tbeLayer
+            // 
+            this.tbeLayer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbeLayer.Enabled = false;
+            this.tbeLayer.Location = new System.Drawing.Point(897, 37);
+            this.tbeLayer.Name = "tbeLayer";
+            this.tbeLayer.Size = new System.Drawing.Size(75, 21);
+            this.tbeLayer.TabIndex = 26;
+            this.tbeLayer.Text = "3";
+            this.tbeLayer.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.tbeLayer.MouseLeave += new System.EventHandler(this.tbeLayer_MouseLeave);
+            // 
+            // btnSetEmptyFolderDelete
+            // 
+            this.btnSetEmptyFolderDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSetEmptyFolderDelete.Location = new System.Drawing.Point(768, 427);
+            this.btnSetEmptyFolderDelete.Name = "btnSetEmptyFolderDelete";
+            this.btnSetEmptyFolderDelete.Size = new System.Drawing.Size(204, 25);
+            this.btnSetEmptyFolderDelete.TabIndex = 31;
+            this.btnSetEmptyFolderDelete.Text = "将空文件夹设为待删";
+            this.btnSetEmptyFolderDelete.UseVisualStyleBackColor = true;
+            this.btnSetEmptyFolderDelete.Click += new System.EventHandler(this.btnSetEmptyFolderDelete_Click);
+            // 
             // ManagerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(984, 580);
+            this.Controls.Add(this.btnSetEmptyFolderDelete);
             this.Controls.Add(this.cbScanMedia);
             this.Controls.Add(this.btnUpdateROF4K);
             this.Controls.Add(this.labelScanDepth);
@@ -364,5 +377,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnScanLayer;
         private System.Windows.Forms.Button btnUpdateROF4K;
         private System.Windows.Forms.CheckBox cbScanMedia;
+        private System.Windows.Forms.Button btnSetEmptyFolderDelete;
     }
 }
