@@ -145,6 +145,22 @@ namespace MyFilm
         }
 
         /// <summary>
+        /// 获取search_log数据库对应的DataTable
+        /// </summary>
+        /// <returns></returns>
+        public static DataTable GetSearchLogDataTable()
+        {
+            DataTable dt = new DataTable();
+
+            dt.Columns.Add("id", typeof(Int32));
+            dt.Columns.Add("search_key", typeof(String));
+            dt.Columns.Add("result_count", typeof(Int64));
+            dt.Columns.Add("search_time", typeof(DateTime));
+
+            return dt;
+        }
+
+        /// <summary>
         /// MainForm DataGridView 数据源格式
         /// </summary>
         /// <returns></returns>

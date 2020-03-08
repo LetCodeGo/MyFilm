@@ -157,7 +157,7 @@ namespace MyFilm
         {
             LoginConfigData initLoginConfigData = new LoginConfigData()
             {
-                dataBaseType = DataBaseType.MYSQL,
+                dataBaseType = DataBaseType.SQLITE,
                 mysqlConfig = new MySQLConfig
                 {
                     selectedIP = "127.0.0.1",

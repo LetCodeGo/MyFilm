@@ -251,6 +251,161 @@ namespace MyFilm
             }
         }
 
+        public override DataTable GetFilmInfoDatabaseTransferData()
+        {
+            String cmdText = String.Format("select * from {0} order by id;", "film_info");
+            DataTable dt = CommonDataTable.GetFilmInfoDataTable();
+            List<int> continuedMinList = new List<int>();
+            List<int> continuedMaxList = new List<int>();
+            List<int> subtractList = new List<int>();
+            int continuedMin = -1, continuedMax = -1, subtract = -1, id = -1, preID = -1;
+
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        while (sqlDataReader.Read())
+                        {
+                            DataRow dr = dt.NewRow();
+                            for (int i = 0; i < dt.Columns.Count; i++)
+                            {
+                                dr[i] = sqlDataReader[i];
+                            }
+                            dt.Rows.Add(dr);
+
+                            preID = id;
+                            id = Convert.ToInt32(dr["id"]);
+                            if (continuedMin == -1) continuedMin = preID;
+
+                            if (preID != -1 && id - preID > 1)
+                            {
+                                continuedMax = preID;
+                                if (continuedMinList.Count == 0)
+                                    subtract = continuedMin - 1;
+                                else
+                                {
+                                    subtract = subtractList[subtractList.Count - 1] +
+                                        continuedMin - continuedMaxList[continuedMaxList.Count - 1] - 1;
+                                }
+                                continuedMinList.Add(continuedMin);
+                                continuedMaxList.Add(continuedMax);
+                                subtractList.Add(subtract);
+
+                                continuedMin = -1;
+                            }
+                        }
+
+                        continuedMax = id;
+                        if (continuedMinList.Count == 0)
+                            subtract = continuedMin - 1;
+                        else
+                        {
+                            subtract = subtractList[subtractList.Count - 1] +
+                                continuedMin - continuedMaxList[continuedMaxList.Count - 1] - 1;
+                        }
+                        continuedMinList.Add(continuedMin);
+                        continuedMaxList.Add(continuedMax);
+                        subtractList.Add(subtract);
+                    }
+                }
+                sqlCon.Close();
+            }
+
+            int[] cols = new int[3] { 0, 14, 15 };
+            int startIndex = 0;
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                id = Convert.ToInt32(dt.Rows[i][0]);
+                for (int j = startIndex; j < continuedMaxList.Count; j++)
+                {
+                    if (id <= continuedMaxList[j])
+                    {
+                        startIndex = j;
+                        break;
+                    }
+                }
+                foreach (int col in cols)
+                {
+                    int num = Convert.ToInt32(dt.Rows[i][col]);
+                    if (num != -1)
+                        dt.Rows[i][col] = num - subtractList[startIndex];
+                }
+            }
+
+            return dt;
+        }
+
+        public override DataTable GetDiskInfoDatabaseTransferData()
+        {
+            String cmdText = String.Format("select * from {0} order by id;", "disk_info");
+            DataTable dt = CommonDataTable.GetDiskInfoDataTable();
+
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        while (sqlDataReader.Read())
+                        {
+                            DataRow dr = dt.NewRow();
+                            for (int i = 0; i < dt.Columns.Count; i++)
+                            {
+                                dr[i] = sqlDataReader[i];
+                            }
+                            dt.Rows.Add(dr);
+                        }
+                    }
+                }
+                sqlCon.Close();
+            }
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                dt.Rows[i][0] = i + 1;
+            }
+
+            return dt;
+        }
+
+        public override DataTable GetSearchLogDatabaseTransferData()
+        {
+            String cmdText = String.Format("select * from {0} order by id;", "search_log");
+            DataTable dt = CommonDataTable.GetSearchLogDataTable();
+
+            using (MySqlConnection sqlCon = new MySqlConnection(SQLOpenCmdText))
+            {
+                sqlCon.Open();
+                using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
+                {
+                    using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
+                    {
+                        while (sqlDataReader.Read())
+                        {
+                            DataRow dr = dt.NewRow();
+                            for (int i = 0; i < dt.Columns.Count; i++)
+                            {
+                                dr[i] = sqlDataReader[i];
+                            }
+                            dt.Rows.Add(dr);
+                        }
+                    }
+                }
+                sqlCon.Close();
+            }
+
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                dt.Rows[i][0] = i + 1;
+            }
+
+            return dt;
+        }
+
         public override int[] GetDeleteDataFromFilmInfoGroupByDisk(
             String diskDescribe = null)
         {

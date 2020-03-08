@@ -81,6 +81,24 @@ namespace MyFilm
         public abstract void FillRamData();
 
         /// <summary>
+        /// 获取film_info数据库转移数据
+        /// 只可用于转移，id间隔被删除
+        /// </summary>
+        public abstract DataTable GetFilmInfoDatabaseTransferData();
+
+        /// <summary>
+        /// 获取disk_info数据库转移数据
+        /// 只可用于转移，id间隔被删除
+        /// </summary>
+        public abstract DataTable GetDiskInfoDatabaseTransferData();
+
+        /// <summary>
+        /// 获取search_log数据库转移数据
+        /// 只可用于转移，id间隔被删除
+        /// </summary>
+        public abstract DataTable GetSearchLogDatabaseTransferData();
+
+        /// <summary>
         /// 获取待删文件，group by disk
         /// </summary>
         /// <param name="diskDescribe"></param>

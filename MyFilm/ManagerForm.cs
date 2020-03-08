@@ -499,6 +499,11 @@ namespace MyFilm
 
             this.btnAddDisk.Enabled = enabledFlag;
             this.btnUpdateDisk.Enabled = enabledFlag;
+
+            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                this.btnDatabaseCopy.Text = "复制 MySQL 数据到 SQLite 数据库";
+            else
+                this.btnDatabaseCopy.Text = "复制 SQLite 数据到 MySQL 数据库";
         }
 
         private void cbScanMedia_CheckedChanged(object sender, EventArgs e)
@@ -553,6 +558,12 @@ namespace MyFilm
             int affectedRows = SqlData.GetSqlData().SetEmptyFolderToDelete();
 
             MessageBox.Show(String.Format("已将 \'{0}\' 个空文件夹设为待删！", affectedRows));
+        }
+
+        private void btnDatabaseCopy_Click(object sender, EventArgs e)
+        {
+            DataTable dt = SqlData.GetSqlData().GetFilmInfoDatabaseTransferData();
+            int ccc = dt.Rows.Count;
         }
     }
 }
