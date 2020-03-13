@@ -18,10 +18,13 @@ namespace MyFilm
 
         private CheckBox[] cbs = null;
 
-        public SqlForm()
+        private SqlData sqlData = null;
+
+        public SqlForm(SqlData sqlData)
         {
             InitializeComponent();
 
+            this.sqlData = sqlData;
             this.textBoxSql.Init("SELECT * FROM film_info WHERE ");
         }
 
@@ -37,7 +40,7 @@ namespace MyFilm
                 String errMsg = String.Empty;
                 String outputText = String.Empty;
 
-                DataTable dt = SqlData.GetSqlData().SelectAllDataBySqlText(cmdText, ref errMsg);
+                DataTable dt = sqlData.SelectAllDataBySqlText(cmdText, ref errMsg);
 
                 if (dt == null)
                 {
@@ -82,8 +85,7 @@ namespace MyFilm
 
         private void SqlForm_Load(object sender, EventArgs e)
         {
-            this.Text = String.Format("{0}@{1} [MyFilm v{2}]",
-                CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+            this.Text = CommonString.MainFormTitle;
             this.Icon = Properties.Resources.Film;
 
             this.cbindex.Checked = true;
@@ -142,7 +144,7 @@ namespace MyFilm
             this.richTextBoxInfo.Text = "mysql> desc film_info" + Environment.NewLine;
 
             String descFilmInfo = CommonDataTable.DataTableFormatToString(
-                SqlData.GetSqlData().GetDescriptionOfFilmInfo(), null);
+                sqlData.GetDescriptionOfFilmInfo(), null);
             UpdateRichTextBox(descFilmInfo);
         }
 

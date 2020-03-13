@@ -45,20 +45,24 @@ namespace MyFilm
             new string[] { "indexdata", "namedata", "pathdata",
                 "sizedata", "modifieddata", "discdata" };
 
+        private SqlData sqlData = null;
+
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="ipAddress">IP地址</param>
         /// <param name="port">端口号</param>
-        public WebServer(string ipAddress, int port)
+        public WebServer(string ipAddress, int port, SqlData sqlData)
             : base(ipAddress, port)
         {
-            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+            this.sqlData = sqlData;
+            LoginConfig.DataBaseType databaseType = this.sqlData.GetDataBaseType();
+            if (databaseType == LoginConfig.DataBaseType.MYSQL)
             {
                 TitleSuffix = String.Format("[MyFilm v{0}][MySQL]",
                     System.Windows.Forms.Application.ProductVersion);
             }
-            else if (CommonString.DataBaseType == LoginConfig.DataBaseType.SQLITE)
+            else if (databaseType == LoginConfig.DataBaseType.SQLITE)
             {
                 TitleSuffix = String.Format("[MyFilm v{0}][SQLite]",
                     System.Windows.Forms.Application.ProductVersion);
@@ -177,7 +181,7 @@ namespace MyFilm
                 string strTitle = RequestURLInfo.SearchKeyWord;
                 int[] idList = null;
                 DataTable dt = null;
-                DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
+                DataTable diskRootDataTable = sqlData.DiskRootDataTable;
 
                 SelectAllDisk = string.Format("全部(共 {0} 磁盘)",
                     diskRootDataTable.Rows.Count);
@@ -205,7 +209,7 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.DATABASE_ID:
                         {
-                            dt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(RequestURLInfo.DataBaseId);
+                            dt = sqlData.GetDataByIdFromFilmInfo(RequestURLInfo.DataBaseId);
                             if (dt != null && dt.Rows.Count == 1)
                             {
                                 TotalItemCount = 1;
@@ -214,7 +218,7 @@ namespace MyFilm
                                 CurrentFolderId = Convert.ToInt32(dt.Rows[0]["pid"]);
                                 if (CurrentFolderId >= 0)
                                 {
-                                    DataTable folderDt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(CurrentFolderId);
+                                    DataTable folderDt = sqlData.GetDataByIdFromFilmInfo(CurrentFolderId);
                                     if (folderDt != null && folderDt.Rows.Count == 1)
                                     {
                                         UpFolderId = Convert.ToInt32(folderDt.Rows[0]["pid"]);
@@ -231,7 +235,7 @@ namespace MyFilm
                             CurrentFolderId = RequestURLInfo.DataBasePid;
                             if (CurrentFolderId >= 0)
                             {
-                                dt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(CurrentFolderId);
+                                dt = sqlData.GetDataByIdFromFilmInfo(CurrentFolderId);
                                 if (dt != null && dt.Rows.Count == 1)
                                 {
                                     UpFolderId = Convert.ToInt32(dt.Rows[0]["pid"]);
@@ -240,7 +244,7 @@ namespace MyFilm
                                 else return false;
                             }
 
-                            idList = SqlData.GetSqlData().GetDataByPidFromFilmInfo(RequestURLInfo.DataBasePid);
+                            idList = sqlData.GetDataByPidFromFilmInfo(RequestURLInfo.DataBasePid);
                             if (idList != null) TotalItemCount = idList.Length;
 
                             strTitle = string.Format("PID[{0}][{1}]", RequestURLInfo.DataBasePid, TotalItemCount);
@@ -248,12 +252,12 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.SEARCH:
                         {
-                            idList = SqlData.GetSqlData().SearchKeyWordFromFilmInfo(
+                            idList = sqlData.SearchKeyWordFromFilmInfo(
                                 RequestURLInfo.SearchKeyWord,
                                 RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
                             if (idList != null) TotalItemCount = idList.Length;
 
-                            SqlData.GetSqlData().InsertDataToSearchLog(
+                            sqlData.InsertDataToSearchLog(
                                 RequestURLInfo.SearchKeyWord, TotalItemCount, DateTime.Now);
 
                             strTitle = string.Format("SEARCH[{0}][1]", RequestURLInfo.SearchKeyWord, TotalItemCount);
@@ -261,7 +265,7 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
                         {
-                            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfo(
+                            idList = sqlData.GetDeleteDataFromFilmInfo(
                                 RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
                             if (idList != null) TotalItemCount = idList.Length;
 
@@ -270,7 +274,7 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
                         {
-                            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfoGroupByDisk(
+                            idList = sqlData.GetDeleteDataFromFilmInfoGroupByDisk(
                                 RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
                             if (idList != null) TotalItemCount = idList.Length;
 
@@ -279,7 +283,7 @@ namespace MyFilm
                         break;
                     case RequestURL.QueryTypeEnum.TO_WATCH:
                         {
-                            idList = SqlData.GetSqlData().GetWatchDataFromFilmInfo(
+                            idList = sqlData.GetWatchDataFromFilmInfo(
                                 RequestURLInfo.DiskDescribe == SelectAllDisk ? null : RequestURLInfo.DiskDescribe);
                             if (idList != null) TotalItemCount = idList.Length;
 
@@ -312,7 +316,7 @@ namespace MyFilm
                         case RequestURL.QueryTypeEnum.TO_DELETE_BY_TIME:
                         case RequestURL.QueryTypeEnum.TO_DELETE_BY_DISK:
                         case RequestURL.QueryTypeEnum.TO_WATCH:
-                            dt = SqlData.GetSqlData().SelectDataByIDList(
+                            dt = sqlData.SelectDataByIDList(
                                 Helper.ArraySlice(idList, PageIndex * PageItemCount, PageItemCount));
                             gridData = CommonDataTable.ConvertFilmInfoToGrid(dt);
                             break;
@@ -421,7 +425,7 @@ namespace MyFilm
                 // -1 是为根目录，不显示上一目录
                 if (UpFolderId >= -1)
                 {
-                    int[] idList = SqlData.GetSqlData().GetDataByPidFromFilmInfo(UpFolderId);
+                    int[] idList = sqlData.GetDataByPidFromFilmInfo(UpFolderId);
                     if (UpFolderId == -1)
                         href = string.Format("/?offset={0}", Array.IndexOf(idList, CurrentFolderId));
                     else href = string.Format("/?databasepid={0}&amp;offset={1}", UpFolderId, Array.IndexOf(idList, CurrentFolderId));

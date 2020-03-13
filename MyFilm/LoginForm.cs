@@ -12,12 +12,22 @@ namespace MyFilm
         private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
             webDataCaptureResult = null;
 
+        private SqlData sqlData = null;
+
+        /// <summary>
+        /// 登陆配置文件路径
+        /// </summary>
+        public readonly static String LoginConfigPath = Path.Combine(
+            System.Windows.Forms.Application.StartupPath, "MyFilmConfig.xml");
+
         public LoginForm()
         {
             InitializeComponent();
 
             this.ControlBox = false;
         }
+
+        public SqlData GetSqlData() { return this.sqlData; }
 
         // 鼠标双击标题栏消息
         private const int WM_NCLBUTTONDBLCLK = 0xA3;
@@ -38,7 +48,7 @@ namespace MyFilm
         private void LoginForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.Film;
-            this.loginConfigData = LoginConfig.LoadXml(CommonString.LoginConfigPath);
+            this.loginConfigData = LoginConfig.LoadXml(LoginConfigPath);
 
             InitComboxIP();
             InitComboxUser();
@@ -126,22 +136,29 @@ namespace MyFilm
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            CommonString.DataBaseType =
+            LoginConfig.DataBaseType databaseType =
                 this.tabControl.SelectedIndex == 0 ?
                 LoginConfig.DataBaseType.MYSQL :
                 LoginConfig.DataBaseType.SQLITE;
 
-            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+            String dbIP = String.Empty;
+            String dbUserName = String.Empty;
+            String dbPassword = String.Empty;
+            String dbName = String.Empty;
+            String sqliteDateBasePath = String.Empty;
+
+            if (databaseType == LoginConfig.DataBaseType.MYSQL)
             {
-                CommonString.DbIP = this.comboBoxIP.Text;
-                CommonString.DbUserName = this.comboBoxUser.Text;
-                CommonString.DbPassword = this.textBoxPwd.Text;
-                CommonString.DbName = this.comboBoxDataBase.Text;
+                dbIP = this.comboBoxIP.Text;
+                dbUserName = this.comboBoxUser.Text;
+                dbPassword = this.textBoxPwd.Text;
+                dbName = this.comboBoxDataBase.Text;
 
                 List<String> databaseNameList = null;
                 try
                 {
-                    databaseNameList = SqlData.GetSqlData().QueryAllDataBaseNames();
+                    databaseNameList = SqlDataInMySql.QueryAllDataBaseNames(
+                        dbIP, dbUserName, dbPassword);
                 }
                 catch (Exception ex)
                 {
@@ -149,15 +166,16 @@ namespace MyFilm
                     return;
                 }
 
-                if (!databaseNameList.Contains(CommonString.DbName))
+                if (!databaseNameList.Contains(dbName))
                 {
                     if (MessageBox.Show(String.Format("数据库 \"{0}\" 不存在，要创建吗？",
-                        CommonString.DbName), "提示",
+                        dbName), "提示",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         try
                         {
-                            SqlData.GetSqlData().CreateDataBase(CommonString.DbName);
+                            SqlDataInMySql.CreateDataBase(dbIP, dbUserName, dbPassword, dbName);
+                            sqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
                         }
                         catch (Exception ex)
                         {
@@ -170,48 +188,43 @@ namespace MyFilm
             }
             else
             {
-                CommonString.SqliteDateBasePath = this.cbSQLiteDataBase.Text;
+                sqliteDateBasePath = this.cbSQLiteDataBase.Text;
+                sqlData = new SqlDataInSqlite(sqliteDateBasePath);
             }
-
-            CommonString.CrawlURL = this.loginConfigData.crawlURL;
 
             try
             {
-                SqlData sqlData = SqlData.GetSqlData();
                 sqlData.CreateTables();
 
                 DateTime dateTimeLast = DateTime.MinValue;
 
-                if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                if (databaseType == LoginConfig.DataBaseType.MYSQL)
                 {
-                    if (!this.loginConfigData.mysqlConfig.hostIPs.Contains(CommonString.DbIP))
-                        this.loginConfigData.mysqlConfig.hostIPs.Add(CommonString.DbIP);
+                    if (!this.loginConfigData.mysqlConfig.hostIPs.Contains(dbIP))
+                        this.loginConfigData.mysqlConfig.hostIPs.Add(dbIP);
 
                     if (this.loginConfigData.mysqlConfig.userNameAndPassWords.FindIndex(
-                        x => x.UserName == CommonString.DbUserName) == -1)
+                        x => x.UserName == dbUserName) == -1)
                         this.loginConfigData.mysqlConfig.userNameAndPassWords.Add(
                             new LoginConfig.UserNameAndPassWord()
                             {
-                                UserName = CommonString.DbUserName,
-                                PassWord = Helper.Encryption(CommonString.DbPassword)
+                                UserName = dbUserName,
+                                PassWord = Helper.Encryption(dbPassword)
                             });
 
                     if (this.loginConfigData.mysqlConfig.dataBaseConfigs.FindIndex(
-                        x => x.Name == CommonString.DbName) == -1)
+                        x => x.Name == dbName) == -1)
                         this.loginConfigData.mysqlConfig.dataBaseConfigs.Add(
                             new LoginConfig.DataBaseConfig()
                             {
-                                Name = CommonString.DbName,
+                                Name = dbName,
                                 WebDataCaptureTime =
                                     DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                             });
 
-                    this.loginConfigData.mysqlConfig.selectedUserName =
-                        CommonString.DbUserName;
-                    this.loginConfigData.mysqlConfig.selectedIP =
-                        CommonString.DbIP;
-                    this.loginConfigData.mysqlConfig.selectedDataBaseName =
-                        CommonString.DbName;
+                    this.loginConfigData.mysqlConfig.selectedUserName = dbUserName;
+                    this.loginConfigData.mysqlConfig.selectedIP = dbIP;
+                    this.loginConfigData.mysqlConfig.selectedDataBaseName = dbName;
 
                     DateTime.TryParse(
                         this.loginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime,
@@ -220,16 +233,15 @@ namespace MyFilm
                 else
                 {
                     if (this.loginConfigData.sqliteConfig.dataBaseConfigs.FindIndex(
-                        x => x.Name == CommonString.SqliteDateBasePath) == -1)
+                        x => x.Name == sqliteDateBasePath) == -1)
                         this.loginConfigData.sqliteConfig.dataBaseConfigs.Add(
                             new LoginConfig.DataBaseConfig()
                             {
-                                Name = CommonString.SqliteDateBasePath,
+                                Name = sqliteDateBasePath,
                                 WebDataCaptureTime =
                                     DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                             });
-                    this.loginConfigData.sqliteConfig.selectedDataBasePath =
-                        CommonString.SqliteDateBasePath;
+                    this.loginConfigData.sqliteConfig.selectedDataBasePath = sqliteDateBasePath;
 
                     DateTime.TryParse(
                         this.loginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime,
@@ -239,7 +251,8 @@ namespace MyFilm
                 TimeSpan ts = DateTime.Now.Subtract(dateTimeLast);
                 if (ts.Days > 3)
                 {
-                    WaitingForm waitingForm = new WaitingForm(SetWebCaptureDataResult);
+                    WaitingForm waitingForm = new WaitingForm(
+                        SetWebCaptureDataResult, sqlData, this.loginConfigData.crawlURL);
                     waitingForm.ShowDialog();
 
                     if (this.webDataCaptureResult.code >= 0)
@@ -247,16 +260,16 @@ namespace MyFilm
                     MessageBox.Show(this.webDataCaptureResult.strMsg);
                 }
 
-                if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                if (databaseType == LoginConfig.DataBaseType.MYSQL)
                     this.loginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime
                         = dateTimeLast.ToString("yyyy-MM-dd HHH:mm:ss");
                 else
                     this.loginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime
                         = dateTimeLast.ToString("yyyy-MM-dd HHH:mm:ss");
 
-                this.loginConfigData.dataBaseType = CommonString.DataBaseType;
+                this.loginConfigData.dataBaseType = databaseType;
 
-                LoginConfig.SaveXml(this.loginConfigData, CommonString.LoginConfigPath);
+                LoginConfig.SaveXml(this.loginConfigData, LoginConfigPath);
                 sqlData.FillRamData();
 
                 this.DialogResult = DialogResult.OK;

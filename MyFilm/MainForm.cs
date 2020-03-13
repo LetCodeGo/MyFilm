@@ -98,22 +98,31 @@ namespace MyFilm
         /// </summary>
         WebServer webServer = null;
 
-        public MainForm()
+        /// <summary>
+        /// 连接数据库
+        /// </summary>
+        SqlData sqlData = null;
+
+        public MainForm(SqlData sqlData)
         {
             InitializeComponent();
+            this.sqlData = sqlData;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+            LoginConfig.DataBaseType databaseType = this.sqlData.GetDataBaseType();
+            if (databaseType == LoginConfig.DataBaseType.MYSQL)
             {
+                SqlDataInMySql sqlDataInMySql = sqlData as SqlDataInMySql;
                 CommonString.MainFormTitle = String.Format("{0}@{1} [MyFilm v{2}][MySQL]",
-                    CommonString.DbName, CommonString.DbIP, Application.ProductVersion);
+                    sqlDataInMySql.DbName, sqlDataInMySql.DbIP, Application.ProductVersion);
             }
-            else if (CommonString.DataBaseType == LoginConfig.DataBaseType.SQLITE)
+            else if (databaseType == LoginConfig.DataBaseType.SQLITE)
             {
+                SqlDataInSqlite sqlDataInSqlite = sqlData as SqlDataInSqlite;
                 CommonString.MainFormTitle = String.Format("{0} [MyFilm v{1}][SQLite]",
-                    CommonString.SqliteDateBasePath, Application.ProductVersion);
+                    sqlDataInSqlite.SqliteDataBasePath, Application.ProductVersion);
             }
 
             this.Text = CommonString.MainFormTitle;
@@ -127,12 +136,12 @@ namespace MyFilm
             }
             else
             {
-                if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+                if (databaseType == LoginConfig.DataBaseType.MYSQL)
                 {
                     this.notifyIcon.Text = String.Format("[MyFilm v{0}][MySQL]",
                         Application.ProductVersion);
                 }
-                else if (CommonString.DataBaseType == LoginConfig.DataBaseType.SQLITE)
+                else if (databaseType == LoginConfig.DataBaseType.SQLITE)
                 {
                     this.notifyIcon.Text = String.Format("[MyFilm v{0}][SQLite]",
                         Application.ProductVersion);
@@ -157,8 +166,8 @@ namespace MyFilm
             t2.Start();
 
             // 获取根目录数据源
-            SqlData.GetSqlData().SetDiskRootDirectoryInfo();
-            totalRowCount = SqlData.GetSqlData().DiskRootDataTable.Rows.Count;
+            sqlData.SetDiskRootDirectoryInfo();
+            totalRowCount = sqlData.DiskRootDataTable.Rows.Count;
 
             InitPageCombox();
             InitDiskCombox();
@@ -181,7 +190,7 @@ namespace MyFilm
 
         private void StartWebServer()
         {
-            webServer = new WebServer("0.0.0.0", 5555);
+            webServer = new WebServer("0.0.0.0", 5555, sqlData);
             webServer.SetRoot(AppDomain.CurrentDomain.BaseDirectory);
             webServer.Start();
         }
@@ -290,7 +299,7 @@ namespace MyFilm
         /// </summary>
         private void InitDiskCombox()
         {
-            DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
+            DataTable diskRootDataTable = sqlData.DiskRootDataTable;
 
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
@@ -382,7 +391,7 @@ namespace MyFilm
                 totalRowCount, currentPageIndex + 1, totalPageCount);
 
             SetPageComboxIndex();
-            DataTable diskRootDataTable = SqlData.GetSqlData().DiskRootDataTable;
+            DataTable diskRootDataTable = sqlData.DiskRootDataTable;
 
             if (actionType == ActionType.ACTION_DISK_ROOT)
             {
@@ -395,7 +404,7 @@ namespace MyFilm
             }
             else
             {
-                DataTable dt = SqlData.GetSqlData().SelectDataByIDList(
+                DataTable dt = sqlData.SelectDataByIDList(
                         Helper.ArraySlice(idList, startIndex, pageRowCount));
                 if (dt != null && dt.Rows.Count > 0)
                     gridViewData = CommonDataTable.ConvertFilmInfoToGrid(dt);
@@ -444,7 +453,7 @@ namespace MyFilm
         private void SqlQuery(string cmdText)
         {
             String errMsg = String.Empty;
-            int[] newIDList = SqlData.GetSqlData().SelectIDBySqlText(cmdText, ref errMsg);
+            int[] newIDList = sqlData.SelectIDBySqlText(cmdText, ref errMsg);
 
             if (newIDList != null)
             {
@@ -483,7 +492,7 @@ namespace MyFilm
                             keyWord);
             actionType = ActionType.ACTION_KEY_WORD_SEARCH;
 
-            idList = SqlData.GetSqlData().SearchKeyWordFromFilmInfo(
+            idList = sqlData.SearchKeyWordFromFilmInfo(
                 keyWord, this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = (idList == null ? 0 : idList.Length);
 
@@ -493,7 +502,7 @@ namespace MyFilm
             InitPageCombox();
 
             // 写入搜索记录
-            SqlData.GetSqlData().InsertDataToSearchLog(keyWord, totalRowCount, DateTime.Now);
+            sqlData.InsertDataToSearchLog(keyWord, totalRowCount, DateTime.Now);
 
             ShowDataGridViewPage(0);
         }
@@ -505,7 +514,7 @@ namespace MyFilm
                             this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
-            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfo(
+            idList = sqlData.GetDeleteDataFromFilmInfo(
                 this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
@@ -521,7 +530,7 @@ namespace MyFilm
                             this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_DELETE_SEARCH;
 
-            idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfoGroupByDisk(
+            idList = sqlData.GetDeleteDataFromFilmInfoGroupByDisk(
                 this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
@@ -538,7 +547,7 @@ namespace MyFilm
                             this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
             actionType = ActionType.ACTION_WATCH_SEARCH;
 
-            idList = SqlData.GetSqlData().GetWatchDataFromFilmInfo(
+            idList = sqlData.GetWatchDataFromFilmInfo(
                 this.comboBoxDisk.SelectedIndex == 0 ? null : diskDescribe);
             totalRowCount = idList.Length;
 
@@ -549,7 +558,7 @@ namespace MyFilm
 
         private void btnManager_Click(object sender, EventArgs e)
         {
-            ManagerForm form = new ManagerForm();
+            ManagerForm form = new ManagerForm(sqlData);
             //this.managerFormSetEnableAction = form.SetControlEnable;
             form.closeAction = this.ManagerFormClosed;
             form.ShowDialog();
@@ -570,14 +579,14 @@ namespace MyFilm
                     return;
                 }
 
-                DataTable dt = SqlData.GetSqlData().GetDataByIdFromFilmInfo(pid);
+                DataTable dt = sqlData.GetDataByIdFromFilmInfo(pid);
 
                 int folderUpID = Convert.ToInt32(dt.Rows[0]["pid"]);
                 actionType = ActionType.ACTION_FOLDER_UP;
 
                 queryInfo = String.Format("索引 \'{0}\'", Helper.GetUpFolder(dt.Rows[0]["path"].ToString()));
 
-                idList = SqlData.GetSqlData().GetDataByPidFromFilmInfo(folderUpID);
+                idList = sqlData.GetDataByPidFromFilmInfo(folderUpID);
                 totalRowCount = idList.Length;
                 int offset = Array.IndexOf(idList, pid);
                 Debug.Assert(offset >= 0 && offset < totalRowCount);
@@ -638,9 +647,9 @@ namespace MyFilm
             queryInfo = "索引 根目录";
             actionType = ActionType.ACTION_DISK_ROOT;
 
-            SqlData.GetSqlData().SetDiskRootDirectoryInfo();
+            sqlData.SetDiskRootDirectoryInfo();
 
-            totalRowCount = SqlData.GetSqlData().DiskRootDataTable.Rows.Count;
+            totalRowCount = sqlData.DiskRootDataTable.Rows.Count;
 
             InitPageCombox();
             InitDiskCombox();
@@ -686,7 +695,7 @@ namespace MyFilm
                 actionType = ActionType.ACTION_FOLDER_DOWN;
                 folderDownID = pid;
 
-                idList = SqlData.GetSqlData().GetDataByPidFromFilmInfo(pid);
+                idList = sqlData.GetDataByPidFromFilmInfo(pid);
                 totalRowCount = idList.Length;
 
                 int offset = 0;
@@ -820,7 +829,7 @@ namespace MyFilm
 
                 this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = true;
             }
-            SqlData.GetSqlData().UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList, DateTime.Now, true);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList, DateTime.Now, true);
         }
 
         private void toolStripMenuItemSetWatch_Click(object sender, EventArgs e)
@@ -844,7 +853,7 @@ namespace MyFilm
 
                 this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = true;
             }
-            SqlData.GetSqlData().UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList, DateTime.Now, true);
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList, DateTime.Now, true);
         }
 
         private void toolStripMenuItemCancelDelete_Click(object sender, EventArgs e)
@@ -868,7 +877,7 @@ namespace MyFilm
 
                 this.dataGridView.Rows[row.Index].Cells["to_delete_ex"].Value = false;
             }
-            SqlData.GetSqlData().UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList,
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(false, setStateStructList,
                 System.Data.SqlTypes.SqlDateTime.MinValue.Value, false);
         }
 
@@ -893,7 +902,7 @@ namespace MyFilm
 
                 this.dataGridView.Rows[row.Index].Cells["to_watch_ex"].Value = false;
             }
-            SqlData.GetSqlData().UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList,
+            sqlData.UpdateWatchOrDeleteStateFromFilmInfo(true, setStateStructList,
                 System.Data.SqlTypes.SqlDateTime.MinValue.Value, false);
         }
 
@@ -1037,8 +1046,8 @@ namespace MyFilm
             }
 
             // 打印目录下的目录信息
-            DataTable childFolderDt = SqlData.GetSqlData().GetChildFolderFromFilmInfo(folderID);
-            DataTable childFileDt = SqlData.GetSqlData().GetChildFileFromFilmInfo(folderID);
+            DataTable childFolderDt = sqlData.GetChildFolderFromFilmInfo(folderID);
+            DataTable childFileDt = sqlData.GetChildFileFromFilmInfo(folderID);
 
             for (int i = 0; i < childFolderDt.Rows.Count; i++)
             {
@@ -1095,7 +1104,7 @@ namespace MyFilm
         {
             if (e.Control && e.KeyCode == Keys.Q)
             {
-                SqlForm form = new SqlForm();
+                SqlForm form = new SqlForm(sqlData);
                 form.SqlQueryAction = this.SqlQuery;
                 form.SqlFormColsedAction = this.SqlFormColsed;
                 this.UpdateSqlFormRichTextBoxActionByDataTable = form.UpdateRichTextBox;

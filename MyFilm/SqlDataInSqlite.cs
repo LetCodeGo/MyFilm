@@ -12,28 +12,28 @@ namespace MyFilm
         /// <summary>
         /// 打开数据库
         /// </summary>
-        private static String SQLOpenCmdText =
-            String.Format("data source = {0};", CommonString.SqliteDateBasePath);
+        private readonly String SQLOpenCmdText = String.Empty;
 
-        private static SqlDataInSqlite sqliteData = null;
-        private static readonly object locker = new object();
+        /// <summary>
+        /// sqlite 数据库默认文件路径
+        /// </summary>
+        public static readonly String SqliteDefaultDateBasePath = Path.Combine(
+            System.Windows.Forms.Application.StartupPath, "MyFilmSqlite.db");
 
-        private SqlDataInSqlite() { }
+        /// <summary>
+        /// sqlite 数据库文件路径
+        /// </summary>
+        public readonly String SqliteDataBasePath = String.Empty;
 
-        public static SqlDataInSqlite GetInstance()
+        public SqlDataInSqlite(String sqliteDataBasePath)
         {
-            if (sqliteData == null)
-            {
-                lock (locker)
-                {
-                    // 如果类的实例不存在则创建，否则直接返回
-                    if (sqliteData == null)
-                    {
-                        sqliteData = new SqlDataInSqlite();
-                    }
-                }
-            }
-            return sqliteData;
+            this.SqliteDataBasePath = sqliteDataBasePath;
+            SQLOpenCmdText = String.Format("data source = {0};", sqliteDataBasePath);
+        }
+
+        public override LoginConfig.DataBaseType GetDataBaseType()
+        {
+            return LoginConfig.DataBaseType.SQLITE;
         }
 
         /// <summary>
@@ -355,40 +355,40 @@ namespace MyFilm
             return ids;
         }
 
-        public override List<String> QueryAllDataBaseNames()
-        {
-            List<String> nameList = new List<String>();
+        //public override List<String> QueryAllDataBaseNames()
+        //{
+        //    List<String> nameList = new List<String>();
 
-            using (SQLiteConnection sqlCon = new SQLiteConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (SQLiteCommand sqlCmd = new SQLiteCommand(".databases;", sqlCon))
-                {
-                    using (SQLiteDataReader sqlDataReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlDataReader.Read())
-                            nameList.Add(sqlDataReader[0].ToString());
-                    }
-                }
-                sqlCon.Close();
-            }
+        //    using (SQLiteConnection sqlCon = new SQLiteConnection(SQLOpenCmdText))
+        //    {
+        //        sqlCon.Open();
+        //        using (SQLiteCommand sqlCmd = new SQLiteCommand(".databases;", sqlCon))
+        //        {
+        //            using (SQLiteDataReader sqlDataReader = sqlCmd.ExecuteReader())
+        //            {
+        //                while (sqlDataReader.Read())
+        //                    nameList.Add(sqlDataReader[0].ToString());
+        //            }
+        //        }
+        //        sqlCon.Close();
+        //    }
 
-            return nameList;
-        }
+        //    return nameList;
+        //}
 
-        public override void CreateDataBase(String databaseName)
-        {
-            using (SQLiteConnection sqlCon = new SQLiteConnection(SQLOpenCmdText))
-            {
-                sqlCon.Open();
-                using (SQLiteCommand sqlCmd = new SQLiteCommand(
-                    String.Format("create database {0};", databaseName), sqlCon))
-                {
-                    sqlCmd.ExecuteNonQuery();
-                }
-                sqlCon.Close();
-            }
-        }
+        //public override void CreateDataBase(String databaseName)
+        //{
+        //    using (SQLiteConnection sqlCon = new SQLiteConnection(SQLOpenCmdText))
+        //    {
+        //        sqlCon.Open();
+        //        using (SQLiteCommand sqlCmd = new SQLiteCommand(
+        //            String.Format("create database {0};", databaseName), sqlCon))
+        //        {
+        //            sqlCmd.ExecuteNonQuery();
+        //        }
+        //        sqlCon.Close();
+        //    }
+        //}
 
         public override void FillRamData()
         {

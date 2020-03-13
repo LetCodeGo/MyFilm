@@ -5,28 +5,6 @@ namespace MyFilm
 {
     public class CommonString
     {
-        public static LoginConfig.DataBaseType DataBaseType =
-            LoginConfig.DataBaseType.MYSQL;
-
-        public static String CrawlURL =
-            "https://digiraw.com/DVD-4K-Bluray-ripping-service/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
-
-        /// <summary>
-        /// 登陆配置文件路径
-        /// </summary>
-        public static String LoginConfigPath = Path.Combine(
-            System.Windows.Forms.Application.StartupPath, "MyFilmConfig.xml");
-        /// <summary>
-        /// sqlite 数据库文件路径
-        /// </summary>
-        public static String SqliteDateBasePath = Path.Combine(
-            System.Windows.Forms.Application.StartupPath, "MyFilmSqlite.db");
-
-        public static String DbIP = "127.0.0.1";
-        public static String DbUserName = string.Empty;
-        public static String DbPassword = string.Empty;
-        public static String DbName = "myfilm";
-
         // Web搜索关键字
         public static String WebSearchKeyWord = String.Empty;
         // 主界面标题
@@ -56,5 +34,8 @@ namespace MyFilm
 
         public readonly static string[] MediaExts =
             new string[] { ".mkv", ".mp4", ".flv", ".ts", ".m2ts" };
+
+        public readonly static String CrawlURL =
+            "https://digiraw.com/DVD-4K-Bluray-ripping-service/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
     }
 }

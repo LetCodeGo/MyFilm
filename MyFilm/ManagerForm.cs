@@ -25,9 +25,12 @@ namespace MyFilm
 
         private bool needReFillRamData = false;
 
-        public ManagerForm()
+        private SqlData sqlData = null;
+
+        public ManagerForm(SqlData sqlData)
         {
             InitializeComponent();
+            this.sqlData = sqlData;
         }
 
         public void ThreaScanDiskResult(bool rst)
@@ -52,7 +55,7 @@ namespace MyFilm
             foreach (DataGridViewColumn col in this.dataGridView.Columns)
                 col.SortMode = DataGridViewColumnSortMode.NotSortable;
 
-            gridViewData = ConvertDiskInfoToGrid(SqlData.GetSqlData().GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
         }
 
@@ -143,12 +146,13 @@ namespace MyFilm
                 ProgressForm progressForm = new ProgressForm(new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
                     bBriefScan ? setLayer : Int32.MaxValue,
-                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult)));
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
+                    sqlData));
                 progressForm.ShowDialog();
 
                 this.needReFillRamData = true;
 
-                gridViewData = ConvertDiskInfoToGrid(SqlData.GetSqlData().GetAllDataFromDiskInfo());
+                gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
                 string extraMsg = string.Empty;
@@ -188,8 +192,8 @@ namespace MyFilm
                     return;
                 }
 
-                int deleteFilmNumber = SqlData.GetSqlData().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
-                int deleteDiskNumber = SqlData.GetSqlData().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
+                int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
+                int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
                 bool bBriefScan = this.checkBoxBriefScan.Checked;
                 int setLayer = Convert.ToInt32(this.tbeLayer.Text);
@@ -197,12 +201,13 @@ namespace MyFilm
                 ProgressForm progressForm = new ProgressForm(new ThreadScanDisk(
                     dlg.SelectedPath, diskDescribe, this.cbScanMedia.Checked,
                     bBriefScan ? setLayer : Int32.MaxValue,
-                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult)));
+                    new ThreadScanDisk.ThreadSacnDiskCallback(ThreaScanDiskResult),
+                    sqlData));
                 progressForm.ShowDialog();
 
                 this.needReFillRamData = true;
 
-                gridViewData = ConvertDiskInfoToGrid(SqlData.GetSqlData().GetAllDataFromDiskInfo());
+                gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
                 this.dataGridView.DataSource = gridViewData;
 
                 string extraMsg = string.Empty;
@@ -233,12 +238,12 @@ namespace MyFilm
                 return;
             }
 
-            int deleteFilmNumber = SqlData.GetSqlData().DeleteByDiskDescribeFromFilmInfo(diskDescribe);
-            int deleteDiskNumber = SqlData.GetSqlData().DeleteByDiskDescribeFromDiskInfo(diskDescribe);
+            int deleteFilmNumber = sqlData.DeleteByDiskDescribeFromFilmInfo(diskDescribe);
+            int deleteDiskNumber = sqlData.DeleteByDiskDescribeFromDiskInfo(diskDescribe);
 
             this.needReFillRamData = true;
 
-            gridViewData = ConvertDiskInfoToGrid(SqlData.GetSqlData().GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
             MessageBox.Show(String.Format("删除磁盘 \'{0}\' 完成！", diskDescribe),
@@ -273,11 +278,11 @@ namespace MyFilm
                 return;
             }
 
-            //int deleteNumber = SqlData.GetSqlData().CountDeleteDataFromFilmInfo(diskDescribe);
-            //DataTable dt = SqlData.GetSqlData().GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
+            //int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
+            //DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
 
-            int[] idList = SqlData.GetSqlData().GetDeleteDataFromFilmInfo(diskDescribe);
-            DataTable dt = SqlData.GetSqlData().SelectDataByIDList(idList);
+            int[] idList = sqlData.GetDeleteDataFromFilmInfo(diskDescribe);
+            DataTable dt = sqlData.SelectDataByIDList(idList);
             Debug.Assert(idList.Length == dt.Rows.Count);
 
             if (!Directory.Exists(moveToFolder)) Directory.CreateDirectory(moveToFolder);
@@ -380,10 +385,10 @@ namespace MyFilm
                 return;
             }
 
-            int changeInFilmInfo = SqlData.GetSqlData().UpdateDiskDescribeFromFilmInfo(diskDescribe, diskNewDescribe);
-            int changeInDiskInfo = SqlData.GetSqlData().UpdateDiskDescribeFromDiskInfo(diskDescribe, diskNewDescribe);
+            int changeInFilmInfo = sqlData.UpdateDiskDescribeFromFilmInfo(diskDescribe, diskNewDescribe);
+            int changeInDiskInfo = sqlData.UpdateDiskDescribeFromDiskInfo(diskDescribe, diskNewDescribe);
 
-            gridViewData = ConvertDiskInfoToGrid(SqlData.GetSqlData().GetAllDataFromDiskInfo());
+            gridViewData = ConvertDiskInfoToGrid(sqlData.GetAllDataFromDiskInfo());
             this.dataGridView.DataSource = gridViewData;
 
             MessageBox.Show(String.Format("更改磁盘描述 \'{0}\' 为 \'{1}\' 完成！", diskDescribe, diskNewDescribe),
@@ -440,27 +445,32 @@ namespace MyFilm
 
         private void btnUpdateROF4K_Click(object sender, EventArgs e)
         {
-            WaitingForm waitingForm = new WaitingForm(SetWebCaptureDataResult);
+            LoginConfig.LoginConfigData loginConfigData =
+                LoginConfig.LoadXml(LoginForm.LoginConfigPath);
+            WaitingForm waitingForm = new WaitingForm(
+                SetWebCaptureDataResult, sqlData, loginConfigData.crawlURL);
             waitingForm.ShowDialog();
 
             if (this.webDataCaptureResult.code >= 0)
             {
-                LoginConfig.LoginConfigData loginConfigData =
-                    LoginConfig.LoadXml(CommonString.LoginConfigPath);
-                if (loginConfigData.dataBaseType == LoginConfig.DataBaseType.MYSQL)
+                LoginConfig.DataBaseType databaseType = this.sqlData.GetDataBaseType();
+                loginConfigData.dataBaseType = databaseType;
+                if (databaseType == LoginConfig.DataBaseType.MYSQL)
                 {
-                    loginConfigData.mysqlConfig.selectedDataBaseName = CommonString.DbName;
+                    SqlDataInMySql sqlDataInMySql = sqlData as SqlDataInMySql;
+                    loginConfigData.mysqlConfig.selectedDataBaseName = sqlDataInMySql.DbName;
                     loginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime =
                         this.webDataCaptureResult.crawlTime.ToString("yyyy-MM-dd HHH:mm:ss");
                 }
-                else
+                else if (databaseType == LoginConfig.DataBaseType.SQLITE)
                 {
+                    SqlDataInSqlite sqlDataInSqlite = sqlData as SqlDataInSqlite;
                     loginConfigData.sqliteConfig.selectedDataBasePath =
-                        CommonString.SqliteDateBasePath;
+                        sqlDataInSqlite.SqliteDataBasePath;
                     loginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime =
                         this.webDataCaptureResult.crawlTime.ToString("yyyy-MM-dd HHH:mm:ss");
                 }
-                LoginConfig.SaveXml(loginConfigData, CommonString.LoginConfigPath);
+                LoginConfig.SaveXml(loginConfigData, LoginForm.LoginConfigPath);
             }
 
             if (this.webDataCaptureResult.code > 0) this.needReFillRamData = true;
@@ -500,10 +510,10 @@ namespace MyFilm
             this.btnAddDisk.Enabled = enabledFlag;
             this.btnUpdateDisk.Enabled = enabledFlag;
 
-            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
-                this.btnDatabaseCopy.Text = "复制 MySQL 数据到 SQLite 数据库";
-            else
-                this.btnDatabaseCopy.Text = "复制 SQLite 数据到 MySQL 数据库";
+            //if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
+            //    this.btnDatabaseCopy.Text = "复制 MySQL 数据到 SQLite 数据库";
+            //else
+            //    this.btnDatabaseCopy.Text = "复制 SQLite 数据到 MySQL 数据库";
         }
 
         private void cbScanMedia_CheckedChanged(object sender, EventArgs e)
@@ -549,21 +559,26 @@ namespace MyFilm
 
         private void ManagerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (needReFillRamData) SqlData.GetSqlData().FillRamData();
+            if (needReFillRamData) sqlData.FillRamData();
             this.closeAction?.Invoke();
         }
 
         private void btnSetEmptyFolderDelete_Click(object sender, EventArgs e)
         {
-            int affectedRows = SqlData.GetSqlData().SetEmptyFolderToDelete();
+            int affectedRows = sqlData.SetEmptyFolderToDelete();
 
             MessageBox.Show(String.Format("已将 \'{0}\' 个空文件夹设为待删！", affectedRows));
         }
 
         private void btnDatabaseCopy_Click(object sender, EventArgs e)
         {
-            DataTable dt = SqlData.GetSqlData().GetFilmInfoDatabaseTransferData();
-            int ccc = dt.Rows.Count;
+            DataTable filmInfoDataTable = sqlData.GetFilmInfoDatabaseTransferData();
+            DataTable diskInfoDataTable = sqlData.GetDiskInfoDatabaseTransferData();
+            DataTable searchLogDataTable = sqlData.GetSearchLogDatabaseTransferData();
+
+            SqlData importSqlData = null;
+
+            importSqlData.InsertDataToFilmInfo(filmInfoDataTable);
         }
     }
 }

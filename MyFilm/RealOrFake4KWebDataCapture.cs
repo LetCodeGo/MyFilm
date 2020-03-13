@@ -22,21 +22,26 @@ namespace MyFilm
         private ThreadWebDataCaptureCallback threadWebDataCaptureCallback = null;
         private ThreadWebDataCaptureFinish threadWebDataCaptureFinish = null;
 
+        private SqlData sqlData = null;
+        private String crawlURL = CommonString.CrawlURL;
+
         public RealOrFake4KWebDataCapture(ThreadWebDataCaptureCallback threadCallback,
-            ThreadWebDataCaptureFinish threadFinish)
+            ThreadWebDataCaptureFinish threadFinish, SqlData sqlData, String crawlURL)
         {
             this.threadWebDataCaptureCallback = threadCallback;
             this.threadWebDataCaptureFinish = threadFinish;
+            this.sqlData = sqlData;
+            this.crawlURL = crawlURL;
         }
 
-        private static DataTable CrawlData(ref string errMsg)
+        private static DataTable CrawlData(ref string errMsg, String crawlURL)
         {
             HtmlWeb htmlWeb = new HtmlWeb();
             HtmlDocument document = null;
 
             try
             {
-                document = htmlWeb.Load(CommonString.CrawlURL);
+                document = htmlWeb.Load(crawlURL);
             }
             catch (Exception ex)
             {
@@ -90,39 +95,39 @@ namespace MyFilm
             rst.crawlTime = DateTime.Now;
 
             string errMsg = "";
-            DataTable crawlDt = CrawlData(ref errMsg);
+            DataTable crawlDt = CrawlData(ref errMsg, this.crawlURL);
             if (crawlDt == null || crawlDt.Rows.Count == 0)
             {
                 rst.strMsg = string.Format("从网页\n{0}\n抓取数据失败\n{1}",
-                    CommonString.CrawlURL, errMsg);
+                    this.crawlURL, errMsg);
                 rst.code = -1;
                 this.threadWebDataCaptureCallback?.Invoke(rst);
                 this.threadWebDataCaptureFinish?.Invoke();
                 return;
             }
 
-            int diskCount = SqlData.GetSqlData().CountRowsOfDiskFromFilmInfo(
+            int diskCount = sqlData.CountRowsOfDiskFromFilmInfo(
                 CommonString.RealOrFake4KDiskName);
             if ((diskCount - 1) >= crawlDt.Rows.Count)
             {
                 // 更新时间
                 int affectedCount =
-                    SqlData.GetSqlData().UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
+                    sqlData.UpdateDiskRealOrFake4KInModifyTimeFromDiskInfo(
                         rst.crawlTime);
                 Debug.Assert(diskCount == affectedCount);
 
                 rst.strMsg = string.Format(
                     "从网页\n{0}\n抓取数据条数 {1} 小于或等于数据库已存在条数 {2}\n不更新数据库信息",
-                    CommonString.CrawlURL, crawlDt.Rows.Count, diskCount - 1);
+                    this.crawlURL, crawlDt.Rows.Count, diskCount - 1);
                 rst.code = 0;
                 this.threadWebDataCaptureCallback?.Invoke(rst);
                 this.threadWebDataCaptureFinish?.Invoke();
                 return;
             }
 
-            SqlData.GetSqlData().DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
+            sqlData.DeleteByDiskDescribeFromFilmInfo(CommonString.RealOrFake4KDiskName);
 
-            int maxId = SqlData.GetSqlData().GetMaxIdOfFilmInfo();
+            int maxId = sqlData.GetMaxIdOfFilmInfo();
             int startId = maxId + 1;
             int diskId = startId;
 
@@ -172,10 +177,10 @@ namespace MyFilm
                 dt.Rows.Add(dr);
             }
 
-            SqlData.GetSqlData().InsertDataToFilmInfo(dt);
+            sqlData.InsertDataToFilmInfo(dt);
 
             rst.strMsg = string.Format("从网页\n{0}\n抓取数据 {1} 条，已写入数据库",
-                CommonString.CrawlURL, crawlDt.Rows.Count);
+                this.crawlURL, crawlDt.Rows.Count);
             rst.code = crawlDt.Rows.Count;
             this.threadWebDataCaptureCallback?.Invoke(rst);
             this.threadWebDataCaptureFinish?.Invoke();

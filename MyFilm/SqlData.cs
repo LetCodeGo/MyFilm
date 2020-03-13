@@ -59,13 +59,6 @@ namespace MyFilm
         /// </summary>
         public DataTable DiskRootDataTable { get; private set; }
 
-        public static SqlData GetSqlData()
-        {
-            if (CommonString.DataBaseType == LoginConfig.DataBaseType.MYSQL)
-                return SqlDataInMySql.GetInstance();
-            else return SqlDataInSqlite.GetInstance();
-        }
-
         protected abstract int ExecuteNonQueryGetAffected(
             String cmdText, Dictionary<String, Object> sqlParamDic = null);
         protected abstract int ExecuteScalarGetNum(
@@ -106,17 +99,19 @@ namespace MyFilm
         public abstract int[] GetDeleteDataFromFilmInfoGroupByDisk(
             String diskDescribe = null);
 
-        /// <summary>
-        /// 查找所有已存在数据库名
-        /// </summary>
-        /// <returns></returns>
-        public abstract List<String> QueryAllDataBaseNames();
+        public abstract LoginConfig.DataBaseType GetDataBaseType();
 
-        /// <summary>
-        /// 创建数据库
-        /// </summary>
-        /// <param name="databaseName"></param>
-        public abstract void CreateDataBase(String databaseName);
+        ///// <summary>
+        ///// 查找所有已存在数据库名
+        ///// </summary>
+        ///// <returns></returns>
+        //public abstract List<String> QueryAllDataBaseNames();
+
+        ///// <summary>
+        ///// 创建数据库
+        ///// </summary>
+        ///// <param name="databaseName"></param>
+        //public abstract void CreateDataBase(String databaseName);
 
         /// <summary>
         /// 创建表
@@ -264,7 +259,7 @@ namespace MyFilm
         }
 
         /// <summary>
-        /// 向film_info数据库插入数据，注意dt的列为FillFilmInfoColumn生成
+        /// 向film_info数据库插入数据，注意dt的列
         /// </summary>
         /// <param name="dt">插入的数据</param>
         /// <param name="start">起始，从0开始</param>

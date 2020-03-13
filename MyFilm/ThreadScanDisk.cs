@@ -60,15 +60,19 @@ namespace MyFilm
         private static bool mediaInfoInitFlag = false;
         private static string mediaInfoInitErrMsg = "";
 
+        private SqlData sqlData = null;
+
         public ThreadScanDisk(string diskPath, string diskDescribe,
             bool scanMediaInfo, int setScanLayer,
-            ThreadSacnDiskCallback threadCallback)
+            ThreadSacnDiskCallback threadCallback,
+            SqlData sqlData)
         {
             this.diskPath = diskPath;
             this.diskDescribe = diskDescribe;
             this.scanMediaInfo = scanMediaInfo;
             this.setMaxScanLayer = setScanLayer;
             this.threadCallback = threadCallback;
+            this.sqlData = sqlData;
 
             if (!mediaInfoInitFlag)
             {
@@ -105,7 +109,7 @@ namespace MyFilm
             actualMaxScanLayer = 0;
             bCompleteScan = true;
 
-            int maxId = SqlData.GetSqlData().GetMaxIdOfFilmInfo();
+            int maxId = sqlData.GetMaxIdOfFilmInfo();
             int startId = maxId + 1;
             startIdGlobal = startId;
             diskScanIndex = 1;
@@ -168,10 +172,10 @@ namespace MyFilm
                     dt.Rows[kv.Key]["size"] = kv.Value;
             }
 
-            SqlData.GetSqlData().InsertDataToFilmInfo(dt);
+            sqlData.InsertDataToFilmInfo(dt);
 
             // 更新磁盘信息
-            SqlData.GetSqlData().InsertOrUpdateDataToDiskInfo(
+            sqlData.InsertOrUpdateDataToDiskInfo(
                 diskDescribe, driveInfo.TotalFreeSpace, driveInfo.TotalSize,
                 bCompleteScan, bCompleteScan ? actualMaxScanLayer : setMaxScanLayer);
 

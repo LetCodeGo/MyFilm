@@ -22,7 +22,8 @@ namespace MyFilm
 
         private RealOrFake4KWebDataCapture webDataCapture = null;
 
-        public WaitingForm(ThreadWebDataCaptureCallback threadCallback)
+        public WaitingForm(
+            ThreadWebDataCaptureCallback threadCallback, SqlData sqlData, String crawlURL)
         {
             InitializeComponent();
 
@@ -32,7 +33,7 @@ namespace MyFilm
             ImageAnimator.Animate(image, this.OnImageAnimate);
 
             this.webDataCapture = new RealOrFake4KWebDataCapture(
-                threadCallback, SetFinish);
+                threadCallback, SetFinish, sqlData, crawlURL);
         }
 
         protected override void OnPaint(PaintEventArgs e)

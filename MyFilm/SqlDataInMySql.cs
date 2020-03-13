@@ -8,36 +8,28 @@ namespace MyFilm
 {
     public class SqlDataInMySql : SqlData
     {
-        /// <summary>
-        /// 打开数据库
-        /// </summary>
-        private static String SQLOpenCmdText =
-            String.Format(
-            @"server = {0}; uid = {1}; pwd = {2}; database = {3};
-            sslmode = none; convert zero datetime = true;
-            allow zero datetime = true;",
-            CommonString.DbIP, CommonString.DbUserName,
-            CommonString.DbPassword, CommonString.DbName);
+        public readonly String DbIP = "127.0.0.1";
+        private readonly String DbUserName = string.Empty;
+        private readonly String DbPassword = string.Empty;
+        public readonly String DbName = "myfilm";
+        private readonly String SQLOpenCmdText = string.Empty;
 
-        private static SqlDataInMySql mySqlData = null;
-        private static readonly object locker = new object();
-
-        private SqlDataInMySql() { }
-
-        public static SqlDataInMySql GetInstance()
+        public SqlDataInMySql(String dbIP, String dbUserName, String dbPassword, String dbName)
         {
-            if (mySqlData == null)
-            {
-                lock (locker)
-                {
-                    // 如果类的实例不存在则创建，否则直接返回
-                    if (mySqlData == null)
-                    {
-                        mySqlData = new SqlDataInMySql();
-                    }
-                }
-            }
-            return mySqlData;
+            this.DbIP = dbIP;
+            this.DbUserName = dbUserName;
+            this.DbPassword = dbPassword;
+            this.DbName = dbName;
+            this.SQLOpenCmdText = String.Format(
+                @"server = {0}; uid = {1}; pwd = {2}; database = {3};
+                sslmode = none; convert zero datetime = true;
+                allow zero datetime = true;",
+                dbIP, dbUserName, dbPassword, dbName);
+        }
+
+        public override LoginConfig.DataBaseType GetDataBaseType()
+        {
+            return LoginConfig.DataBaseType.MYSQL;
         }
 
         protected override int ExecuteNonQueryGetAffected(
@@ -167,14 +159,19 @@ namespace MyFilm
             return ids;
         }
 
-        public override List<String> QueryAllDataBaseNames()
+        /// <summary>
+        /// 查找所有已存在数据库名
+        /// </summary>
+        /// <returns></returns>
+        public static List<String> QueryAllDataBaseNames(
+            String dbIP, String dbUserName, String dbPassword)
         {
             List<String> nameList = new List<String>();
 
             using (MySqlConnection sqlCon = new MySqlConnection(
                 String.Format(@"Data Source={0};Persist Security Info=yes;
                 SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
+                dbIP, dbUserName, dbPassword)))
             {
                 sqlCon.Open();
                 using (MySqlCommand sqlCmd = new MySqlCommand("show databases;", sqlCon))
@@ -191,16 +188,17 @@ namespace MyFilm
             return nameList;
         }
 
-        public override void CreateDataBase(String databaseName)
+        public static void CreateDataBase(
+            String dbIP, String dbUserName, String dbPassword, String dbName)
         {
             using (MySqlConnection sqlCon = new MySqlConnection(
                 String.Format(@"Data Source={0};Persist Security Info=yes;
                 SslMode = none;UserId={1}; PWD={2};",
-                CommonString.DbIP, CommonString.DbUserName, CommonString.DbPassword)))
+                dbIP, dbUserName, dbPassword)))
             {
                 sqlCon.Open();
                 using (MySqlCommand sqlCmd = new MySqlCommand(
-                    String.Format("create database {0};", databaseName), sqlCon))
+                    String.Format("create database {0};", dbName), sqlCon))
                 {
                     sqlCmd.ExecuteNonQuery();
                 }

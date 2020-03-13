@@ -169,16 +169,16 @@ namespace MyFilm
                 },
                 sqliteConfig = new SQLiteConfig
                 {
-                    selectedDataBasePath = CommonString.SqliteDateBasePath,
+                    selectedDataBasePath = SqlDataInSqlite.SqliteDefaultDateBasePath,
                     dataBaseConfigs = new List<DataBaseConfig>() {
                         new DataBaseConfig() {
-                            Name = CommonString.SqliteDateBasePath,
+                            Name = SqlDataInSqlite.SqliteDefaultDateBasePath,
                             WebDataCaptureTime =
                             DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                         }
                     }
                 },
-                crawlURL = "https://digiraw.com/DVD-4K-Bluray-ripping-service/4K-UHD-ripping-service/the-real-or-fake-4K-list/"
+                crawlURL = CommonString.CrawlURL
             };
 
             return initLoginConfigData;
@@ -232,10 +232,10 @@ namespace MyFilm
             {
                 loginConfigData.sqliteConfig = new SQLiteConfig
                 {
-                    selectedDataBasePath = CommonString.SqliteDateBasePath,
+                    selectedDataBasePath = SqlDataInSqlite.SqliteDefaultDateBasePath,
                     dataBaseConfigs = new List<DataBaseConfig>() {
                         new DataBaseConfig() {
-                            Name = CommonString.SqliteDateBasePath,
+                            Name = SqlDataInSqlite.SqliteDefaultDateBasePath,
                             WebDataCaptureTime =
                             DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                         }
@@ -246,12 +246,12 @@ namespace MyFilm
             {
                 if (loginConfigData.sqliteConfig.selectedDataBasePath == null)
                     loginConfigData.sqliteConfig.selectedDataBasePath =
-                        CommonString.SqliteDateBasePath;
+                        SqlDataInSqlite.SqliteDefaultDateBasePath;
                 if (loginConfigData.sqliteConfig.dataBaseConfigs == null)
                     loginConfigData.sqliteConfig.dataBaseConfigs =
                         new List<DataBaseConfig>() {
                             new DataBaseConfig() {
-                                Name = CommonString.SqliteDateBasePath,
+                                Name = SqlDataInSqlite.SqliteDefaultDateBasePath,
                                 WebDataCaptureTime =
                                     DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                         }
@@ -259,8 +259,7 @@ namespace MyFilm
             }
 
             if (String.IsNullOrWhiteSpace(loginConfigData.crawlURL))
-                loginConfigData.crawlURL =
-                    "https://digiraw.com/DVD-4K-Bluray-ripping-service/4K-UHD-ripping-service/the-real-or-fake-4K-list/";
+                loginConfigData.crawlURL = CommonString.CrawlURL;
 
             if (String.IsNullOrWhiteSpace(loginConfigData.mysqlConfig.selectedIP))
                 loginConfigData.mysqlConfig.selectedIP = "127.0.0.1";
