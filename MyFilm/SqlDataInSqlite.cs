@@ -36,6 +36,11 @@ namespace MyFilm
             return LoginConfig.DataBaseType.SQLITE;
         }
 
+        public override string GetIdentString()
+        {
+            return string.Format("sqlite_{0}", this.SqliteDataBasePath);
+        }
+
         /// <summary>
         /// 创建影片信息表，其中pid为其父文件夹id，disk_desc关联disk_info表
         /// +--------------+---------------+------+-----+---------+-------+
@@ -141,6 +146,25 @@ namespace MyFilm
             ExecuteNonQueryGetAffected(cmdText, null);
         }
 
+        public override void DeleteAllDataFormAllTable()
+        {
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            sqlParamDic.Add("@table_name", "film_info");
+
+            ExecuteNonQueryGetAffected("delete from film_info;", null);
+            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
+
+            sqlParamDic["@table_name"] = "disk_info";
+            ExecuteNonQueryGetAffected("delete from disk_info;", null);
+            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
+
+            sqlParamDic["@table_name"] = "search_log";
+            ExecuteNonQueryGetAffected("delete from search_log;", null);
+            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
+
+            ExecuteNonQueryGetAffected("VACUUM;", null);
+        }
+
         override public void InsertDataToFilmInfo(DataTable dt)
         {
             if (dt != null && dt.Rows.Count > 0)
@@ -148,6 +172,28 @@ namespace MyFilm
                 for (int i = 0; i < dt.Rows.Count; i += 30)
                 {
                     InsertDataToFilmInfo(dt, i, 30);
+                }
+            }
+        }
+
+        override public void InsertDataToDiskInfo(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i += 90)
+                {
+                    InsertDataToDiskInfo(dt, i, 90);
+                }
+            }
+        }
+
+        override public void InsertDataToSearchLog(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i += 120)
+                {
+                    InsertDataToSearchLog(dt, i, 120);
                 }
             }
         }
@@ -435,7 +481,7 @@ namespace MyFilm
 
         public override DataTable GetFilmInfoDatabaseTransferData()
         {
-            String cmdText = String.Format("select * from {0} order by id;", "film_info");
+            String cmdText = String.Format("select * from {0} where disk_desc!=@disk_desc order by id;", "film_info");
             DataTable dt = CommonDataTable.GetFilmInfoDataTable();
             List<int> continuedMinList = new List<int>();
             List<int> continuedMaxList = new List<int>();
@@ -447,6 +493,7 @@ namespace MyFilm
                 sqlCon.Open();
                 using (SQLiteCommand sqlCmd = new SQLiteCommand(cmdText, sqlCon))
                 {
+                    sqlCmd.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
                     using (SQLiteDataReader sqlDataReader = sqlCmd.ExecuteReader())
                     {
                         while (sqlDataReader.Read())

@@ -7,12 +7,22 @@ namespace MyFilm
 {
     public partial class LoginForm : Form
     {
+        public enum LoginType
+        {
+            Normal,
+            DataBaseDataCopy
+        }
+
         private LoginConfig.LoginConfigData loginConfigData = null;
 
         private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
             webDataCaptureResult = null;
 
-        private SqlData sqlData = null;
+        private LoginType loginType = LoginType.Normal;
+        /// <summary>
+        /// 通过新参数创建的数据库连接
+        /// </summary>
+        private SqlData generatedSqlData = null;
 
         /// <summary>
         /// 登陆配置文件路径
@@ -20,14 +30,17 @@ namespace MyFilm
         public readonly static String LoginConfigPath = Path.Combine(
             System.Windows.Forms.Application.StartupPath, "MyFilmConfig.xml");
 
-        public LoginForm()
+        public LoginForm(LoginType loginType = LoginType.Normal)
         {
             InitializeComponent();
 
+            this.loginType = loginType;
+            if (this.loginType == LoginType.Normal) this.Text = "连接数据库";
+            else if (this.loginType == LoginType.DataBaseDataCopy) this.Text = "选择要复制的数据库";
             this.ControlBox = false;
         }
 
-        public SqlData GetSqlData() { return this.sqlData; }
+        public SqlData GetGeneratedSqlData() { return this.generatedSqlData; }
 
         // 鼠标双击标题栏消息
         private const int WM_NCLBUTTONDBLCLK = 0xA3;
@@ -175,7 +188,7 @@ namespace MyFilm
                         try
                         {
                             SqlDataInMySql.CreateDataBase(dbIP, dbUserName, dbPassword, dbName);
-                            sqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
+                            generatedSqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
                         }
                         catch (Exception ex)
                         {
@@ -185,16 +198,38 @@ namespace MyFilm
                     }
                     else return;
                 }
+                else if (this.loginType == LoginType.DataBaseDataCopy)
+                {
+                    if (MessageBox.Show(String.Format(
+                        "数据库 \"{0}\" 已存在，此操作会覆盖该数据库相同的表，仍然要复制到该数据库吗？",
+                        dbName), "提示",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        generatedSqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
+                    }
+                    else return;
+                }
             }
             else
             {
                 sqliteDateBasePath = this.cbSQLiteDataBase.Text;
-                sqlData = new SqlDataInSqlite(sqliteDateBasePath);
+                generatedSqlData = new SqlDataInSqlite(sqliteDateBasePath);
+
+                if (this.loginType == LoginType.DataBaseDataCopy && File.Exists(sqliteDateBasePath))
+                {
+                    if (MessageBox.Show(String.Format(
+                        "数据库 \"{0}\"\n已存在，此操作会覆盖该数据库相同的表，仍然要复制到该数据库吗？",
+                        sqliteDateBasePath), "提示",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+                    {
+                        return;
+                    }
+                }
             }
 
             try
             {
-                sqlData.CreateTables();
+                generatedSqlData.CreateTables();
 
                 DateTime dateTimeLast = DateTime.MinValue;
 
@@ -248,16 +283,19 @@ namespace MyFilm
                         out dateTimeLast);
                 }
 
-                TimeSpan ts = DateTime.Now.Subtract(dateTimeLast);
-                if (ts.Days > 3)
+                if (this.loginType == LoginType.Normal)
                 {
-                    WaitingForm waitingForm = new WaitingForm(
-                        SetWebCaptureDataResult, sqlData, this.loginConfigData.crawlURL);
-                    waitingForm.ShowDialog();
+                    TimeSpan ts = DateTime.Now.Subtract(dateTimeLast);
+                    if (ts.Days > 3)
+                    {
+                        WaitingForm waitingForm = new WaitingForm(
+                            SetWebCaptureDataResult, generatedSqlData, this.loginConfigData.crawlURL);
+                        waitingForm.ShowDialog();
 
-                    if (this.webDataCaptureResult.code >= 0)
-                        dateTimeLast = this.webDataCaptureResult.crawlTime;
-                    MessageBox.Show(this.webDataCaptureResult.strMsg);
+                        if (this.webDataCaptureResult.code >= 0)
+                            dateTimeLast = this.webDataCaptureResult.crawlTime;
+                        MessageBox.Show(this.webDataCaptureResult.strMsg);
+                    }
                 }
 
                 if (databaseType == LoginConfig.DataBaseType.MYSQL)
@@ -270,7 +308,8 @@ namespace MyFilm
                 this.loginConfigData.dataBaseType = databaseType;
 
                 LoginConfig.SaveXml(this.loginConfigData, LoginConfigPath);
-                sqlData.FillRamData();
+
+                if (this.loginType == LoginType.Normal) generatedSqlData.FillRamData();
 
                 this.DialogResult = DialogResult.OK;
             }

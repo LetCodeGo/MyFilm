@@ -328,7 +328,7 @@
             this.btnDatabaseCopy.Name = "btnDatabaseCopy";
             this.btnDatabaseCopy.Size = new System.Drawing.Size(204, 25);
             this.btnDatabaseCopy.TabIndex = 32;
-            this.btnDatabaseCopy.Text = "复制 MySQL 数据到 SQLite 数据库";
+            this.btnDatabaseCopy.Text = "复制数据库所有数据";
             this.btnDatabaseCopy.UseVisualStyleBackColor = true;
             this.btnDatabaseCopy.Click += new System.EventHandler(this.btnDatabaseCopy_Click);
             // 

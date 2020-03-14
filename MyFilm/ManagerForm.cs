@@ -572,13 +572,18 @@ namespace MyFilm
 
         private void btnDatabaseCopy_Click(object sender, EventArgs e)
         {
-            DataTable filmInfoDataTable = sqlData.GetFilmInfoDatabaseTransferData();
-            DataTable diskInfoDataTable = sqlData.GetDiskInfoDatabaseTransferData();
-            DataTable searchLogDataTable = sqlData.GetSearchLogDatabaseTransferData();
+            LoginForm loginForm = new LoginForm(LoginForm.LoginType.DataBaseDataCopy);
+            loginForm.ShowDialog();
 
-            SqlData importSqlData = null;
+            if (loginForm.DialogResult == DialogResult.OK)
+            {
+                SqlData importSqlData = loginForm.GetGeneratedSqlData();
 
-            importSqlData.InsertDataToFilmInfo(filmInfoDataTable);
+                WaitingForm waitingForm = new WaitingForm(sqlData, importSqlData);
+                waitingForm.ShowDialog();
+
+                MessageBox.Show("数据复制完成！");
+            }
         }
     }
 }

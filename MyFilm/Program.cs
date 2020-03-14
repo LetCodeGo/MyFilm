@@ -39,7 +39,7 @@ namespace MyFilm
 
                     if (loginForm.DialogResult == DialogResult.OK)
                     {
-                        Application.Run(new MainForm(loginForm.GetSqlData()));
+                        Application.Run(new MainForm(loginForm.GetGeneratedSqlData()));
                     }
                 }
                 // 程序已经运行

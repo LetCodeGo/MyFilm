@@ -32,6 +32,18 @@ namespace MyFilm
             return LoginConfig.DataBaseType.MYSQL;
         }
 
+        public override string GetIdentString()
+        {
+            return string.Format("mysql_{0}_{1}", this.DbIP, this.DbName);
+        }
+
+        public override void DeleteAllDataFormAllTable()
+        {
+            ExecuteNonQueryGetAffected("truncate table film_info;", null);
+            ExecuteNonQueryGetAffected("truncate table disk_info;", null);
+            ExecuteNonQueryGetAffected("truncate table search_log;", null);
+        }
+
         protected override int ExecuteNonQueryGetAffected(
             String cmdText, Dictionary<String, Object> sqlParamDic = null)
         {
@@ -251,7 +263,7 @@ namespace MyFilm
 
         public override DataTable GetFilmInfoDatabaseTransferData()
         {
-            String cmdText = String.Format("select * from {0} order by id;", "film_info");
+            String cmdText = String.Format("select * from {0} where disk_desc!=@disk_desc order by id;", "film_info");
             DataTable dt = CommonDataTable.GetFilmInfoDataTable();
             List<int> continuedMinList = new List<int>();
             List<int> continuedMaxList = new List<int>();
@@ -263,6 +275,7 @@ namespace MyFilm
                 sqlCon.Open();
                 using (MySqlCommand sqlCmd = new MySqlCommand(cmdText, sqlCon))
                 {
+                    sqlCmd.Parameters.AddWithValue("@disk_desc", CommonString.RealOrFake4KDiskName);
                     using (MySqlDataReader sqlDataReader = sqlCmd.ExecuteReader())
                     {
                         while (sqlDataReader.Read())

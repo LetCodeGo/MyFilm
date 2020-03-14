@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using static MyFilm.RealOrFake4KWebDataCapture;
 
@@ -14,6 +9,12 @@ namespace MyFilm
 {
     public partial class WaitingForm : Form
     {
+        private enum WaitingType
+        {
+            RealOrFake4KWebDataCapture,
+            CopyDataBaseData
+        }
+
         private Bitmap bitmap = null;
 
         private Image image = null;
@@ -22,11 +23,17 @@ namespace MyFilm
 
         private RealOrFake4KWebDataCapture webDataCapture = null;
 
+        private SqlData sqlDataFrom = null;
+        private SqlData sqlDataTo = null;
+
+        private WaitingType waitingType = WaitingType.RealOrFake4KWebDataCapture;
+
         public WaitingForm(
             ThreadWebDataCaptureCallback threadCallback, SqlData sqlData, String crawlURL)
         {
             InitializeComponent();
 
+            waitingType = WaitingType.RealOrFake4KWebDataCapture;
             bitmap = new Bitmap(this.Width, this.Height);
             image = MyFilm.Properties.Resources.waiting;
 
@@ -34,6 +41,20 @@ namespace MyFilm
 
             this.webDataCapture = new RealOrFake4KWebDataCapture(
                 threadCallback, SetFinish, sqlData, crawlURL);
+        }
+
+        public WaitingForm(SqlData sqlDataFrom, SqlData sqlDataTo)
+        {
+            InitializeComponent();
+
+            waitingType = WaitingType.CopyDataBaseData;
+            this.sqlDataFrom = sqlDataFrom;
+            this.sqlDataTo = sqlDataTo;
+
+            bitmap = new Bitmap(this.Width, this.Height);
+            image = MyFilm.Properties.Resources.waiting;
+
+            ImageAnimator.Animate(image, this.OnImageAnimate);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -44,8 +65,14 @@ namespace MyFilm
                 ImageAnimator.UpdateFrames(image);
 
                 Graphics.FromImage(bitmap).DrawImage(image, 0, 0, bitmap.Width, bitmap.Height);
-                Graphics.FromImage(bitmap).DrawString("正在从网页抓取数据，请等待！",
-                    new Font("微软雅黑", 20, FontStyle.Bold), Brushes.Orange, 12, 200);
+                StringFormat stringFormat = new StringFormat();
+                stringFormat.Alignment = StringAlignment.Center;
+                int y = ((bitmap.Height / 2) + 60);
+                RectangleF rectangleF = new Rectangle(0, y, bitmap.Width, bitmap.Height - y);
+                Graphics.FromImage(bitmap).DrawString(
+                    this.waitingType == WaitingType.RealOrFake4KWebDataCapture ? "正在从网页抓取数据，请等待" : "正在复制数据库数据，请等待",
+                    new Font("微软雅黑", 16, FontStyle.Bold), Brushes.Orange, rectangleF, stringFormat);
+
                 e.Graphics.DrawImage(bitmap, 0, 0, this.Width, this.Height);
             }
             mutex.ReleaseMutex();
@@ -77,9 +104,35 @@ namespace MyFilm
 
         private void WaitingForm_Load(object sender, EventArgs e)
         {
-            Thread threadWebDataCapture = new Thread(
-                new ThreadStart(this.webDataCapture.Update4KInfo));
-            threadWebDataCapture.Start();
+            if (this.waitingType == WaitingType.RealOrFake4KWebDataCapture)
+            {
+                Thread threadWebDataCapture = new Thread(
+                    new ThreadStart(this.webDataCapture.Update4KInfo));
+                threadWebDataCapture.Start();
+            }
+            else
+            {
+                Thread threadCopyDataBaseData = new Thread(new ThreadStart(this.CopyDataBaseData));
+                threadCopyDataBaseData.Start();
+            }
+        }
+
+        private void CopyDataBaseData()
+        {
+            DataTable filmInfoDataTable = sqlDataFrom.GetFilmInfoDatabaseTransferData();
+            DataTable diskInfoDataTable = sqlDataFrom.GetDiskInfoDatabaseTransferData();
+            DataTable searchLogDataTable = sqlDataFrom.GetSearchLogDatabaseTransferData();
+
+            if (sqlDataFrom.GetIdentString() == sqlDataTo.GetIdentString())
+            {
+                sqlDataTo.DeleteAllDataFormAllTable();
+            }
+
+            sqlDataTo.InsertDataToFilmInfo(filmInfoDataTable);
+            sqlDataTo.InsertDataToDiskInfo(diskInfoDataTable);
+            sqlDataTo.InsertDataToSearchLog(searchLogDataTable);
+
+            SetFinish();
         }
     }
 }

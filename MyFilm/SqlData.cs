@@ -101,6 +101,10 @@ namespace MyFilm
 
         public abstract LoginConfig.DataBaseType GetDataBaseType();
 
+        public abstract void DeleteAllDataFormAllTable();
+
+        public abstract string GetIdentString();
+
         ///// <summary>
         ///// 查找所有已存在数据库名
         ///// </summary>
@@ -317,6 +321,90 @@ namespace MyFilm
                     dt.Rows[i]["max_cid"]);
                 sqlParamDic.Add(String.Format("@disk_desc{0}", i),
                     dt.Rows[i]["disk_desc"]);
+            }
+
+            ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
+        }
+
+        virtual public void InsertDataToDiskInfo(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i += 1500)
+                {
+                    InsertDataToDiskInfo(dt, i, 1500);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 向disk_info数据库插入数据，注意dt的列
+        /// </summary>
+        /// <param name="dt">插入的数据</param>
+        /// <param name="start">起始，从0开始</param>
+        /// <param name="count">个数</param>
+        protected void InsertDataToDiskInfo(DataTable dt, int start, int count)
+        {
+            String cmdText = String.Format(
+                @"insert into {0} (disk_desc, free_space, total_size, complete_scan, scan_layer) values", "disk_info");
+
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            for (int i = start, j = 0; i < dt.Rows.Count && j < count; i++, j++)
+            {
+                cmdText += String.Format(
+                    @"(@disk_desc{0}, @free_space{0}, @total_size{0}, @complete_scan{0}, @scan_layer{0}){1}",
+                    i, i == dt.Rows.Count - 1 || j == count - 1 ? ";" : ",");
+
+                sqlParamDic.Add(String.Format("@disk_desc{0}", i),
+                    dt.Rows[i]["disk_desc"]);
+                sqlParamDic.Add(String.Format("@free_space{0}", i),
+                    dt.Rows[i]["free_space"]);
+                sqlParamDic.Add(String.Format("@total_size{0}", i),
+                    dt.Rows[i]["total_size"]);
+                sqlParamDic.Add(String.Format("@complete_scan{0}", i),
+                    dt.Rows[i]["complete_scan"]);
+                sqlParamDic.Add(String.Format("@scan_layer{0}", i),
+                    dt.Rows[i]["scan_layer"]);
+            }
+
+            ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
+        }
+
+        virtual public void InsertDataToSearchLog(DataTable dt)
+        {
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i += 2000)
+                {
+                    InsertDataToSearchLog(dt, i, 2000);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 向search_log数据库插入数据，注意dt的列
+        /// </summary>
+        /// <param name="dt">插入的数据</param>
+        /// <param name="start">起始，从0开始</param>
+        /// <param name="count">个数</param>
+        protected void InsertDataToSearchLog(DataTable dt, int start, int count)
+        {
+            String cmdText = String.Format(
+                @"insert into {0} (search_key, result_count, search_time) values", "disk_info");
+
+            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+            for (int i = start, j = 0; i < dt.Rows.Count && j < count; i++, j++)
+            {
+                cmdText += String.Format(
+                    @"(@search_key{0}, @result_count{0}, @search_time{0}){1}",
+                    i, i == dt.Rows.Count - 1 || j == count - 1 ? ";" : ",");
+
+                sqlParamDic.Add(String.Format("@search_key{0}", i),
+                    dt.Rows[i]["search_key"]);
+                sqlParamDic.Add(String.Format("@result_count{0}", i),
+                    dt.Rows[i]["result_count"]);
+                sqlParamDic.Add(String.Format("@search_time{0}", i),
+                    dt.Rows[i]["search_time"]);
             }
 
             ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
