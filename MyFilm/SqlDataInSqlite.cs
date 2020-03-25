@@ -162,6 +162,11 @@ namespace MyFilm
             ExecuteNonQueryGetAffected("delete from search_log;", null);
             ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
 
+            FreeEmptySpace();
+        }
+
+        public void FreeEmptySpace()
+        {
             ExecuteNonQueryGetAffected("VACUUM;", null);
         }
 

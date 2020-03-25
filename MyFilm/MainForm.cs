@@ -85,7 +85,7 @@ namespace MyFilm
         /// 打开的 nfo 文件所在文件夹
         /// </summary>
         private static String nfoFolder = Path.Combine(
-            System.Windows.Forms.Application.StartupPath, "nfos");
+            CommonString.MyFilmApplicationDataFolder, "nfos");
 
         /// <summary>
         /// 同步更新 SqlForm
@@ -106,7 +106,9 @@ namespace MyFilm
         public MainForm(SqlData sqlData)
         {
             InitializeComponent();
+
             this.sqlData = sqlData;
+            this.pageRowCount = CommonString.LoginConfigData.rowsPerPage;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -162,8 +164,11 @@ namespace MyFilm
             Thread t1 = new Thread(new ParameterizedThreadStart(ProcessReceiveData.ReceiveData));
             t1.Start(this.Handle);
 
-            Thread t2 = new Thread(new ThreadStart(StartWebServer));
-            t2.Start();
+            if (CommonString.LoginConfigData.webServerConfig.IsStartWebServer)
+            {
+                Thread t2 = new Thread(new ThreadStart(StartWebServer));
+                t2.Start();
+            }
 
             // 获取根目录数据源
             sqlData.SetDiskRootDirectoryInfo();
@@ -190,7 +195,9 @@ namespace MyFilm
 
         private void StartWebServer()
         {
-            webServer = new WebServer("0.0.0.0", 5555, sqlData);
+            webServer = new WebServer("0.0.0.0",
+                CommonString.LoginConfigData.webServerConfig.Port,
+                CommonString.LoginConfigData.webServerConfig.RowsPerPage, sqlData);
             webServer.SetRoot(AppDomain.CurrentDomain.BaseDirectory);
             webServer.Start();
         }
@@ -200,6 +207,11 @@ namespace MyFilm
             // 通知栏右键退出
             if (notifyIconExitFlag)
             {
+                if (CommonString.LoginConfigData.rowsPerPage != pageRowCount)
+                {
+                    CommonString.LoginConfigData.rowsPerPage = pageRowCount;
+                    LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
+                }
                 webServer.Stop();
                 ProcessSendData.exitCall = true;
                 ProcessSendData.SendData("quit");
@@ -215,6 +227,11 @@ namespace MyFilm
                         this.notifyIcon.Visible = true;
                         break;
                     default:
+                        if (CommonString.LoginConfigData.rowsPerPage != pageRowCount)
+                        {
+                            CommonString.LoginConfigData.rowsPerPage = pageRowCount;
+                            LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
+                        }
                         webServer.Stop();
                         ProcessSendData.exitCall = true;
                         ProcessSendData.SendData("quit");
@@ -955,7 +972,7 @@ namespace MyFilm
             PrintFolder(Convert.ToInt32(gridViewData.Rows[selectIndex]["id"]),
                 gridViewData.Rows[selectIndex]["name"].ToString(), 0, "", ref strResult);
 
-            String filePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "MyfilmTemp.txt");
+            String filePath = Path.Combine(CommonString.MyFilmApplicationDataFolder, "MyfilmTemp.txt");
             File.WriteAllText(filePath, strResult, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, strResult);

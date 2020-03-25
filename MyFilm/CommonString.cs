@@ -10,6 +10,11 @@ namespace MyFilm
         // 主界面标题
         public static String MainFormTitle = String.Empty;
 
+        public static String MyFilmApplicationDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyFilm");
+
+        public static LoginConfig.LoginConfigData LoginConfigData = null;
+
         public readonly static String RealOrFake4KDiskName = "REAL_OR_FAKE_4K";
 
         public readonly static String RSAKeyContainerName =

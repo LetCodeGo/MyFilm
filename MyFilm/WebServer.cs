@@ -13,7 +13,7 @@ namespace MyFilm
 {
     public class WebServer : HttpServer.HttpServer
     {
-        private static readonly int PageItemCount = 20;
+        private int PageItemCount = 20;
         private int TotalItemCount = 0;
         private int PageCount = 0;
         private int PageIndex = -1;
@@ -52,9 +52,10 @@ namespace MyFilm
         /// </summary>
         /// <param name="ipAddress">IP地址</param>
         /// <param name="port">端口号</param>
-        public WebServer(string ipAddress, int port, SqlData sqlData)
+        public WebServer(string ipAddress, int port, int rowsPerPage, SqlData sqlData)
             : base(ipAddress, port)
         {
+            this.PageItemCount = rowsPerPage;
             this.sqlData = sqlData;
             LoginConfig.DataBaseType databaseType = this.sqlData.GetDataBaseType();
             if (databaseType == LoginConfig.DataBaseType.MYSQL)
@@ -98,6 +99,11 @@ namespace MyFilm
             ContentTypeDic.Add(".gif", "image/gif");
             ContentTypeDic.Add(".jpg", "image/jpeg");
             ContentTypeDic.Add(".jpeg", "image/jpeg");
+        }
+
+        public void SetRowsPerPage(int rowsPerPage)
+        {
+            this.PageItemCount = rowsPerPage;
         }
 
         public override void OnPost(HttpRequest request, HttpResponse response)

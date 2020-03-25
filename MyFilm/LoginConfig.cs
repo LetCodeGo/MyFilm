@@ -31,6 +31,32 @@ namespace MyFilm
             public String PassWord;
         }
 
+        [XmlRoot("CrawlConfig")]
+        public class CrawlConfig
+        {
+            [XmlAttribute("IsCrawl")]
+            public Boolean IsCrawl;
+
+            [XmlAttribute("IntervalDays")]
+            public Int32 IntervalDays;
+
+            [XmlAttribute("CrawlURL")]
+            public String CrawlURL;
+        }
+
+        [XmlRoot("WebServerConfig")]
+        public class WebServerConfig
+        {
+            [XmlAttribute("IsStartWebServer")]
+            public Boolean IsStartWebServer;
+
+            [XmlAttribute("Port")]
+            public Int32 Port;
+
+            [XmlAttribute("RowsPerPage")]
+            public Int32 RowsPerPage;
+        }
+
         [Serializable]
         [XmlRoot("MySQLConfig")]
         public class MySQLConfig
@@ -143,14 +169,20 @@ namespace MyFilm
             [XmlAttribute("DataBaseType")]
             public DataBaseType dataBaseType;
 
+            [XmlAttribute("RowsPerPage")]
+            public Int32 rowsPerPage;
+
             [XmlElement("MySQLConfig")]
             public MySQLConfig mysqlConfig;
 
             [XmlElement("SQLiteConfig")]
             public SQLiteConfig sqliteConfig;
 
-            [XmlElement("CrawlURL")]
-            public String crawlURL;
+            [XmlElement("CrawlConfig")]
+            public CrawlConfig crawlConfig;
+
+            [XmlElement("WebServerConfig")]
+            public WebServerConfig webServerConfig;
         }
 
         private static LoginConfigData GetInitLoginConfigData()
@@ -158,6 +190,7 @@ namespace MyFilm
             LoginConfigData initLoginConfigData = new LoginConfigData()
             {
                 dataBaseType = DataBaseType.SQLITE,
+                rowsPerPage = 20,
                 mysqlConfig = new MySQLConfig
                 {
                     selectedIP = "127.0.0.1",
@@ -178,7 +211,18 @@ namespace MyFilm
                         }
                     }
                 },
-                crawlURL = CommonString.CrawlURL
+                crawlConfig = new CrawlConfig
+                {
+                    IsCrawl = true,
+                    IntervalDays = 10,
+                    CrawlURL = CommonString.CrawlURL
+                },
+                webServerConfig = new WebServerConfig
+                {
+                    IsStartWebServer = true,
+                    Port = 5555,
+                    RowsPerPage = 20
+                }
             };
 
             return initLoginConfigData;
@@ -201,6 +245,9 @@ namespace MyFilm
             }
 
             if (loginConfigData == null) loginConfigData = GetInitLoginConfigData();
+
+            if (loginConfigData.rowsPerPage <= 0)
+                loginConfigData.rowsPerPage = 20;
 
             if (loginConfigData.mysqlConfig == null)
             {
@@ -258,8 +305,32 @@ namespace MyFilm
                     };
             }
 
-            if (String.IsNullOrWhiteSpace(loginConfigData.crawlURL))
-                loginConfigData.crawlURL = CommonString.CrawlURL;
+            if (loginConfigData.crawlConfig == null)
+            {
+                loginConfigData.crawlConfig = new CrawlConfig
+                {
+                    IsCrawl = true,
+                    IntervalDays = 10,
+                    CrawlURL = CommonString.CrawlURL
+                };
+            }
+            else
+            {
+                if (String.IsNullOrWhiteSpace(loginConfigData.crawlConfig.CrawlURL))
+                    loginConfigData.crawlConfig.CrawlURL = CommonString.CrawlURL;
+                if (loginConfigData.crawlConfig.IntervalDays < 1)
+                    loginConfigData.crawlConfig.IntervalDays = 10;
+            }
+
+            if (loginConfigData.webServerConfig == null)
+            {
+                loginConfigData.webServerConfig = new WebServerConfig
+                {
+                    IsStartWebServer = true,
+                    Port = 5555,
+                    RowsPerPage = 20
+                };
+            }
 
             if (String.IsNullOrWhiteSpace(loginConfigData.mysqlConfig.selectedIP))
                 loginConfigData.mysqlConfig.selectedIP = "127.0.0.1";

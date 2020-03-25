@@ -21,7 +21,7 @@ namespace MyFilm
                 true);                                         // 设置以上值为 true
             base.UpdateStyles();
 
-            this.SizeMode = TabSizeMode.Fixed;
+            //this.SizeMode = TabSizeMode.Fixed;
             this.ItemSize = new Size(65, 25);
         }
 

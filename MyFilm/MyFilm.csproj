@@ -126,6 +126,12 @@
     </Compile>
     <Compile Include="RealOrFake4KWebDataCapture.cs" />
     <Compile Include="RequestURL.cs" />
+    <Compile Include="SettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingForm.Designer.cs">
+      <DependentUpon>SettingForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SqlData.cs" />
     <Compile Include="SqlDataInMySql.cs" />
     <Compile Include="SqlDataInSqlite.cs" />
@@ -177,6 +183,9 @@
     </Compile>
     <EmbeddedResource Include="ManagerForm.resx">
       <DependentUpon>ManagerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingForm.resx">
+      <DependentUpon>SettingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SqlForm.resx">
       <DependentUpon>SqlForm.cs</DependentUpon>

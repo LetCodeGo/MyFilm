@@ -13,8 +13,6 @@ namespace MyFilm
             DataBaseDataCopy
         }
 
-        private LoginConfig.LoginConfigData loginConfigData = null;
-
         private RealOrFake4KWebDataCapture.RealOrFake4KWebDataCaptureResult
             webDataCaptureResult = null;
 
@@ -36,8 +34,11 @@ namespace MyFilm
 
             this.loginType = loginType;
             if (this.loginType == LoginType.Normal) this.Text = "连接数据库";
-            else if (this.loginType == LoginType.DataBaseDataCopy) this.Text = "选择要复制的数据库";
-            this.ControlBox = false;
+            else if (this.loginType == LoginType.DataBaseDataCopy)
+            {
+                this.Text = "选择要复制的数据库";
+                this.btnSetting.Enabled = false;
+            }
         }
 
         public SqlData GetGeneratedSqlData() { return this.generatedSqlData; }
@@ -61,25 +62,25 @@ namespace MyFilm
         private void LoginForm_Load(object sender, EventArgs e)
         {
             this.Icon = Properties.Resources.Film;
-            this.loginConfigData = LoginConfig.LoadXml(LoginConfigPath);
+            CommonString.LoginConfigData = LoginConfig.LoadXml(LoginConfigPath);
 
             InitComboxIP();
             InitComboxUser();
 
-            var uap = this.loginConfigData.mysqlConfig.userNameAndPassWords.Find(
+            var uap = CommonString.LoginConfigData.mysqlConfig.userNameAndPassWords.Find(
                 x => x.UserName == this.comboBoxUser.Text);
             if (uap != null) this.textBoxPwd.Text = Helper.Decrypt(uap.PassWord);
 
             InitComboxDataBase();
 
             this.cbSQLiteDataBase.Items.Clear();
-            this.loginConfigData.sqliteConfig.dataBaseConfigs.ForEach(
+            CommonString.LoginConfigData.sqliteConfig.dataBaseConfigs.ForEach(
                 x => this.cbSQLiteDataBase.Items.Add(x.Name));
             this.cbSQLiteDataBase.Text =
-                this.loginConfigData.sqliteConfig.selectedDataBasePath;
+                CommonString.LoginConfigData.sqliteConfig.selectedDataBasePath;
 
             this.tabControl.SelectedIndex =
-                (this.loginConfigData.dataBaseType == LoginConfig.DataBaseType.MYSQL ? 0 : 1);
+                (CommonString.LoginConfigData.dataBaseType == LoginConfig.DataBaseType.MYSQL ? 0 : 1);
         }
 
         private void InitComboxIP()
@@ -87,8 +88,8 @@ namespace MyFilm
             this.comboBoxIP.SuspendLayout();
             this.comboBoxIP.Items.Clear();
             this.comboBoxIP.Items.AddRange(
-                this.loginConfigData.mysqlConfig.hostIPs.ToArray());
-            this.comboBoxIP.Text = this.loginConfigData.mysqlConfig.selectedIP;
+                CommonString.LoginConfigData.mysqlConfig.hostIPs.ToArray());
+            this.comboBoxIP.Text = CommonString.LoginConfigData.mysqlConfig.selectedIP;
             this.comboBoxIP.ResumeLayout();
         }
 
@@ -97,9 +98,9 @@ namespace MyFilm
             this.comboBoxUser.SuspendLayout();
             this.comboBoxUser.SelectedIndexChanged -= comboBoxUser_SelectedIndexChanged;
             this.comboBoxUser.Items.Clear();
-            this.loginConfigData.mysqlConfig.userNameAndPassWords.ForEach(
+            CommonString.LoginConfigData.mysqlConfig.userNameAndPassWords.ForEach(
                 x => this.comboBoxUser.Items.Add(x.UserName));
-            this.comboBoxUser.Text = this.loginConfigData.mysqlConfig.selectedUserName;
+            this.comboBoxUser.Text = CommonString.LoginConfigData.mysqlConfig.selectedUserName;
             this.comboBoxUser.SelectedIndexChanged += comboBoxUser_SelectedIndexChanged;
             this.comboBoxUser.ResumeLayout();
         }
@@ -108,10 +109,10 @@ namespace MyFilm
         {
             this.comboBoxDataBase.SuspendLayout();
             this.comboBoxDataBase.Items.Clear();
-            this.loginConfigData.mysqlConfig.dataBaseConfigs.ForEach(
+            CommonString.LoginConfigData.mysqlConfig.dataBaseConfigs.ForEach(
                 x => this.comboBoxDataBase.Items.Add(x.Name));
             this.comboBoxDataBase.Text =
-                this.loginConfigData.mysqlConfig.selectedDataBaseName;
+                CommonString.LoginConfigData.mysqlConfig.selectedDataBaseName;
             this.comboBoxDataBase.ResumeLayout();
         }
 
@@ -129,7 +130,7 @@ namespace MyFilm
                 selectedIndex < this.comboBoxUser.Items.Count)
             {
                 this.textBoxPwd.Text =
-                    Helper.Decrypt(this.loginConfigData.mysqlConfig
+                    Helper.Decrypt(CommonString.LoginConfigData.mysqlConfig
                     .userNameAndPassWords[selectedIndex].PassWord);
             }
         }
@@ -209,6 +210,10 @@ namespace MyFilm
                     }
                     else return;
                 }
+                else
+                {
+                    generatedSqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
+                }
             }
             else
             {
@@ -235,21 +240,21 @@ namespace MyFilm
 
                 if (databaseType == LoginConfig.DataBaseType.MYSQL)
                 {
-                    if (!this.loginConfigData.mysqlConfig.hostIPs.Contains(dbIP))
-                        this.loginConfigData.mysqlConfig.hostIPs.Add(dbIP);
+                    if (!CommonString.LoginConfigData.mysqlConfig.hostIPs.Contains(dbIP))
+                        CommonString.LoginConfigData.mysqlConfig.hostIPs.Add(dbIP);
 
-                    if (this.loginConfigData.mysqlConfig.userNameAndPassWords.FindIndex(
+                    if (CommonString.LoginConfigData.mysqlConfig.userNameAndPassWords.FindIndex(
                         x => x.UserName == dbUserName) == -1)
-                        this.loginConfigData.mysqlConfig.userNameAndPassWords.Add(
+                        CommonString.LoginConfigData.mysqlConfig.userNameAndPassWords.Add(
                             new LoginConfig.UserNameAndPassWord()
                             {
                                 UserName = dbUserName,
                                 PassWord = Helper.Encryption(dbPassword)
                             });
 
-                    if (this.loginConfigData.mysqlConfig.dataBaseConfigs.FindIndex(
+                    if (CommonString.LoginConfigData.mysqlConfig.dataBaseConfigs.FindIndex(
                         x => x.Name == dbName) == -1)
-                        this.loginConfigData.mysqlConfig.dataBaseConfigs.Add(
+                        CommonString.LoginConfigData.mysqlConfig.dataBaseConfigs.Add(
                             new LoginConfig.DataBaseConfig()
                             {
                                 Name = dbName,
@@ -257,39 +262,41 @@ namespace MyFilm
                                     DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                             });
 
-                    this.loginConfigData.mysqlConfig.selectedUserName = dbUserName;
-                    this.loginConfigData.mysqlConfig.selectedIP = dbIP;
-                    this.loginConfigData.mysqlConfig.selectedDataBaseName = dbName;
+                    CommonString.LoginConfigData.mysqlConfig.selectedUserName = dbUserName;
+                    CommonString.LoginConfigData.mysqlConfig.selectedIP = dbIP;
+                    CommonString.LoginConfigData.mysqlConfig.selectedDataBaseName = dbName;
 
                     DateTime.TryParse(
-                        this.loginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime,
+                        CommonString.LoginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime,
                         out dateTimeLast);
                 }
                 else
                 {
-                    if (this.loginConfigData.sqliteConfig.dataBaseConfigs.FindIndex(
+                    if (CommonString.LoginConfigData.sqliteConfig.dataBaseConfigs.FindIndex(
                         x => x.Name == sqliteDateBasePath) == -1)
-                        this.loginConfigData.sqliteConfig.dataBaseConfigs.Add(
+                        CommonString.LoginConfigData.sqliteConfig.dataBaseConfigs.Add(
                             new LoginConfig.DataBaseConfig()
                             {
                                 Name = sqliteDateBasePath,
                                 WebDataCaptureTime =
                                     DateTime.MinValue.ToString("yyyy-MM-dd HHH:mm:ss")
                             });
-                    this.loginConfigData.sqliteConfig.selectedDataBasePath = sqliteDateBasePath;
+                    CommonString.LoginConfigData.sqliteConfig.selectedDataBasePath = sqliteDateBasePath;
 
                     DateTime.TryParse(
-                        this.loginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime,
+                        CommonString.LoginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime,
                         out dateTimeLast);
                 }
 
-                if (this.loginType == LoginType.Normal)
+                if (this.loginType == LoginType.Normal &&
+                    CommonString.LoginConfigData.crawlConfig.IsCrawl)
                 {
                     TimeSpan ts = DateTime.Now.Subtract(dateTimeLast);
-                    if (ts.Days > 3)
+                    if (ts.Days >= CommonString.LoginConfigData.crawlConfig.IntervalDays)
                     {
                         WaitingForm waitingForm = new WaitingForm(
-                            SetWebCaptureDataResult, generatedSqlData, this.loginConfigData.crawlURL);
+                            SetWebCaptureDataResult, generatedSqlData,
+                            CommonString.LoginConfigData.crawlConfig.CrawlURL);
                         waitingForm.ShowDialog();
 
                         if (this.webDataCaptureResult.code >= 0)
@@ -299,15 +306,15 @@ namespace MyFilm
                 }
 
                 if (databaseType == LoginConfig.DataBaseType.MYSQL)
-                    this.loginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime
+                    CommonString.LoginConfigData.mysqlConfig.SelectedDataBaseWebDataCaptureTime
                         = dateTimeLast.ToString("yyyy-MM-dd HHH:mm:ss");
                 else
-                    this.loginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime
+                    CommonString.LoginConfigData.sqliteConfig.SelectedDataBaseWebDataCaptureTime
                         = dateTimeLast.ToString("yyyy-MM-dd HHH:mm:ss");
 
-                this.loginConfigData.dataBaseType = databaseType;
+                CommonString.LoginConfigData.dataBaseType = databaseType;
 
-                LoginConfig.SaveXml(this.loginConfigData, LoginConfigPath);
+                LoginConfig.SaveXml(CommonString.LoginConfigData, LoginConfigPath);
 
                 if (this.loginType == LoginType.Normal) generatedSqlData.FillRamData();
 
@@ -317,6 +324,22 @@ namespace MyFilm
             {
                 MessageBox.Show(ex.Message, "提示", MessageBoxButtons.OK);
             }
+        }
+
+        private void SettingFormApply(LoginConfig.CrawlConfig crawlConfig,
+            LoginConfig.WebServerConfig webServerConfig)
+        {
+            CommonString.LoginConfigData.crawlConfig = crawlConfig;
+            CommonString.LoginConfigData.webServerConfig = webServerConfig;
+        }
+
+        private void btnSetting_Click(object sender, EventArgs e)
+        {
+            SettingForm form = new SettingForm(
+                CommonString.LoginConfigData.crawlConfig,
+                CommonString.LoginConfigData.webServerConfig);
+            form.SettingFormApplyAction += this.SettingFormApply;
+            form.ShowDialog();
         }
     }
 }

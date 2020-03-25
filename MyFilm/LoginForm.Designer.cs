@@ -30,6 +30,7 @@
         {
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnSetting = new System.Windows.Forms.Button();
             this.tabControl = new MyFilm.TableControlEx();
             this.tabPageMySQL = new System.Windows.Forms.TabPage();
             this.labelIP = new System.Windows.Forms.Label();
@@ -50,7 +51,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(147, 233);
+            this.btnConnect.Location = new System.Drawing.Point(304, 233);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(75, 23);
             this.btnConnect.TabIndex = 1;
@@ -61,12 +62,22 @@
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(280, 233);
+            this.btnCancel.Location = new System.Drawing.Point(397, 233);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "取消";
             this.btnCancel.UseVisualStyleBackColor = true;
+            // 
+            // btnSetting
+            // 
+            this.btnSetting.Location = new System.Drawing.Point(211, 233);
+            this.btnSetting.Name = "btnSetting";
+            this.btnSetting.Size = new System.Drawing.Size(75, 23);
+            this.btnSetting.TabIndex = 13;
+            this.btnSetting.Text = "设置";
+            this.btnSetting.UseVisualStyleBackColor = true;
+            this.btnSetting.Click += new System.EventHandler(this.btnSetting_Click);
             // 
             // tabControl
             // 
@@ -78,7 +89,6 @@
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
             this.tabControl.Size = new System.Drawing.Size(460, 186);
-            this.tabControl.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl.TabIndex = 12;
             // 
             // tabPageMySQL
@@ -102,7 +112,7 @@
             // labelIP
             // 
             this.labelIP.AutoSize = true;
-            this.labelIP.Location = new System.Drawing.Point(129, 22);
+            this.labelIP.Location = new System.Drawing.Point(127, 22);
             this.labelIP.Name = "labelIP";
             this.labelIP.Size = new System.Drawing.Size(41, 12);
             this.labelIP.TabIndex = 9;
@@ -110,7 +120,7 @@
             // 
             // textBoxPwd
             // 
-            this.textBoxPwd.Location = new System.Drawing.Point(181, 83);
+            this.textBoxPwd.Location = new System.Drawing.Point(179, 83);
             this.textBoxPwd.Name = "textBoxPwd";
             this.textBoxPwd.PasswordChar = '*';
             this.textBoxPwd.Size = new System.Drawing.Size(158, 21);
@@ -119,14 +129,14 @@
             // comboBoxDataBase
             // 
             this.comboBoxDataBase.FormattingEnabled = true;
-            this.comboBoxDataBase.Location = new System.Drawing.Point(181, 117);
+            this.comboBoxDataBase.Location = new System.Drawing.Point(179, 117);
             this.comboBoxDataBase.Name = "comboBoxDataBase";
             this.comboBoxDataBase.Size = new System.Drawing.Size(158, 20);
             this.comboBoxDataBase.TabIndex = 0;
             // 
             // comboBoxIP
             // 
-            this.comboBoxIP.Location = new System.Drawing.Point(181, 17);
+            this.comboBoxIP.Location = new System.Drawing.Point(179, 17);
             this.comboBoxIP.Name = "comboBoxIP";
             this.comboBoxIP.Size = new System.Drawing.Size(158, 20);
             this.comboBoxIP.TabIndex = 10;
@@ -134,7 +144,7 @@
             // labelDataBase
             // 
             this.labelDataBase.AutoSize = true;
-            this.labelDataBase.Location = new System.Drawing.Point(129, 121);
+            this.labelDataBase.Location = new System.Drawing.Point(127, 121);
             this.labelDataBase.Name = "labelDataBase";
             this.labelDataBase.Size = new System.Drawing.Size(41, 12);
             this.labelDataBase.TabIndex = 3;
@@ -143,7 +153,7 @@
             // labelPwd
             // 
             this.labelPwd.AutoSize = true;
-            this.labelPwd.Location = new System.Drawing.Point(129, 88);
+            this.labelPwd.Location = new System.Drawing.Point(127, 88);
             this.labelPwd.Name = "labelPwd";
             this.labelPwd.Size = new System.Drawing.Size(41, 12);
             this.labelPwd.TabIndex = 5;
@@ -151,7 +161,7 @@
             // 
             // comboBoxUser
             // 
-            this.comboBoxUser.Location = new System.Drawing.Point(181, 50);
+            this.comboBoxUser.Location = new System.Drawing.Point(179, 50);
             this.comboBoxUser.Name = "comboBoxUser";
             this.comboBoxUser.Size = new System.Drawing.Size(158, 20);
             this.comboBoxUser.TabIndex = 8;
@@ -160,7 +170,7 @@
             // labelUser
             // 
             this.labelUser.AutoSize = true;
-            this.labelUser.Location = new System.Drawing.Point(129, 55);
+            this.labelUser.Location = new System.Drawing.Point(127, 55);
             this.labelUser.Name = "labelUser";
             this.labelUser.Size = new System.Drawing.Size(41, 12);
             this.labelUser.TabIndex = 7;
@@ -201,6 +211,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 281);
+            this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnConnect);
@@ -236,5 +247,6 @@
         private System.Windows.Forms.Button btnSelectSQLiteDataBase;
         private System.Windows.Forms.ComboBox cbSQLiteDataBase;
         private TableControlEx tabControl;
+        private System.Windows.Forms.Button btnSetting;
     }
 }

@@ -333,7 +333,7 @@ namespace MyFilm
             log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
                 moveSuccess, logSuccess, moveFailed, logFailed);
 
-            String filePath = Path.Combine(System.Windows.Forms.Application.StartupPath, "MyfilmTemp.txt");
+            String filePath = Path.Combine(CommonString.MyFilmApplicationDataFolder, "MyfilmTemp.txt");
             File.WriteAllText(filePath, log, System.Text.Encoding.UTF8);
 
             Helper.OpenEdit(filePath, log);
@@ -448,7 +448,7 @@ namespace MyFilm
             LoginConfig.LoginConfigData loginConfigData =
                 LoginConfig.LoadXml(LoginForm.LoginConfigPath);
             WaitingForm waitingForm = new WaitingForm(
-                SetWebCaptureDataResult, sqlData, loginConfigData.crawlURL);
+                SetWebCaptureDataResult, sqlData, loginConfigData.crawlConfig.CrawlURL);
             waitingForm.ShowDialog();
 
             if (this.webDataCaptureResult.code >= 0)
@@ -584,6 +584,36 @@ namespace MyFilm
 
                 MessageBox.Show("数据复制完成！");
             }
+        }
+
+        private void SettingFormApply(LoginConfig.CrawlConfig crawlConfig,
+            LoginConfig.WebServerConfig webServerConfig)
+        {
+            CommonString.LoginConfigData.crawlConfig = crawlConfig;
+
+            if (CommonString.LoginConfigData.webServerConfig.IsStartWebServer)
+            {
+
+            }
+            else
+            {
+                CommonString.LoginConfigData.webServerConfig = webServerConfig;
+
+                if (webServerConfig.IsStartWebServer)
+                {
+                    
+                }
+            }
+        }
+
+        private void btnSetting_Click(object sender, EventArgs e)
+        {
+            SettingForm form = new SettingForm(
+                CommonString.LoginConfigData.crawlConfig,
+                CommonString.LoginConfigData.webServerConfig,
+                true);
+            form.SettingFormApplyAction += this.SettingFormApply;
+            form.ShowDialog();
         }
     }
 }
