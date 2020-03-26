@@ -21,6 +21,8 @@ namespace MyFilm
         {
             InitializeComponent();
             this.tbPort.SetTextMaxLength(5);
+            this.tbPort.SetMinValue(1024);
+            this.tbPort.SetMaxValue(65535);
 
             this.cbIsCrawl.Checked = crawlConfig.IsCrawl;
             this.tbCrawlAddr.Text = crawlConfig.CrawlURL;
