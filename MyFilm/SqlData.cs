@@ -1298,5 +1298,25 @@ namespace MyFilm
                 }
             }
         }
+
+        public DataTable GetToDeleteInfoOrderByCountDesc()
+        {
+            String cmdText = String.Format(
+                @"select disk_desc, count(*) as delete_count, sum(size)/1073741824 as delete_sum 
+                from {0} where to_delete = 1 group by disk_desc order by delete_count desc;",
+                "film_info");
+
+            return ExecuteReaderGetAll(cmdText, null);
+        }
+
+        public DataTable GetToDeleteInfoOrderBySumDesc()
+        {
+            String cmdText = String.Format(
+                @"select disk_desc, count(*) as delete_count, sum(size)/1073741824 as delete_sum 
+                from {0} where to_delete = 1 group by disk_desc order by delete_sum desc;",
+                "film_info");
+
+            return ExecuteReaderGetAll(cmdText, null);
+        }
     }
 }

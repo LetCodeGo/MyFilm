@@ -153,7 +153,7 @@ namespace MyFilm
 
             string[] actionList = new string[] {
                 "搜索", "待删(以设置待删时间倒序)", "待删(以磁盘中待删个数倒序)",
-                "待看(以设置待看时间倒序)", "管理", "设置" };
+                "待看(以设置待看时间倒序)", "管理", "设置", "输出待删信息"};
             this.cbAction.SuspendLayout();
             this.cbAction.Items.Clear();
             this.cbAction.Items.AddRange(actionList);
@@ -1331,6 +1331,17 @@ namespace MyFilm
             ReLoadDiskRootDataAndShow();
         }
 
+        private void OutputToDeleteInfo()
+        {
+            DataTable dt = sqlData.GetToDeleteInfoOrderBySumDesc();
+            string strOutput = CommonDataTable.DataTableFormatToString(dt, null);
+
+            String filePath = Path.Combine(CommonString.MyFilmApplicationDataFolder, "MyfilmTemp.txt");
+            File.WriteAllText(filePath, strOutput, System.Text.Encoding.UTF8);
+
+            Helper.OpenEdit(filePath, strOutput);
+        }
+
         private void cbAction_SelectedIndexChanged(object sender, EventArgs e)
         {
             switch (this.cbAction.SelectedItem.ToString())
@@ -1352,6 +1363,9 @@ namespace MyFilm
                     break;
                 case "设置":
                     ShowSettingForm();
+                    break;
+                case "输出待删信息":
+                    OutputToDeleteInfo();
                     break;
                 default:
                     SearchKeyWord();
