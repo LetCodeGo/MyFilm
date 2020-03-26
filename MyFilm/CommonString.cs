@@ -13,6 +13,8 @@ namespace MyFilm
         public static String MyFilmApplicationDataFolder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MyFilm");
 
+        public static Boolean NeedDeleteAllTableData = false;
+
         public static LoginConfig.LoginConfigData LoginConfigData = null;
 
         public readonly static String RealOrFake4KDiskName = "REAL_OR_FAKE_4K";

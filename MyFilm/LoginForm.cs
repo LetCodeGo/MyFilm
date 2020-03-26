@@ -37,7 +37,7 @@ namespace MyFilm
             else if (this.loginType == LoginType.DataBaseDataCopy)
             {
                 this.Text = "选择要复制的数据库";
-                this.btnSetting.Enabled = false;
+                this.btnSetting.Visible = false;
             }
         }
 
@@ -137,10 +137,9 @@ namespace MyFilm
 
         private void btnSelectSQLiteDataBase_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog
+            SaveFileDialog dlg = new SaveFileDialog
             {
-                Filter = "db file|*.db",
-                Multiselect = false
+                Filter = "db file|*.db"
             };
             if (dlg.ShowDialog() == DialogResult.OK)
             {
@@ -160,6 +159,8 @@ namespace MyFilm
             String dbPassword = String.Empty;
             String dbName = String.Empty;
             String sqliteDateBasePath = String.Empty;
+
+            CommonString.NeedDeleteAllTableData = false;
 
             if (databaseType == LoginConfig.DataBaseType.MYSQL)
             {
@@ -207,6 +208,7 @@ namespace MyFilm
                         MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
                         generatedSqlData = new SqlDataInMySql(dbIP, dbUserName, dbPassword, dbName);
+                        CommonString.NeedDeleteAllTableData = true;
                     }
                     else return;
                 }
@@ -229,6 +231,7 @@ namespace MyFilm
                     {
                         return;
                     }
+                    else CommonString.NeedDeleteAllTableData = true;
                 }
             }
 

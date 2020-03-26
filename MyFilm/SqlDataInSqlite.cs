@@ -146,24 +146,23 @@ namespace MyFilm
             ExecuteNonQueryGetAffected(cmdText, null);
         }
 
-        public override void DeleteAllDataFormAllTable()
-        {
-            Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
-            sqlParamDic.Add("@table_name", "film_info");
+        //public override void DeleteAllDataFormAllTable()
+        //{
+        //    Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
+        //    sqlParamDic.Add("@table_name", "table_name");
 
-            ExecuteNonQueryGetAffected("delete from film_info;", null);
-            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
+        //    string[] tableNames = new string[] { "film_info", "disk_info", "search_log" };
+        //    foreach (string tableName in tableNames)
+        //    {
+        //        sqlParamDic["@table_name"] = tableName;
+        //        ExecuteNonQueryGetAffected(
+        //            string.Format("delete from {0};", tableName), null);
+        //        ExecuteNonQueryGetAffected(
+        //            "update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
+        //    }
 
-            sqlParamDic["@table_name"] = "disk_info";
-            ExecuteNonQueryGetAffected("delete from disk_info;", null);
-            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
-
-            sqlParamDic["@table_name"] = "search_log";
-            ExecuteNonQueryGetAffected("delete from search_log;", null);
-            ExecuteNonQueryGetAffected("update sqlite_sequence set seq=0 where name=@table_name;", sqlParamDic);
-
-            FreeEmptySpace();
-        }
+        //    FreeEmptySpace();
+        //}
 
         public void FreeEmptySpace()
         {

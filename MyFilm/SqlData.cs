@@ -101,8 +101,6 @@ namespace MyFilm
 
         public abstract LoginConfig.DataBaseType GetDataBaseType();
 
-        public abstract void DeleteAllDataFormAllTable();
-
         public abstract string GetIdentString();
 
         ///// <summary>
@@ -251,6 +249,17 @@ namespace MyFilm
             return ExecuteNonQueryGetAffected(cmdText, sqlParamDic);
         }
 
+        public virtual void DeleteAllDataFormAllTable()
+        {
+            string[] tableNames = new string[] { "film_info", "disk_info", "search_log" };
+            foreach (string tableName in tableNames)
+            {
+                ExecuteNonQueryGetAffected(
+                    string.Format("drop table {0};", tableName), null);
+            }
+            CreateTables();
+        }
+
         virtual public void InsertDataToFilmInfo(DataTable dt)
         {
             if (dt != null && dt.Rows.Count > 0)
@@ -390,7 +399,7 @@ namespace MyFilm
         protected void InsertDataToSearchLog(DataTable dt, int start, int count)
         {
             String cmdText = String.Format(
-                @"insert into {0} (search_key, result_count, search_time) values", "disk_info");
+                @"insert into {0} (search_key, result_count, search_time) values", "search_log");
 
             Dictionary<String, Object> sqlParamDic = new Dictionary<string, object>();
             for (int i = start, j = 0; i < dt.Rows.Count && j < count; i++, j++)

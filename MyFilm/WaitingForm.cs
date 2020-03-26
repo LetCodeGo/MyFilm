@@ -123,7 +123,7 @@ namespace MyFilm
             DataTable diskInfoDataTable = sqlDataFrom.GetDiskInfoDatabaseTransferData();
             DataTable searchLogDataTable = sqlDataFrom.GetSearchLogDatabaseTransferData();
 
-            if (sqlDataFrom.GetIdentString() == sqlDataTo.GetIdentString())
+            if (CommonString.NeedDeleteAllTableData)
             {
                 sqlDataTo.DeleteAllDataFormAllTable();
             }
