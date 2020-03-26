@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -43,6 +45,29 @@ namespace MyFilm
             else if (lSize < TB) return String.Format("{0:F} GB", dSize / GB);
             else if (lSize < PB) return String.Format("{0:F} TB", dSize / TB);
             else return "N/A";
+        }
+
+        /// <summary>
+        /// 检测端口号是否被占用
+        /// </summary>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static bool PortInUse(int port)
+        {
+            bool inUse = false;
+
+            IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            IPEndPoint[] ipEndPoints = ipProperties.GetActiveTcpListeners();
+
+            foreach (IPEndPoint endPoint in ipEndPoints)
+            {
+                if (endPoint.Port == port)
+                {
+                    inUse = true;
+                    break;
+                }
+            }
+            return inUse;
         }
 
         /// <summary>

@@ -33,10 +33,6 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.comboBoxDisk = new System.Windows.Forms.ComboBox();
             this.textBoxSearch = new System.Windows.Forms.TextBox();
-            this.btnSearch = new System.Windows.Forms.Button();
-            this.btnDelete = new System.Windows.Forms.Button();
-            this.btnWatch = new System.Windows.Forms.Button();
-            this.btnManager = new System.Windows.Forms.Button();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.labelExplain = new System.Windows.Forms.Label();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -64,7 +60,7 @@
             this.contextMenuStripNotify = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemShowWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemExitWindow = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnDeleteOrderByDisk = new System.Windows.Forms.Button();
+            this.cbAction = new System.Windows.Forms.ComboBox();
             this.tbePageRowCount = new MyFilm.TextBoxEx();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStrip.SuspendLayout();
@@ -86,53 +82,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxSearch.Location = new System.Drawing.Point(249, 12);
             this.textBoxSearch.Name = "textBoxSearch";
-            this.textBoxSearch.Size = new System.Drawing.Size(533, 21);
+            this.textBoxSearch.Size = new System.Drawing.Size(731, 21);
             this.textBoxSearch.TabIndex = 1;
             this.textBoxSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSearch_KeyDown);
-            // 
-            // btnSearch
-            // 
-            this.btnSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSearch.Location = new System.Drawing.Point(788, 11);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(75, 23);
-            this.btnSearch.TabIndex = 2;
-            this.btnSearch.Text = "搜索";
-            this.btnSearch.UseVisualStyleBackColor = true;
-            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
-            // 
-            // btnDelete
-            // 
-            this.btnDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDelete.Location = new System.Drawing.Point(865, 11);
-            this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(75, 23);
-            this.btnDelete.TabIndex = 3;
-            this.btnDelete.Text = "待删(时间)";
-            this.btnDelete.UseVisualStyleBackColor = true;
-            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
-            // 
-            // btnWatch
-            // 
-            this.btnWatch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnWatch.Location = new System.Drawing.Point(1019, 11);
-            this.btnWatch.Name = "btnWatch";
-            this.btnWatch.Size = new System.Drawing.Size(75, 23);
-            this.btnWatch.TabIndex = 4;
-            this.btnWatch.Text = "待看";
-            this.btnWatch.UseVisualStyleBackColor = true;
-            this.btnWatch.Click += new System.EventHandler(this.btnWatch_Click);
-            // 
-            // btnManager
-            // 
-            this.btnManager.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnManager.Location = new System.Drawing.Point(1097, 11);
-            this.btnManager.Name = "btnManager";
-            this.btnManager.Size = new System.Drawing.Size(75, 23);
-            this.btnManager.TabIndex = 5;
-            this.btnManager.Text = "管理";
-            this.btnManager.UseVisualStyleBackColor = true;
-            this.btnManager.Click += new System.EventHandler(this.btnManager_Click);
             // 
             // dataGridView
             // 
@@ -282,7 +234,7 @@
             // btnRootDirectory
             // 
             this.btnRootDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnRootDirectory.Location = new System.Drawing.Point(196, 601);
+            this.btnRootDirectory.Location = new System.Drawing.Point(12, 601);
             this.btnRootDirectory.Name = "btnRootDirectory";
             this.btnRootDirectory.Size = new System.Drawing.Size(75, 23);
             this.btnRootDirectory.TabIndex = 23;
@@ -348,7 +300,7 @@
             // btnUpFolder
             // 
             this.btnUpFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnUpFolder.Location = new System.Drawing.Point(12, 601);
+            this.btnUpFolder.Location = new System.Drawing.Point(93, 601);
             this.btnUpFolder.Name = "btnUpFolder";
             this.btnUpFolder.Size = new System.Drawing.Size(178, 23);
             this.btnUpFolder.TabIndex = 17;
@@ -360,7 +312,7 @@
             // 
             this.labelPageRowCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.labelPageRowCount.AutoSize = true;
-            this.labelPageRowCount.Location = new System.Drawing.Point(1018, 55);
+            this.labelPageRowCount.Location = new System.Drawing.Point(1017, 56);
             this.labelPageRowCount.Name = "labelPageRowCount";
             this.labelPageRowCount.Size = new System.Drawing.Size(77, 12);
             this.labelPageRowCount.TabIndex = 24;
@@ -394,16 +346,15 @@
             this.toolStripMenuItemExitWindow.Text = "退出";
             this.toolStripMenuItemExitWindow.Click += new System.EventHandler(this.toolStripMenuItemExitWindow_Click);
             // 
-            // btnDeleteOrderByDisk
+            // cbAction
             // 
-            this.btnDeleteOrderByDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteOrderByDisk.Location = new System.Drawing.Point(942, 11);
-            this.btnDeleteOrderByDisk.Name = "btnDeleteOrderByDisk";
-            this.btnDeleteOrderByDisk.Size = new System.Drawing.Size(75, 23);
-            this.btnDeleteOrderByDisk.TabIndex = 29;
-            this.btnDeleteOrderByDisk.Text = "待删(磁盘)";
-            this.btnDeleteOrderByDisk.UseVisualStyleBackColor = true;
-            this.btnDeleteOrderByDisk.Click += new System.EventHandler(this.btnDeleteOrderByDisk_Click);
+            this.cbAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbAction.FormattingEnabled = true;
+            this.cbAction.Location = new System.Drawing.Point(986, 12);
+            this.cbAction.Name = "cbAction";
+            this.cbAction.Size = new System.Drawing.Size(186, 20);
+            this.cbAction.TabIndex = 30;
             // 
             // tbePageRowCount
             // 
@@ -421,7 +372,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 636);
-            this.Controls.Add(this.btnDeleteOrderByDisk);
+            this.Controls.Add(this.cbAction);
             this.Controls.Add(this.tbePageRowCount);
             this.Controls.Add(this.labelPageRowCount);
             this.Controls.Add(this.btnRootDirectory);
@@ -433,10 +384,6 @@
             this.Controls.Add(this.btnUpFolder);
             this.Controls.Add(this.labelExplain);
             this.Controls.Add(this.dataGridView);
-            this.Controls.Add(this.btnManager);
-            this.Controls.Add(this.btnWatch);
-            this.Controls.Add(this.btnDelete);
-            this.Controls.Add(this.btnSearch);
             this.Controls.Add(this.textBoxSearch);
             this.Controls.Add(this.comboBoxDisk);
             this.KeyPreview = true;
@@ -460,10 +407,6 @@
 
         private System.Windows.Forms.ComboBox comboBoxDisk;
         private System.Windows.Forms.TextBox textBoxSearch;
-        private System.Windows.Forms.Button btnSearch;
-        private System.Windows.Forms.Button btnDelete;
-        private System.Windows.Forms.Button btnWatch;
-        private System.Windows.Forms.Button btnManager;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.Label labelExplain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
@@ -487,12 +430,12 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowWindow;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemExitWindow;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemShowContent;
-        private System.Windows.Forms.Button btnDeleteOrderByDisk;
         private System.Windows.Forms.ToolStripComboBox toolStripComboBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ComboBox cbAction;
     }
 }
 

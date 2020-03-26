@@ -20,6 +20,7 @@ namespace MyFilm
             bool buttonApplyVisible = false)
         {
             InitializeComponent();
+            this.tbPort.SetTextMaxLength(5);
 
             this.cbIsCrawl.Checked = crawlConfig.IsCrawl;
             this.tbCrawlAddr.Text = crawlConfig.CrawlURL;
@@ -30,10 +31,18 @@ namespace MyFilm
             this.tbRowsPerPage.Text = webServerConfig.RowsPerPage.ToString();
 
             this.btnApply.Visible = buttonApplyVisible;
+            this.Icon = Properties.Resources.Film;
         }
 
-        private void btnApply_Click(object sender, EventArgs e)
+        private bool ApplyAction()
         {
+            if (Helper.PortInUse(Convert.ToInt32(this.tbPort.Text)))
+            {
+                MessageBox.Show(string.Format("端口号 \'{0}\' 已被占用", this.tbPort.Text),
+                    "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
             LoginConfig.CrawlConfig crawlConfig = new LoginConfig.CrawlConfig()
             {
                 IsCrawl = this.cbIsCrawl.Checked,
@@ -47,12 +56,18 @@ namespace MyFilm
                 RowsPerPage = Convert.ToInt32(this.tbRowsPerPage.Text)
             };
             SettingFormApplyAction?.Invoke(crawlConfig, webServerConfig);
+
+            return true;
+        }
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            ApplyAction();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            btnApply_Click(null, null);
-            this.Close();
+            if (ApplyAction()) this.Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

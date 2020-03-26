@@ -151,6 +151,17 @@ namespace MyFilm
             }
             this.notifyIcon.ContextMenuStrip = this.contextMenuStripNotify;
 
+            string[] actionList = new string[] {
+                "搜索", "待删(以设置待删时间倒序)", "待删(以磁盘中待删个数倒序)",
+                "待看(以设置待看时间倒序)", "管理", "设置" };
+            this.cbAction.SuspendLayout();
+            this.cbAction.Items.Clear();
+            this.cbAction.Items.AddRange(actionList);
+            this.cbAction.SelectedIndex = 0;
+            this.cbAction.SelectedIndexChanged +=
+                new System.EventHandler(this.cbAction_SelectedIndexChanged);
+            this.cbAction.ResumeLayout();
+
             // 删除NFO文件夹中所有的nfo文件
             if (Directory.Exists(nfoFolder))
             {
@@ -189,7 +200,7 @@ namespace MyFilm
             else
             {
                 this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
-                btnSearch_Click(null, null);
+                SearchKeyWord();
             }
         }
 
@@ -207,11 +218,6 @@ namespace MyFilm
             // 通知栏右键退出
             if (notifyIconExitFlag)
             {
-                if (CommonString.LoginConfigData.rowsPerPage != pageRowCount)
-                {
-                    CommonString.LoginConfigData.rowsPerPage = pageRowCount;
-                    LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
-                }
                 webServer.Stop();
                 ProcessSendData.exitCall = true;
                 ProcessSendData.SendData("quit");
@@ -227,11 +233,6 @@ namespace MyFilm
                         this.notifyIcon.Visible = true;
                         break;
                     default:
-                        if (CommonString.LoginConfigData.rowsPerPage != pageRowCount)
-                        {
-                            CommonString.LoginConfigData.rowsPerPage = pageRowCount;
-                            LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
-                        }
                         webServer.Stop();
                         ProcessSendData.exitCall = true;
                         ProcessSendData.SendData("quit");
@@ -320,7 +321,7 @@ namespace MyFilm
 
             this.comboBoxDisk.SuspendLayout();
             this.comboBoxDisk.Items.Clear();
-            this.comboBoxDisk.Items.Add(string.Format("全部（共 {0} 磁盘）", totalRowCount));
+            this.comboBoxDisk.Items.Add(string.Format("全部(共 {0} 磁盘)", totalRowCount));
             for (int i = 0; i < diskRootDataTable.Rows.Count; i++)
             {
                 this.comboBoxDisk.Items.Add(diskRootDataTable.Rows[i]["disk_desc"]);
@@ -492,7 +493,7 @@ namespace MyFilm
             }
         }
 
-        private void btnSearch_Click(object sender, EventArgs e)
+        private void SearchKeyWord()
         {
             String keyWord = this.textBoxSearch.Text;
             // 为空时直接显示根目录
@@ -524,7 +525,7 @@ namespace MyFilm
             ShowDataGridViewPage(0);
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void ShowToDelteOrderByTimeDesc()
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待删（结果以设置时间倒序）",
@@ -540,7 +541,7 @@ namespace MyFilm
             ShowDataGridViewPage(0);
         }
 
-        private void btnDeleteOrderByDisk_Click(object sender, EventArgs e)
+        private void ShowToDeleteOrderByDiskCount()
         {
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待删（结果以磁盘分组）",
@@ -556,9 +557,8 @@ namespace MyFilm
             ShowDataGridViewPage(0);
         }
 
-        private void btnWatch_Click(object sender, EventArgs e)
+        private void ShowToWatch()
         {
-
             String diskDescribe = this.comboBoxDisk.SelectedItem.ToString();
             queryInfo = String.Format("在 {0} 里搜索 待看",
                             this.comboBoxDisk.SelectedIndex == 0 ? "所有磁盘" : diskDescribe);
@@ -573,11 +573,75 @@ namespace MyFilm
             ShowDataGridViewPage(0);
         }
 
-        private void btnManager_Click(object sender, EventArgs e)
+        private void ShowManagerForm()
         {
             ManagerForm form = new ManagerForm(sqlData);
-            //this.managerFormSetEnableAction = form.SetControlEnable;
             form.closeAction = this.ManagerFormClosed;
+            form.ShowDialog();
+        }
+
+        private void SettingFormApply(LoginConfig.CrawlConfig crawlConfig,
+            LoginConfig.WebServerConfig webServerConfig)
+        {
+            bool notChange =
+                CommonString.LoginConfigData.crawlConfig.CrawlURL == crawlConfig.CrawlURL &&
+                CommonString.LoginConfigData.crawlConfig.IntervalDays == crawlConfig.IntervalDays &&
+                CommonString.LoginConfigData.crawlConfig.IsCrawl == crawlConfig.IsCrawl &&
+                CommonString.LoginConfigData.webServerConfig.IsStartWebServer == webServerConfig.IsStartWebServer &&
+                CommonString.LoginConfigData.webServerConfig.Port == webServerConfig.Port &&
+                CommonString.LoginConfigData.webServerConfig.RowsPerPage == webServerConfig.RowsPerPage;
+
+            CommonString.LoginConfigData.crawlConfig = crawlConfig;
+
+            if (CommonString.LoginConfigData.webServerConfig.IsStartWebServer)
+            {
+                if (webServerConfig.IsStartWebServer)
+                {
+                    if (CommonString.LoginConfigData.webServerConfig.Port != webServerConfig.Port)
+                    {
+                        webServer.Stop();
+                        webServer.SetPort(webServerConfig.Port);
+                        webServer.SetRowsPerPage(webServerConfig.RowsPerPage);
+                        Thread t1 = new Thread(new ThreadStart(webServer.Start));
+                        t1.Start();
+                    }
+                    else if (CommonString.LoginConfigData.webServerConfig.RowsPerPage !=
+                        webServerConfig.RowsPerPage)
+                    {
+                        webServer.SetRowsPerPage(webServerConfig.RowsPerPage);
+                    }
+                }
+                else
+                {
+                    webServer.Stop();
+                }
+
+                CommonString.LoginConfigData.webServerConfig = webServerConfig;
+            }
+            else
+            {
+                CommonString.LoginConfigData.webServerConfig = webServerConfig;
+
+                if (webServerConfig.IsStartWebServer)
+                {
+                    Thread t2 = new Thread(new ThreadStart(StartWebServer));
+                    t2.Start();
+                }
+            }
+
+            if (!notChange)
+            {
+                LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
+            }
+        }
+
+        private void ShowSettingForm()
+        {
+            SettingForm form = new SettingForm(
+                CommonString.LoginConfigData.crawlConfig,
+                CommonString.LoginConfigData.webServerConfig,
+                true);
+            form.SettingFormApplyAction += this.SettingFormApply;
             form.ShowDialog();
         }
 
@@ -1013,6 +1077,12 @@ namespace MyFilm
                     this.pageRowCount = 1;
                 }
 
+                if (CommonString.LoginConfigData.rowsPerPage != this.pageRowCount)
+                {
+                    CommonString.LoginConfigData.rowsPerPage = this.pageRowCount;
+                    LoginConfig.SaveXml(CommonString.LoginConfigData, LoginForm.LoginConfigPath);
+                }
+
                 InitPageCombox();
                 ShowDataGridViewPage(0);
 
@@ -1024,7 +1094,7 @@ namespace MyFilm
         {
             if (e.KeyData == Keys.Enter)
             {
-                btnSearch_Click(null, null);
+                SearchKeyWord();
                 e.Handled = false;
             }
         }
@@ -1208,7 +1278,7 @@ namespace MyFilm
                 // 命令行搜索时为全盘
                 this.comboBoxDisk.SelectedIndex = 0;
                 this.textBoxSearch.Text = CommonString.WebSearchKeyWord;
-                btnSearch_Click(null, null);
+                SearchKeyWord();
                 // 窗口切换到最前
                 Win32API.SwitchToThisWindow(this.Handle, true);
                 this.TopLevel = true;
@@ -1259,6 +1329,34 @@ namespace MyFilm
         {
             // 设置返回后显示根目录
             ReLoadDiskRootDataAndShow();
+        }
+
+        private void cbAction_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (this.cbAction.SelectedItem.ToString())
+            {
+                case "搜索":
+                    SearchKeyWord();
+                    break;
+                case "待删(以设置待删时间倒序)":
+                    ShowToDelteOrderByTimeDesc();
+                    break;
+                case "待删(以磁盘中待删个数倒序)":
+                    ShowToDeleteOrderByDiskCount();
+                    break;
+                case "待看(以设置待看时间倒序)":
+                    ShowToWatch();
+                    break;
+                case "管理":
+                    ShowManagerForm();
+                    break;
+                case "设置":
+                    ShowSettingForm();
+                    break;
+                default:
+                    SearchKeyWord();
+                    break;
+            }
         }
     }
 }

@@ -54,7 +54,6 @@
             this.tbeLayer = new MyFilm.TextBoxEx();
             this.btnSetEmptyFolderDelete = new System.Windows.Forms.Button();
             this.btnDatabaseCopy = new System.Windows.Forms.Button();
-            this.btnSetting = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -164,7 +163,7 @@
             // btnAddDisk
             // 
             this.btnAddDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAddDisk.Location = new System.Drawing.Point(768, 162);
+            this.btnAddDisk.Location = new System.Drawing.Point(768, 130);
             this.btnAddDisk.Name = "btnAddDisk";
             this.btnAddDisk.Size = new System.Drawing.Size(204, 25);
             this.btnAddDisk.TabIndex = 1;
@@ -175,7 +174,7 @@
             // btnUpdateDisk
             // 
             this.btnUpdateDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateDisk.Location = new System.Drawing.Point(768, 193);
+            this.btnUpdateDisk.Location = new System.Drawing.Point(768, 161);
             this.btnUpdateDisk.Name = "btnUpdateDisk";
             this.btnUpdateDisk.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateDisk.TabIndex = 2;
@@ -186,7 +185,7 @@
             // btnDeleteDisk
             // 
             this.btnDeleteDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDeleteDisk.Location = new System.Drawing.Point(768, 224);
+            this.btnDeleteDisk.Location = new System.Drawing.Point(768, 192);
             this.btnDeleteDisk.Name = "btnDeleteDisk";
             this.btnDeleteDisk.Size = new System.Drawing.Size(204, 25);
             this.btnDeleteDisk.TabIndex = 3;
@@ -279,7 +278,7 @@
             // btnUpdateROF4K
             // 
             this.btnUpdateROF4K.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateROF4K.Location = new System.Drawing.Point(768, 120);
+            this.btnUpdateROF4K.Location = new System.Drawing.Point(768, 88);
             this.btnUpdateROF4K.Name = "btnUpdateROF4K";
             this.btnUpdateROF4K.Size = new System.Drawing.Size(204, 25);
             this.btnUpdateROF4K.TabIndex = 29;
@@ -325,7 +324,7 @@
             // btnDatabaseCopy
             // 
             this.btnDatabaseCopy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDatabaseCopy.Location = new System.Drawing.Point(768, 255);
+            this.btnDatabaseCopy.Location = new System.Drawing.Point(768, 223);
             this.btnDatabaseCopy.Name = "btnDatabaseCopy";
             this.btnDatabaseCopy.Size = new System.Drawing.Size(204, 25);
             this.btnDatabaseCopy.TabIndex = 32;
@@ -333,23 +332,11 @@
             this.btnDatabaseCopy.UseVisualStyleBackColor = true;
             this.btnDatabaseCopy.Click += new System.EventHandler(this.btnDatabaseCopy_Click);
             // 
-            // btnSetting
-            // 
-            this.btnSetting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetting.Location = new System.Drawing.Point(768, 89);
-            this.btnSetting.Name = "btnSetting";
-            this.btnSetting.Size = new System.Drawing.Size(204, 25);
-            this.btnSetting.TabIndex = 33;
-            this.btnSetting.Text = "设置";
-            this.btnSetting.UseVisualStyleBackColor = true;
-            this.btnSetting.Click += new System.EventHandler(this.btnSetting_Click);
-            // 
             // ManagerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(984, 580);
-            this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.btnDatabaseCopy);
             this.Controls.Add(this.btnSetEmptyFolderDelete);
             this.Controls.Add(this.cbScanMedia);
@@ -405,6 +392,5 @@
         private System.Windows.Forms.CheckBox cbScanMedia;
         private System.Windows.Forms.Button btnSetEmptyFolderDelete;
         private System.Windows.Forms.Button btnDatabaseCopy;
-        private System.Windows.Forms.Button btnSetting;
     }
 }

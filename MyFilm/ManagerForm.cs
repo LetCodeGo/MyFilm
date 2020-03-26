@@ -585,35 +585,5 @@ namespace MyFilm
                 MessageBox.Show("数据复制完成！");
             }
         }
-
-        private void SettingFormApply(LoginConfig.CrawlConfig crawlConfig,
-            LoginConfig.WebServerConfig webServerConfig)
-        {
-            CommonString.LoginConfigData.crawlConfig = crawlConfig;
-
-            if (CommonString.LoginConfigData.webServerConfig.IsStartWebServer)
-            {
-
-            }
-            else
-            {
-                CommonString.LoginConfigData.webServerConfig = webServerConfig;
-
-                if (webServerConfig.IsStartWebServer)
-                {
-                    
-                }
-            }
-        }
-
-        private void btnSetting_Click(object sender, EventArgs e)
-        {
-            SettingForm form = new SettingForm(
-                CommonString.LoginConfigData.crawlConfig,
-                CommonString.LoginConfigData.webServerConfig,
-                true);
-            form.SettingFormApplyAction += this.SettingFormApply;
-            form.ShowDialog();
-        }
     }
 }
