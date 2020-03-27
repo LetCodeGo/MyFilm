@@ -37,17 +37,17 @@ namespace MyFilm
             return string.Format("mysql_{0}_{1}", this.DbIP, this.DbName);
         }
 
-        //public override void DeleteAllDataFormAllTable()
-        //{
-        //    string[] tableNames = new string[] { "film_info", "disk_info", "search_log" };
-        //    foreach (string tableName in tableNames)
-        //    {
-        //        ExecuteNonQueryGetAffected(
-        //            string.Format("truncate table {0};", tableName), null);
-        //        ExecuteNonQueryGetAffected(
-        //            string.Format("update statistics low for table {0};", tableName), null);
-        //    }
-        //}
+        public override void DeleteAllDataFormAllTable()
+        {
+            string[] tableNames = new string[] { "film_info", "disk_info", "search_log" };
+            foreach (string tableName in tableNames)
+            {
+                ExecuteNonQueryGetAffected(
+                    string.Format("truncate table {0};", tableName), null);
+                //ExecuteNonQueryGetAffected(
+                //    string.Format("update statistics low for table {0};", tableName), null);
+            }
+        }
 
         protected override int ExecuteNonQueryGetAffected(
             String cmdText, Dictionary<String, Object> sqlParamDic = null)
