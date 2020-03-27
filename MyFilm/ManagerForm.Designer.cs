@@ -45,8 +45,6 @@
             this.textBoxDiskDescribe = new System.Windows.Forms.TextBox();
             this.textBoxNewDiskDescribe = new System.Windows.Forms.TextBox();
             this.btnChangeDiskDescribe = new System.Windows.Forms.Button();
-            this.comboBoxLocalDisk = new System.Windows.Forms.ComboBox();
-            this.btnUpdateLocalDisk = new System.Windows.Forms.Button();
             this.checkBoxBriefScan = new System.Windows.Forms.CheckBox();
             this.labelScanDepth = new System.Windows.Forms.Label();
             this.btnUpdateROF4K = new System.Windows.Forms.Button();
@@ -196,7 +194,7 @@
             // btnMoveFolderOrFile
             // 
             this.btnMoveFolderOrFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(768, 458);
+            this.btnMoveFolderOrFile.Location = new System.Drawing.Point(768, 473);
             this.btnMoveFolderOrFile.Name = "btnMoveFolderOrFile";
             this.btnMoveFolderOrFile.Size = new System.Drawing.Size(204, 25);
             this.btnMoveFolderOrFile.TabIndex = 4;
@@ -230,27 +228,6 @@
             this.btnChangeDiskDescribe.Text = "更改磁盘描述";
             this.btnChangeDiskDescribe.UseVisualStyleBackColor = true;
             this.btnChangeDiskDescribe.Click += new System.EventHandler(this.btnChangeDiskDescribe_Click);
-            // 
-            // comboBoxLocalDisk
-            // 
-            this.comboBoxLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.comboBoxLocalDisk.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxLocalDisk.FormattingEnabled = true;
-            this.comboBoxLocalDisk.Location = new System.Drawing.Point(886, 489);
-            this.comboBoxLocalDisk.Name = "comboBoxLocalDisk";
-            this.comboBoxLocalDisk.Size = new System.Drawing.Size(86, 20);
-            this.comboBoxLocalDisk.TabIndex = 9;
-            // 
-            // btnUpdateLocalDisk
-            // 
-            this.btnUpdateLocalDisk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnUpdateLocalDisk.Location = new System.Drawing.Point(768, 487);
-            this.btnUpdateLocalDisk.Name = "btnUpdateLocalDisk";
-            this.btnUpdateLocalDisk.Size = new System.Drawing.Size(112, 23);
-            this.btnUpdateLocalDisk.TabIndex = 10;
-            this.btnUpdateLocalDisk.Text = "刷新磁盘盘符";
-            this.btnUpdateLocalDisk.UseVisualStyleBackColor = true;
-            this.btnUpdateLocalDisk.Click += new System.EventHandler(this.btnUpdateLocalDisk_Click);
             // 
             // checkBoxBriefScan
             // 
@@ -313,7 +290,7 @@
             // btnSetEmptyFolderDelete
             // 
             this.btnSetEmptyFolderDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSetEmptyFolderDelete.Location = new System.Drawing.Point(768, 427);
+            this.btnSetEmptyFolderDelete.Location = new System.Drawing.Point(768, 442);
             this.btnSetEmptyFolderDelete.Name = "btnSetEmptyFolderDelete";
             this.btnSetEmptyFolderDelete.Size = new System.Drawing.Size(204, 25);
             this.btnSetEmptyFolderDelete.TabIndex = 31;
@@ -344,8 +321,6 @@
             this.Controls.Add(this.labelScanDepth);
             this.Controls.Add(this.tbeLayer);
             this.Controls.Add(this.checkBoxBriefScan);
-            this.Controls.Add(this.btnUpdateLocalDisk);
-            this.Controls.Add(this.comboBoxLocalDisk);
             this.Controls.Add(this.textBoxNewDiskDescribe);
             this.Controls.Add(this.btnChangeDiskDescribe);
             this.Controls.Add(this.textBoxDiskDescribe);
@@ -377,8 +352,6 @@
         private System.Windows.Forms.TextBox textBoxDiskDescribe;
         private System.Windows.Forms.TextBox textBoxNewDiskDescribe;
         private System.Windows.Forms.Button btnChangeDiskDescribe;
-        private System.Windows.Forms.ComboBox comboBoxLocalDisk;
-        private System.Windows.Forms.Button btnUpdateLocalDisk;
         private System.Windows.Forms.CheckBox checkBoxBriefScan;
         private TextBoxEx tbeLayer;
         private System.Windows.Forms.Label labelScanDepth;

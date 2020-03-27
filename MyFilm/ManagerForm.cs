@@ -59,25 +59,6 @@ namespace MyFilm
             this.dataGridView.DataSource = gridViewData;
         }
 
-        private void InitComboxLocalDisk()
-        {
-            this.comboBoxLocalDisk.SuspendLayout();
-            this.comboBoxLocalDisk.Items.Clear();
-
-            System.IO.DriveInfo[] drives = System.IO.DriveInfo.GetDrives();
-            // 是否含磁盘E
-            bool eDrive = false;
-            for (int i = 0; i < drives.Length; i++)
-            {
-                if ((!eDrive) && drives[i].Name == @"E:\") eDrive = true;
-                this.comboBoxLocalDisk.Items.Add(drives[i].Name);
-            }
-
-            if (eDrive) this.comboBoxLocalDisk.SelectedItem = @"E:\";
-            else this.comboBoxLocalDisk.SelectedIndex = drives.Length - 1;
-            this.comboBoxLocalDisk.ResumeLayout();
-        }
-
         private DataTable ConvertDiskInfoToGrid(DataTable diDt)
         {
             DataTable dt = CommonDataTable.GetSettingGridDataTable();
@@ -131,7 +112,7 @@ namespace MyFilm
                 }
 
                 if (MessageBox.Show(
-                    string.Format("确定要添加磁盘 \'{0}\' 通过实际磁盘 \'{1}\' ?",
+                    string.Format("确定要添加磁盘 \'{0}\' 通过实际磁盘 \'{1}\' 吗?",
                     diskDescribe, dlg.SelectedPath), "提示",
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Question) ==
@@ -183,7 +164,7 @@ namespace MyFilm
                 }
 
                 if (MessageBox.Show(
-                    string.Format("确定要更新磁盘 \'{0}\' 通过实际磁盘 \'{1}\' ?",
+                    string.Format("确定要更新磁盘 \'{0}\' 通过实际磁盘 \'{1}\' 吗?",
                     diskDescribe, dlg.SelectedPath), "提示",
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Question) ==
@@ -229,7 +210,7 @@ namespace MyFilm
             String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
 
             if (MessageBox.Show(
-                string.Format("确定要删除磁盘 \'{0}\' ?",
+                string.Format("确定要删除磁盘 \'{0}\' 吗?",
                 diskDescribe), "提示",
                 MessageBoxButtons.OKCancel,
                 MessageBoxIcon.Question) ==
@@ -258,90 +239,95 @@ namespace MyFilm
                 return;
             }
 
-            String log = String.Empty;
-            String logSuccess = String.Empty;
-            int moveSuccess = 0;
-            String logFailed = String.Empty;
-            int moveFailed = 0;
-
-            String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
-            String localDisk = this.comboBoxLocalDisk.SelectedItem.ToString();
-            String moveToFolder = Path.Combine(localDisk, "ToDelete");
-
-            if (MessageBox.Show(
-                string.Format("确定要将磁盘 \'{0}\'，实际磁盘 \'{1}\' 中的待删项移到 \'{2}\' ?",
-                diskDescribe, localDisk, moveToFolder), "提示",
-                MessageBoxButtons.OKCancel,
-                MessageBoxIcon.Question) ==
-                DialogResult.Cancel)
+            FolderBrowserDialog dlg = new FolderBrowserDialog();
+            if (dlg.ShowDialog() == DialogResult.OK)
             {
-                return;
-            }
-
-            //int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
-            //DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
-
-            int[] idList = sqlData.GetDeleteDataFromFilmInfo(diskDescribe);
-            DataTable dt = sqlData.SelectDataByIDList(idList);
-            Debug.Assert(idList.Length == dt.Rows.Count);
-
-            if (!Directory.Exists(moveToFolder)) Directory.CreateDirectory(moveToFolder);
-
-            log += String.Format("查询到待删记录 {0} 条\r\n", dt.Rows.Count);
-            log += String.Format("目标文件夹 {0}\r\n", moveToFolder);
-
-            for (int i = 0; i < dt.Rows.Count; i++)
-            {
-                String name = dt.Rows[i]["name"].ToString();
-                String path = dt.Rows[i]["path"].ToString();
-                Boolean isFolder = Convert.ToBoolean(dt.Rows[i]["is_folder"]);
-
-                String moveToPath = Path.Combine(moveToFolder, name);
-                // 更改磁盘名称（扫描时的磁盘和此时的磁盘名称可能不同）
-                String moveFromPath = localDisk[0] + path.Substring(1);
-
-                if (isFolder)
+                if (!dlg.SelectedPath.EndsWith(":\\"))
                 {
-                    if (Directory.Exists(moveFromPath))
+                    MessageBox.Show("请选择磁盘根目录！", "提示", MessageBoxButtons.OK);
+                    return;
+                }
+
+                String log = String.Empty;
+                String logSuccess = String.Empty;
+                int moveSuccess = 0;
+                String logFailed = String.Empty;
+                int moveFailed = 0;
+
+                String diskDescribe = this.dataGridView.SelectedRows[0].Cells[1].Value.ToString();
+                String localDisk = dlg.SelectedPath;
+                String moveToFolder = Path.Combine(localDisk, "ToDelete");
+
+                if (MessageBox.Show(
+                    string.Format("确定要将磁盘 \'{0}\'，实际磁盘 \'{1}\' 中的待删项移到 \'{2}\' 吗?",
+                    diskDescribe, localDisk, moveToFolder), "提示",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Question) ==
+                    DialogResult.Cancel)
+                {
+                    return;
+                }
+
+                //int deleteNumber = sqlData.CountDeleteDataFromFilmInfo(diskDescribe);
+                //DataTable dt = sqlData.GetDeleteDataFromFilmInfo(0, deleteNumber, diskDescribe);
+
+                int[] idList = sqlData.GetDeleteDataFromFilmInfo(diskDescribe);
+                DataTable dt = sqlData.SelectDataByIDList(idList);
+                Debug.Assert(idList.Length == dt.Rows.Count);
+
+                if (!Directory.Exists(moveToFolder)) Directory.CreateDirectory(moveToFolder);
+
+                log += String.Format("查询到待删记录 {0} 条\r\n", dt.Rows.Count);
+                log += String.Format("目标文件夹 {0}\r\n", moveToFolder);
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    String name = dt.Rows[i]["name"].ToString();
+                    String path = dt.Rows[i]["path"].ToString();
+                    Boolean isFolder = Convert.ToBoolean(dt.Rows[i]["is_folder"]);
+
+                    String moveToPath = Path.Combine(moveToFolder, name);
+                    // 更改磁盘名称（扫描时的磁盘和此时的磁盘名称可能不同）
+                    String moveFromPath = localDisk[0] + path.Substring(1);
+
+                    if (isFolder)
                     {
-                        Directory.Move(moveFromPath, moveToPath);
-                        moveSuccess++;
-                        logSuccess += String.Format("{0} ---> {1}\r\n", moveFromPath, moveToPath);
+                        if (Directory.Exists(moveFromPath))
+                        {
+                            Directory.Move(moveFromPath, moveToPath);
+                            moveSuccess++;
+                            logSuccess += String.Format("{0} ---> {1}\r\n", moveFromPath, moveToPath);
+                        }
+                        else
+                        {
+                            moveFailed++;
+                            logFailed += String.Format("{0}\r\n", moveFromPath);
+                        }
                     }
                     else
                     {
-                        moveFailed++;
-                        logFailed += String.Format("{0}\r\n", moveFromPath);
+                        if (File.Exists(moveFromPath))
+                        {
+                            File.Move(moveFromPath, moveToPath);
+                            moveSuccess++;
+                            logSuccess += String.Format("{0} ---> {1}\r\n", moveFromPath, moveToPath);
+                        }
+                        else
+                        {
+                            moveFailed++;
+                            logFailed += String.Format("{0}\r\n", moveFromPath);
+                        }
                     }
                 }
-                else
-                {
-                    if (File.Exists(moveFromPath))
-                    {
-                        File.Move(moveFromPath, moveToPath);
-                        moveSuccess++;
-                        logSuccess += String.Format("{0} ---> {1}\r\n", moveFromPath, moveToPath);
-                    }
-                    else
-                    {
-                        moveFailed++;
-                        logFailed += String.Format("{0}\r\n", moveFromPath);
-                    }
-                }
+
+                log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
+                    moveSuccess, logSuccess, moveFailed, logFailed);
+
+                String filePath = Path.Combine(CommonString.MyFilmApplicationDataFolder, "MyfilmTemp.txt");
+                File.WriteAllText(filePath, log, System.Text.Encoding.UTF8);
+
+                Helper.OpenEdit(filePath, log);
             }
-
-            log += String.Format("\r\n成功 {0} 项：\r\n{1}\r\n失败 {2} 项：\r\n{3}",
-                moveSuccess, logSuccess, moveFailed, logFailed);
-
-            String filePath = Path.Combine(CommonString.MyFilmApplicationDataFolder, "MyfilmTemp.txt");
-            File.WriteAllText(filePath, log, System.Text.Encoding.UTF8);
-
-            Helper.OpenEdit(filePath, log);
-        }
-
-        private void btnUpdateLocalDisk_Click(object sender, EventArgs e)
-        {
-            InitComboxLocalDisk();
         }
 
         private void btnChangeDiskDescribe_Click(object sender, EventArgs e)
@@ -376,7 +362,7 @@ namespace MyFilm
             }
 
             if (MessageBox.Show(
-                string.Format("确定要将磁盘 \'{0}\' 更名为 \'{1}\' ?",
+                string.Format("确定要将磁盘 \'{0}\' 更名为 \'{1}\' 吗?",
                 diskDescribe, diskNewDescribe), "提示",
                 MessageBoxButtons.OKCancel,
                 MessageBoxIcon.Question) ==
@@ -489,7 +475,6 @@ namespace MyFilm
             this.controlEnableArray = new bool[this.Controls.Count];
 
             this.Icon = Properties.Resources.Film;
-            InitComboxLocalDisk();
             InitGrid();
 
             // 默认不扫描媒体信息
