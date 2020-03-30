@@ -349,10 +349,7 @@ namespace MyFilm
                         dt = new DataTable();
                         for (int i = 0; i < sqlDataReader.FieldCount; i++)
                         {
-                            dt.Columns.Add(sqlDataReader.GetName(i),
-                                sqlDataReader.GetFieldType(i) ==
-                                typeof(MySql.Data.Types.MySqlDateTime) ?
-                                typeof(DateTime) : sqlDataReader.GetFieldType(i));
+                            dt.Columns.Add(sqlDataReader.GetName(i), sqlDataReader.GetFieldType(i));
                         }
 
                         while (sqlDataReader.Read())
